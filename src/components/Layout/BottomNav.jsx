@@ -4,16 +4,13 @@ import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import ReceiptRoundedIcon from '@mui/icons-material/ReceiptRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 
-// Barra di navigazione inferiore — sempre visibile
-// useNavigate → permette di cambiare pagina via codice
-// useLocation → dice in quale pagina siamo adesso
 function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
 
   return (
-    // Paper con elevation dà l'ombra sopra la barra
     <Paper
       sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100 }}
       elevation={8}
@@ -37,6 +34,11 @@ function BottomNav() {
           label="Attività"
           value="/attivita"
           icon={<CheckCircleRoundedIcon />}
+        />
+        <BottomNavigationAction
+          label="Impostazioni"
+          value="/impostazioni"
+          icon={<SettingsRoundedIcon />}
         />
       </BottomNavigation>
     </Paper>

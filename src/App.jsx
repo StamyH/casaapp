@@ -10,6 +10,7 @@ import Benvenuto from './pages/Benvenuto';
 import Impostazioni from './pages/Impostazioni';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Navbar from './components/Layout/Navbar';
 
 // Tema personalizzato dell'app — colori, font, stile generale
 const theme = createTheme({
@@ -53,6 +54,7 @@ function AuthGuard({ children }) {
 
   return (
     <>
+      {mostraNav && <Navbar />}
       <div style={{ paddingBottom: mostraNav ? '70px' : '0' }}>
         <Routes>
           <Route path="/benvenuto" element={<Benvenuto />} />
