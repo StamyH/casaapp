@@ -5,9 +5,10 @@ const AppContext = createContext();
 
 // Dati finti per sviluppare l'interfaccia senza Firebase
 const SPESE_INIZIALI = [
-  { id: 1, descrizione: 'Spesa supermercato', importo: 85.50, categoria: 'spesa', pagatore: 'Riccardo', data: '2024-01-15' },
-  { id: 2, descrizione: 'Bolletta luce', importo: 120.00, categoria: 'bolletta', pagatore: 'Federico', data: '2024-01-10' },
-  { id: 3, descrizione: 'Affitto', importo: 800.00, categoria: 'affitto', pagatore: 'Riccardo', data: '2024-01-01' },
+  { id: 1, descrizione: 'Spesa supermercato', importo: 85.50, categoria: 'spesa', pagatore: 'Riccardo', divisione: 'metà', percentuale: 50, data: '2024-01-15' },
+  { id: 2, descrizione: 'Bolletta luce', importo: 120.00, categoria: 'bolletta', pagatore: 'Federico', divisione: 'metà', percentuale: 50, data: '2024-01-10' },
+  { id: 3, descrizione: 'Affitto', importo: 800.00, categoria: 'affitto', pagatore: 'Riccardo', divisione: 'metà', percentuale: 50, data: '2024-01-01' },
+  { id: 4, descrizione: 'Netflix', importo: 18.00, categoria: 'altro', pagatore: 'Federico', divisione: 'tutto_altro', percentuale: 100, data: '2024-01-05' },
 ];
 
 const ATTIVITA_INIZIALI = [

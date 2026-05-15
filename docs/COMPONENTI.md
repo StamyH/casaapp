@@ -2,14 +2,15 @@
 
 ## Layout
 
-### `Navbar.jsx`
+### `Navbar.jsx` ✅
 Barra di navigazione superiore.
 - Mostra il titolo della schermata corrente
 - Mostra l'avatar dell'utente attivo (Riccardo / Federico)
+- Cliccando l'avatar si torna alla schermata di benvenuto
 
-### `BottomNav.jsx`
+### `BottomNav.jsx` ✅
 Navigazione inferiore stile app mobile.
-- 3 tab: **Home**, **Spese**, **Attività**
+- 4 tab: **Home**, **Spese**, **Attività**, **Impostazioni**
 - Evidenzia la tab attiva
 
 ---

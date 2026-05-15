@@ -14,6 +14,11 @@
 - [ ] Inserire descrizione
 - [ ] Selezionare categoria (spesa, bolletta, affitto, altro)
 - [ ] Selezionare chi ha pagato (Riccardo / Federico)
+- [ ] Selezionare come dividere la spesa:
+  - **Metà/Metà** — 50% ciascuno
+  - **Tutto a me** — chi paga si accolla tutto
+  - **Tutto all'altro** — chi paga anticipa tutto per l'altro
+  - **Percentuale custom** — slider per scegliere la percentuale
 - [ ] Data automatica
 
 ### Visualizzazione
