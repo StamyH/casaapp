@@ -1,47 +1,43 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { AppProvider, useApp } from './context/AppContext';
 import Home from './pages/Home';
 import Spese from './pages/Spese';
 import Attivita from './pages/Attivita';
-import BottomNav from './components/Layout/BottomNav';
-import Benvenuto from './pages/Benvenuto';
 import Impostazioni from './pages/Impostazioni';
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import ImpostazioniProfilo from './pages/ImpostazioniProfilo';
+import ImpostazioniTema from './pages/ImpostazioniTema';
+import ImpostazioniCategorie from './pages/ImpostazioniCategorie';
+import ImpostazioniCasa from './pages/ImpostazioniCasa';
+import Benvenuto from './pages/Benvenuto';
 import Navbar from './components/Layout/Navbar';
+import BottomNav from './components/Layout/BottomNav';
 
-// Tema personalizzato dell'app — colori, font, stile generale
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#5C6BC0', // viola/indaco — colore principale
-    },
-    secondary: {
-      main: '#26A69A', // verde acqua — colore secondario
-    },
-    background: {
-      default: '#F5F5F5', // sfondo grigio chiaro
-    },
-  },
-  typography: {
-    fontFamily: '"Inter", "Roboto", sans-serif',
-    h6: {
-      fontWeight: 700,
-    },
-  },
-  shape: {
-    borderRadius: 16, // angoli arrotondati ovunque
-  },
-});
-
-// Componente che controlla se c'è un utente attivo
-// Se no, reindirizza alla schermata di benvenuto
-function AuthGuard({ children }) {
-  const { utente } = useApp();
+function AuthGuard() {
+  const { utente, impostazioni } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Rileva preferenza sistema
+  const preferenzaSistema = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  const modalitaEffettiva = impostazioni.modalita === 'auto' ? preferenzaSistema : impostazioni.modalita;
+
+  const theme = createTheme({
+    palette: {
+      mode: modalitaEffettiva,
+      primary: { main: impostazioni.colore },
+      secondary: { main: '#26A69A' },
+      background: {
+        default: modalitaEffettiva === 'dark' ? '#121212' : '#F5F5F5',
+      },
+    },
+    typography: {
+      fontFamily: '"Inter", "Roboto", sans-serif',
+      h6: { fontWeight: 700 },
+    },
+    shape: { borderRadius: 16 },
+  });
 
   useEffect(() => {
     if (!utente && location.pathname !== '/benvenuto') {
@@ -49,11 +45,11 @@ function AuthGuard({ children }) {
     }
   }, [utente, navigate, location]);
 
-  // Nasconde il BottomNav nella schermata di benvenuto
   const mostraNav = location.pathname !== '/benvenuto';
 
   return (
-    <>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
       {mostraNav && <Navbar />}
       <div style={{ paddingBottom: mostraNav ? '70px' : '0' }}>
         <Routes>
@@ -62,22 +58,23 @@ function AuthGuard({ children }) {
           <Route path="/spese" element={<Spese />} />
           <Route path="/attivita" element={<Attivita />} />
           <Route path="/impostazioni" element={<Impostazioni />} />
+          <Route path="/impostazioni/profilo" element={<ImpostazioniProfilo />} />
+          <Route path="/impostazioni/tema" element={<ImpostazioniTema />} />
+          <Route path="/impostazioni/categorie" element={<ImpostazioniCategorie />} />
+          <Route path="/impostazioni/casa" element={<ImpostazioniCasa />} />
         </Routes>
       </div>
       {mostraNav && <BottomNav />}
-    </>
+    </ThemeProvider>
   );
 }
 
 function App() {
   return (
     <AppProvider>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <BrowserRouter>
-          <AuthGuard />
-        </BrowserRouter>
-      </ThemeProvider>
+      <BrowserRouter>
+        <AuthGuard />
+      </BrowserRouter>
     </AppProvider>
   );
 }

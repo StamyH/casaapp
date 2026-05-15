@@ -65,14 +65,15 @@
 - [ ] Modificare il nome utente
 - [ ] Scegliere avatar o colore profilo
 
-### Tema
-- [ ] Scegliere il colore principale dell'app
-- [ ] Modalità chiara / scura
-
 ### Categorie spese
 - [ ] Visualizzare categorie esistenti
 - [ ] Aggiungere nuova categoria personalizzata
-- [ ] Eliminare categoria personalizzata
+- [ ] Eliminare qualsiasi categoria (incluse quelle base)
+
+### Tema
+- [ ] Scegliere il colore principale dell'app (applicato in tempo reale)
+- [ ] Modalità chiara / scura (applicata in tempo reale)
+- [ ] Segui impostazioni del telefono (auto)
 
 ### Gestione casa
 - [ ] Modificare il nome della casa

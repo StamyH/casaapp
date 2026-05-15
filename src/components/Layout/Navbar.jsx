@@ -1,14 +1,18 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, Avatar, IconButton, Box } from '@mui/material';
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import { useApp } from '../../context/AppContext';
 
-// Titoli per ogni schermata
 const TITOLI = {
   '/': 'Home',
   '/spese': 'Spese',
   '/attivita': 'Attività',
   '/impostazioni': 'Impostazioni',
+  '/impostazioni/profilo': 'Profilo',
+  '/impostazioni/tema': 'Tema',
+  '/impostazioni/categorie': 'Categorie spese',
+  '/impostazioni/casa': 'La tua casa',
 };
 
 function Navbar() {
@@ -17,6 +21,9 @@ function Navbar() {
   const navigate = useNavigate();
 
   const titolo = TITOLI[location.pathname] || 'CasaApp';
+
+  // Mostra il tasto indietro nelle sotto-pagine
+  const isSottoPagina = location.pathname.split('/').length > 2;
 
   return (
     <AppBar
@@ -29,16 +36,19 @@ function Navbar() {
       }}
     >
       <Toolbar sx={{ justifyContent: 'space-between' }}>
-        {/* Titolo schermata */}
-        <Typography
-          variant="h6"
-          fontWeight={700}
-          color="text.primary"
-        >
-          {titolo}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {/* Tasto indietro nelle sotto-pagine */}
+          {isSottoPagina && (
+            <IconButton onClick={() => navigate(-1)} size="small" sx={{ color: 'text.primary' }}>
+              <ArrowBackRoundedIcon />
+            </IconButton>
+          )}
+          <Typography variant="h6" fontWeight={700} color="text.primary">
+            {titolo}
+          </Typography>
+        </Box>
 
-        {/* Avatar utente — clicca per cambiare utente */}
+        {/* Avatar utente */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography variant="body2" color="text.secondary">
             {utente}
