@@ -36,9 +36,13 @@
 
 ### Creazione attività
 - [ ] Titolo attività
-- [ ] Frequenza: giornaliera, settimanale, mensile
+- [ ] Frequenza:
+  - **Giornaliera** — si ripete ogni giorno
+  - **Settimanale** — si ripete un giorno specifico della settimana (es. ogni lunedì)
+  - **Mensile** — si ripete una data specifica del mese (es. ogni 1° del mese)
+  - **Data specifica** — una tantum, con data scelta da calendario
 - [ ] Assegnazione: Riccardo, Federico, o entrambi
-- [ ] Data scadenza automatica in base alla frequenza
+- [ ] Reset automatico alla scadenza per task ricorrenti
 
 ### Gestione
 - [ ] Spunta completamento

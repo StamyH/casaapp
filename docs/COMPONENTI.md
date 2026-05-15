@@ -17,15 +17,15 @@ Navigazione inferiore stile app mobile.
 
 ## Spese
 
-### `SpesaCard.jsx`
+### `SpesaCard.jsx`✅
 Card che mostra una singola spesa.
 - Props: `importo`, `descrizione`, `categoria`, `pagatore`, `data`
 
-### `AggiuntaSpesa.jsx`
+### `AggiuntaSpesa.jsx`✅
 Form per aggiungere una nuova spesa.
 - Campi: importo, descrizione, categoria, chi ha pagato
 
-### `Bilancio.jsx`
+### `Bilancio.jsx`✅
 Mostra il riepilogo del bilancio tra i due coinquilini.
 - Chi deve quanto a chi
 - Totale spese del mese

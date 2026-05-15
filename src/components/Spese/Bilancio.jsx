@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, Box, Typography, Divider } from '@mui/material';
-import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
 import { formattaImporto, calcolaBilancio, calcolaQuote } from '../../utils/helpers';
 import { useApp } from '../../context/AppContext';
 
@@ -44,7 +44,7 @@ function Bilancio() {
         {/* Situazione attuale */}
         {inPari ? (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <CheckCircleRoundedIcon />
+                <CheckCircleOutlineRoundedIcon />
                 <Typography variant="h6" fontWeight={700}>
                     Siete in pari! 🎉
                 </Typography>
