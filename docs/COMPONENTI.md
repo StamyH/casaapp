@@ -63,3 +63,20 @@ Schermata completa delle spese.
 ### `Attivita.jsx`
 Schermata completa delle attività.
 - Lista task divisi per frequenza
+
+---
+
+## Impostazioni
+
+### `Impostazioni.jsx` (page)
+Schermata impostazioni generale.
+- Accesso alle sezioni: Profili, Tema, Categorie, Casa
+
+### `ImpostazioniProfilo.jsx`
+Modifica nome e avatar utente.
+
+### `ImpostazioniTema.jsx`
+Selezione colore tema e modalità chiara/scura.
+
+### `ImpostazioniCategorie.jsx`
+Gestione categorie spese personalizzate.

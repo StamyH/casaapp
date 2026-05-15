@@ -47,3 +47,23 @@
 - [ ] Funziona offline
 - [ ] Sincronizzazione Firebase in tempo reale
 - [ ] Responsive mobile-first
+
+---
+
+## Modulo Impostazioni
+
+### Profili utente
+- [ ] Modificare il nome utente
+- [ ] Scegliere avatar o colore profilo
+
+### Tema
+- [ ] Scegliere il colore principale dell'app
+- [ ] Modalità chiara / scura
+
+### Categorie spese
+- [ ] Visualizzare categorie esistenti
+- [ ] Aggiungere nuova categoria personalizzata
+- [ ] Eliminare categoria personalizzata
+
+### Gestione casa
+- [ ] Modificare il nome della casa

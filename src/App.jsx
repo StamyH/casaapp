@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
+import { AppProvider } from './context/AppContext';
 import Home from './pages/Home';
 import Spese from './pages/Spese';
 import Attivita from './pages/Attivita';
@@ -32,22 +33,21 @@ const theme = createTheme({
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      {/* CssBaseline normalizza gli stili di default del browser */}
-      <CssBaseline />
-      <BrowserRouter>
-        <div style={{ paddingBottom: '70px' }}>
-          {/* Routes definisce quale pagina mostrare in base all'URL */}
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/spese" element={<Spese />} />
-            <Route path="/attivita" element={<Attivita />} />
-          </Routes>
-        </div>
-        {/* BottomNav è sempre visibile in fondo */}
-        <BottomNav />
-      </BrowserRouter>
-    </ThemeProvider>
+    <AppProvider>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <BrowserRouter>
+          <div style={{ paddingBottom: '70px' }}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/spese" element={<Spese />} />
+              <Route path="/attivita" element={<Attivita />} />
+            </Routes>
+          </div>
+          <BottomNav />
+        </BrowserRouter>
+      </ThemeProvider>
+    </AppProvider>
   );
 }
 
