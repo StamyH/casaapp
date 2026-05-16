@@ -24,8 +24,10 @@ const CATEGORIE_INIZIALI = ['spesa', 'bolletta', 'affitto', 'altro'];
 const IMPOSTAZIONI_INIZIALI = {
   nomeCasa: 'Casa Riccardo & Federico',
   colore: '#5C6BC0',
-  modalita: 'auto', // auto, light, dark
+  modalita: 'auto',
   categorie: CATEGORIE_INIZIALI,
+  coloreRiccardo: '#5C6BC0',
+  coloreFederico: '#26A69A',
 };
 
 export function AppProvider({ children }) {
