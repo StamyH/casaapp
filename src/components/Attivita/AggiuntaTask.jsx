@@ -31,6 +31,7 @@ const GIORNI_SETTIMANA = [
 
 function AggiuntaTask({ aperto, onChiudi }) {
   const { aggiungiAttivita } = useApp();
+  const [errori, setErrori] = useState({});
 
   const [form, setForm] = useState({
     titolo: '',
@@ -46,18 +47,36 @@ function AggiuntaTask({ aperto, onChiudi }) {
   };
 
   const handleSubmit = () => {
-    if (!form.titolo) return;
-    if (form.frequenza === 'specifica' && !form.dataSpecifica) return;
-
+    const nuoviErrori = {};
+  
+    if (!form.titolo.trim()) {
+      nuoviErrori.titolo = 'Inserisci un titolo per l\'attività';
+    }
+  
+    if (form.frequenza === 'specifica') {
+      if (!form.dataSpecifica) {
+        nuoviErrori.dataSpecifica = 'Seleziona una data';
+      } else if (form.dataSpecifica < new Date().toISOString().split('T')[0]) {
+        nuoviErrori.dataSpecifica = 'La data non può essere nel passato';
+      }
+    }
+  
+    if (Object.keys(nuoviErrori).length > 0) {
+      setErrori(nuoviErrori);
+      return;
+    }
+  
+    setErrori({});
+  
     aggiungiAttivita({
-      titolo: form.titolo,
+      titolo: form.titolo.trim(),
       frequenza: form.frequenza,
       giornoSettimana: form.frequenza === 'settimanale' ? form.giornoSettimana : null,
       giornoMese: form.frequenza === 'mensile' ? form.giornoMese : null,
       dataSpecifica: form.frequenza === 'specifica' ? form.dataSpecifica : null,
       assegnato: form.assegnato,
     });
-
+  
     setForm({
       titolo: '',
       frequenza: 'giornaliera',
@@ -66,7 +85,7 @@ function AggiuntaTask({ aperto, onChiudi }) {
       dataSpecifica: '',
       assegnato: 'entrambi',
     });
-
+  
     onChiudi();
   };
 
@@ -96,9 +115,11 @@ function AggiuntaTask({ aperto, onChiudi }) {
           label="Titolo attività"
           fullWidth
           value={form.titolo}
-          onChange={e => aggiorna('titolo', e.target.value)}
+          onChange={e => { aggiorna('titolo', e.target.value); setErrori(p => ({ ...p, titolo: '' })); }}
           sx={{ mb: 3 }}
           placeholder="es. Portare la spazzatura"
+          error={!!errori.titolo}
+          helperText={errori.titolo}
         />
 
         {/* Frequenza */}
@@ -179,8 +200,10 @@ function AggiuntaTask({ aperto, onChiudi }) {
               fullWidth
               size="small"
               value={form.dataSpecifica}
-              onChange={e => aggiorna('dataSpecifica', e.target.value)}
+              onChange={e => { aggiorna('dataSpecifica', e.target.value); setErrori(p => ({ ...p, dataSpecifica: '' })); }}
               inputProps={{ min: new Date().toISOString().split('T')[0] }}
+              error={!!errori.dataSpecifica}
+              helperText={errori.dataSpecifica}
             />
           </Box>
         )}
@@ -213,7 +236,6 @@ function AggiuntaTask({ aperto, onChiudi }) {
           variant="contained"
           size="large"
           onClick={handleSubmit}
-          disabled={!form.titolo || (form.frequenza === 'specifica' && !form.dataSpecifica)}
           sx={{ borderRadius: 3, py: 1.5, fontWeight: 700 }}
         >
           Aggiungi attività

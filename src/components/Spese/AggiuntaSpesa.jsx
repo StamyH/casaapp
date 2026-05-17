@@ -26,6 +26,7 @@ function AggiuntaSpesa({ aperto, onChiudi }) {
     percentuale: 50,
   });
 
+  const [errori, setErrori] = useState({});
   const altroUtente = utente === 'Riccardo' ? 'Federico' : 'Riccardo';
 
   const aggiorna = (campo, valore) => {
@@ -37,19 +38,34 @@ function AggiuntaSpesa({ aperto, onChiudi }) {
     : null;
 
   const handleSubmit = () => {
-    if (!form.descrizione || !form.importo) return;
-
+    const nuoviErrori = {};
+    
+    if (!form.descrizione.trim()) {
+      nuoviErrori.descrizione = 'Inserisci una descrizione';
+    }
+    
+    const importoNum = parseFloat(form.importo);
+    if (!form.importo || isNaN(importoNum) || importoNum <= 0) {
+      nuoviErrori.importo = 'Inserisci un importo valido maggiore di 0';
+    }
+    
+    if (Object.keys(nuoviErrori).length > 0) {
+      setErrori(nuoviErrori);
+      return;
+    }
+    
+    setErrori({});
+    
     aggiungiSpesa({
-      descrizione: form.descrizione,
-      importo: parseFloat(form.importo),
+      descrizione: form.descrizione.trim(),
+      importo: importoNum,
       categoria: form.categoria,
       pagatore: utente,
       divisione: form.divisione,
       percentuale: form.percentuale,
       data: new Date().toISOString().split('T')[0],
     });
-
-    // Reset form
+    
     setForm({
       descrizione: '',
       importo: '',
@@ -57,7 +73,7 @@ function AggiuntaSpesa({ aperto, onChiudi }) {
       divisione: 'metà',
       percentuale: 50,
     });
-
+    
     onChiudi();
   };
 
@@ -87,9 +103,11 @@ function AggiuntaSpesa({ aperto, onChiudi }) {
           label="Descrizione"
           fullWidth
           value={form.descrizione}
-          onChange={e => aggiorna('descrizione', e.target.value)}
+          onChange={e => { aggiorna('descrizione', e.target.value); setErrori(p => ({ ...p, descrizione: '' })); }}
           sx={{ mb: 2 }}
           placeholder="es. Spesa supermercato"
+          error={!!errori.descrizione}
+          helperText={errori.descrizione}
         />
 
         {/* Importo */}
@@ -98,9 +116,13 @@ function AggiuntaSpesa({ aperto, onChiudi }) {
           fullWidth
           type="number"
           value={form.importo}
-          onChange={e => aggiorna('importo', e.target.value)}
+          onChange={e => { aggiorna('importo', e.target.value); setErrori(p => ({ ...p, importo: '' })); 
+        }}
           sx={{ mb: 2 }}
           placeholder="0.00"
+          inputProps={{ min: 0.01, step: 0.01 }}
+          error={!!errori.importo}
+          helperText={errori.importo}
         />
 
         {/* Categoria */}
@@ -191,7 +213,6 @@ function AggiuntaSpesa({ aperto, onChiudi }) {
           variant="contained"
           size="large"
           onClick={handleSubmit}
-          disabled={!form.descrizione || !form.importo}
           sx={{ borderRadius: 3, py: 1.5, fontWeight: 700 }}
         >
           Aggiungi spesa
