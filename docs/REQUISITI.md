@@ -3,77 +3,76 @@
 ## Utenti
 - L'app supporta due utenti: **Riccardo** e **Federico**
 - Ogni utente seleziona il proprio profilo all'avvio
-- I dati sono condivisi e sincronizzati in tempo reale
+- I dati sono salvati in locale su ogni dispositivo (localStorage)
 
 ---
 
 ## Modulo Spese
 
 ### Registrazione spesa
-- [ ] Inserire importo
-- [ ] Inserire descrizione
-- [ ] Selezionare categoria (spesa, bolletta, affitto, altro)
-- [ ] Selezionare chi ha pagato (Riccardo / Federico)
-- [ ] Selezionare come dividere la spesa:
+- [x] Inserire importo
+- [x] Inserire descrizione
+- [x] Selezionare categoria (spesa, bolletta, affitto, altro + personalizzate)
+- [x] Selezionare chi ha pagato (Riccardo / Federico)
+- [x] Selezionare come dividere la spesa:
   - **Metà/Metà** — 50% ciascuno
   - **Tutto a me** — chi paga si accolla tutto
   - **Tutto all'altro** — chi paga anticipa tutto per l'altro
   - **Percentuale custom** — slider per scegliere la percentuale
-- [ ] Data automatica
+- [x] Data automatica
 
 ### Visualizzazione
-- [ ] Lista spese del mese corrente
-- [ ] Filtro per categoria
-- [ ] Totale spese del mese
+- [x] Lista spese
+- [x] Totale spese
 
 ### Bilancio
-- [ ] Calcolo automatico di chi deve cosa a chi
-- [ ] Storico mesi precedenti
+- [x] Calcolo automatico di chi deve cosa a chi
 
 ---
 
 ## Modulo Attività
 
 ### Creazione attività
-- [ ] Titolo attività
-- [ ] Frequenza:
+- [x] Titolo attività
+- [x] Frequenza:
   - **Giornaliera** — si ripete ogni giorno
-  - **Settimanale** — si ripete un giorno specifico della settimana (es. ogni lunedì)
-  - **Mensile** — si ripete una data specifica del mese (es. ogni 1° del mese)
-  - **Data specifica** — una tantum, con data scelta da calendario
-- [ ] Assegnazione: Riccardo, Federico, o entrambi
-- [ ] Reset automatico alla scadenza per task ricorrenti
+  - **Settimanale** — si ripete un giorno specifico della settimana
+  - **Mensile** — si ripete una data specifica del mese
+  - **Data specifica** — una tantum, con data scelta
+- [x] Assegnazione: Riccardo, Federico, o entrambi
 
 ### Gestione
-- [ ] Spunta completamento
-- [ ] Reset automatico alla scadenza
+- [x] Spunta completamento
+- [ ] Reset automatico alla scadenza per task ricorrenti
 - [ ] Notifica visiva se in ritardo
-
----
-
-## Requisiti tecnici
-- [ ] PWA installabile su iPhone
-- [ ] Funziona offline
-- [ ] Sincronizzazione Firebase in tempo reale
-- [ ] Responsive mobile-first
 
 ---
 
 ## Modulo Impostazioni
 
 ### Profili utente
-- [ ] Modificare il nome utente
-- [ ] Scegliere avatar o colore profilo
+- [x] Visualizzare nome e avatar utente
+- [x] Scegliere colore avatar (da pagina Tema)
+- [ ] Modificare il nome utente (attualmente solo dalla schermata di selezione)
 
 ### Categorie spese
-- [ ] Visualizzare categorie esistenti
-- [ ] Aggiungere nuova categoria personalizzata
-- [ ] Eliminare qualsiasi categoria (incluse quelle base)
+- [x] Visualizzare categorie esistenti
+- [x] Aggiungere nuova categoria personalizzata
+- [x] Eliminare categorie
 
 ### Tema
-- [ ] Scegliere il colore principale dell'app (applicato in tempo reale)
-- [ ] Modalità chiara / scura (applicata in tempo reale)
-- [ ] Segui impostazioni del telefono (auto)
+- [x] Scegliere il colore principale dell'app (applicato in tempo reale)
+- [x] Scegliere il colore del proprio avatar (applicato in tempo reale)
+- [x] Modalità chiara / scura / auto (segui impostazioni del telefono)
 
 ### Gestione casa
-- [ ] Modificare il nome della casa
+- [x] Modificare il nome della casa
+
+---
+
+## Requisiti tecnici
+- [ ] PWA installabile su iPhone
+- [ ] Funziona offline
+- [ ] Sincronizzazione tra dispositivi (attualmente i dati sono locali)
+- [x] Responsive mobile-first
+- [x] Persistenza dati con localStorage
