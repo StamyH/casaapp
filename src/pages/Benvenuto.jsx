@@ -2,11 +2,13 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Typography, Button, Avatar } from '@mui/material';
 import { useApp } from '../context/AppContext';
+import { useImpostazioni } from '../context/ImpostazioniContext';
 
 // Schermata iniziale — selezione utente
 // Viene mostrata solo se nessun utente è ancora attivo
 function Benvenuto() {
-  const { setUtente, impostazioni } = useApp();
+  const { setUtente } = useApp();
+  const { impostazioni } = useImpostazioni();
   const navigate = useNavigate();
 
   const selezionaUtente = (nome) => {
