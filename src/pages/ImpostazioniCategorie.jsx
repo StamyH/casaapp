@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { Box, TextField, Typography, Chip, IconButton } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import { useImpostazioni } from '../context/ImpostazioniContext';
+import { useSpese } from '../context/SpeseContext';
 
 function ImpostazioniCategorie() {
   const { impostazioni, aggiornaImpostazioni } = useImpostazioni();
+  const { riassegnaCategoria } = useSpese();
   const [nuovaCategoria, setNuovaCategoria] = useState('');
   const [errore, setErrore] = useState('');
 
@@ -24,7 +26,10 @@ function ImpostazioniCategorie() {
 
   const elimina = (cat) => {
     if (impostazioni.categorie.length <= 1) return;
-    aggiornaImpostazioni({ categorie: impostazioni.categorie.filter(c => c !== cat) });
+    const rimanenti = impostazioni.categorie.filter(c => c !== cat);
+    console.log('Riassegno:', cat, '→', rimanenti[0]);
+    riassegnaCategoria(cat, rimanenti[0]);
+    aggiornaImpostazioni({ categorie: rimanenti });
   };
 
   return (

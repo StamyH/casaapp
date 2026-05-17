@@ -31,8 +31,14 @@ export function SpeseProvider({ children }) {
     setSpese(prev => prev.filter(s => s.id !== id));
   };
 
+  const riassegnaCategoria = (vecchia, nuova) => {
+    setSpese(prev => prev.map(s =>
+      s.categoria === vecchia ? { ...s, categoria: nuova } : s
+    ));
+  };
+
   return (
-    <SpeseContext.Provider value={{ spese, aggiungiSpesa, eliminaSpesa }}>
+    <SpeseContext.Provider value={{ spese, aggiungiSpesa, eliminaSpesa, riassegnaCategoria }}>
       {children}
     </SpeseContext.Provider>
   );
