@@ -41,7 +41,7 @@ function Navbar() {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           {/* Tasto indietro nelle sotto-pagine */}
           {isSottoPagina && (
-            <IconButton onClick={() => navigate(-1)} size="small" sx={{ color: 'text.primary' }}>
+            <IconButton onClick={() => navigate('/impostazioni')} size="small" sx={{ color: 'text.primary' }}>
               <ArrowBackRoundedIcon />
             </IconButton>
           )}
