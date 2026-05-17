@@ -6,10 +6,15 @@ import { useNavigate } from 'react-router-dom';
 function ImpostazioniCasa() {
   const { impostazioni, aggiornaImpostazioni } = useApp();
   const [nomeCasa, setNomeCasa] = useState(impostazioni.nomeCasa);
+  const [errore, setErrore] = useState('');
   const navigate = useNavigate();
 
   const salva = () => {
-    aggiornaImpostazioni({ nomeCasa });
+    if (!nomeCasa.trim()) {
+      setErrore('Il nome della casa non può essere vuoto');
+      return;
+    }
+    aggiornaImpostazioni({ nomeCasa: nomeCasa.trim() });
     navigate('/impostazioni');
   };
 
@@ -22,15 +27,16 @@ function ImpostazioniCasa() {
         label="Nome della casa"
         fullWidth
         value={nomeCasa}
-        onChange={e => setNomeCasa(e.target.value)}
+        onChange={e => { setNomeCasa(e.target.value); setErrore(''); }}
         placeholder="es. Casa Riccardo & Federico"
+        error={!!errore}
+        helperText={errore}
       />
       <Button
         fullWidth
         variant="contained"
         size="large"
         onClick={salva}
-        disabled={!nomeCasa}
         sx={{ borderRadius: 3, py: 1.5, fontWeight: 700 }}
       >
         Salva
