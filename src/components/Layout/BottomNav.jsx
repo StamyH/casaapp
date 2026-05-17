@@ -17,7 +17,7 @@ function BottomNav() {
       elevation={8}
     >
       <BottomNavigation
-        value={tabAtiivo}
+        value={tabAttivo}
         onChange={(event, newPath) => navigate(newPath)}
         sx={{ borderRadius: '16px 16px 0 0' }}
       >
