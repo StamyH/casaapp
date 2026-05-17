@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, Typography, Avatar } from '@mui/material';
 import { useApp } from '../context/AppContext';
+import { useImpostazioni } from '../context/ImpostazioniContext';
 import { useNavigate } from 'react-router-dom';
 
 const COLORI_AVATAR = [
@@ -13,7 +14,8 @@ const COLORI_AVATAR = [
 ];
 
 function ImpostazioniProfilo() {
-  const { utente, impostazioni, aggiornaImpostazioni } = useApp();
+  const { utente } = useApp();
+  const { impostazioni, aggiornaImpostazioni } = useImpostazioni();
   const navigate = useNavigate();
 
   const chiaveColore = utente === 'Riccardo' ? 'coloreRiccardo' : 'coloreFederico';

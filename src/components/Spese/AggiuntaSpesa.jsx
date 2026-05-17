@@ -6,6 +6,8 @@ import {
 } from '@mui/material';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { useApp } from '../../context/AppContext';
+import { useSpese } from '../../context/SpeseContext';
+import { useImpostazioni } from '../../context/ImpostazioniContext';
 import { formattaImporto, calcolaQuote } from '../../utils/helpers';
 
 const DIVISIONI = [
@@ -16,7 +18,9 @@ const DIVISIONI = [
 ];
 
 function AggiuntaSpesa({ aperto, onChiudi }) {
-  const { aggiungiSpesa, utente, impostazioni } = useApp();
+  const { utente } = useApp();
+  const { aggiungiSpesa } = useSpese();
+  const { impostazioni } = useImpostazioni();
 
   const [form, setForm] = useState({
     descrizione: '',

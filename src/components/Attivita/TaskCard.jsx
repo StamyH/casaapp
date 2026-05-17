@@ -5,6 +5,8 @@ import {
 } from '@mui/material';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import { useApp } from '../../context/AppContext';
+import { useAttivita } from '../../context/AttivitaContext';
+import { useImpostazioni } from '../../context/ImpostazioniContext';
 
 const FREQUENZE = {
   giornaliera: { icona: '☀️', colore: '#FF7043' },
@@ -29,7 +31,9 @@ function AvatarUtente({ nome, impostazioni, size = 22 }) {
 }
 
 function TaskCard({ task }) {
-  const { toggleAttivita, eliminaAttivita, utente, impostazioni } = useApp();
+  const { utente } = useApp();
+  const { toggleAttivita, eliminaAttivita } = useAttivita();
+  const { impostazioni } = useImpostazioni();
   const frequenza = FREQUENZE[task.frequenza] || FREQUENZE.giornaliera;
 
   return (

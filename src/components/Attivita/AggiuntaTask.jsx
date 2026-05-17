@@ -4,7 +4,7 @@ import {
   ToggleButton, ToggleButtonGroup, IconButton
 } from '@mui/material';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
-import { useApp } from '../../context/AppContext';
+import { useAttivita } from '../../context/AttivitaContext';
 
 const FREQUENZE = [
   { value: 'giornaliera', label: '☀️ Giornaliera' },
@@ -30,7 +30,7 @@ const GIORNI_SETTIMANA = [
 ];
 
 function AggiuntaTask({ aperto, onChiudi }) {
-  const { aggiungiAttivita } = useApp();
+  const { aggiungiAttivita } = useAttivita();
   const [errori, setErrori] = useState({});
 
   const [form, setForm] = useState({

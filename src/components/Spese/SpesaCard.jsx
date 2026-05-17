@@ -6,6 +6,7 @@ import {
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import { formattaImporto, formattaData, calcolaQuote } from '../../utils/helpers';
 import { useApp } from '../../context/AppContext';
+import { useSpese } from '../../context/SpeseContext';
 
 // Icone e colori per ogni categoria
 const CATEGORIE = {
@@ -24,7 +25,8 @@ const DIVISIONE_LABEL = {
 };
 
 function SpesaCard({ spesa }) {
-  const { eliminaSpesa, utente } = useApp();
+  const { utente } = useApp();
+  const { eliminaSpesa } = useSpese();
   const categoria = CATEGORIE[spesa.categoria] || CATEGORIE.altro;
   const quote = calcolaQuote(spesa.importo, spesa.pagatore, spesa.divisione, spesa.percentuale);
 

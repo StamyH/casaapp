@@ -7,6 +7,7 @@ import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import { useApp } from '../context/AppContext';
+import { useImpostazioni } from '../context/ImpostazioniContext';
 
 const VOCI = [
   {
@@ -40,7 +41,8 @@ const VOCI = [
 ];
 
 function Impostazioni() {
-  const { utente, impostazioni } = useApp();
+  const { utente } = useApp();
+  const { impostazioni } = useImpostazioni();
   const navigate = useNavigate();
 
   return (

@@ -3,7 +3,7 @@ import { Box, Typography, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
 import SettingsBrightnessRoundedIcon from '@mui/icons-material/SettingsBrightnessRounded';
-import { useApp } from '../context/AppContext';
+import { useImpostazioni } from '../context/ImpostazioniContext';
 
 const COLORI = [
   { valore: '#5C6BC0', nome: 'Indaco' },
@@ -15,7 +15,7 @@ const COLORI = [
 ];
 
 function ImpostazioniTema() {
-  const { impostazioni, aggiornaImpostazioni } = useApp();
+  const { impostazioni, aggiornaImpostazioni } = useImpostazioni();
 
   return (
     <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
