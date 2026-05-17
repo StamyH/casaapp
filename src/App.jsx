@@ -13,6 +13,7 @@ import ImpostazioniCasa from './pages/ImpostazioniCasa';
 import Benvenuto from './pages/Benvenuto';
 import Navbar from './components/Layout/Navbar';
 import BottomNav from './components/Layout/BottomNav';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function AuthGuard() {
   const { utente, impostazioni } = useApp();
@@ -71,11 +72,13 @@ function AuthGuard() {
 
 function App() {
   return (
-    <AppProvider>
-      <BrowserRouter>
-        <AuthGuard />
-      </BrowserRouter>
-    </AppProvider>
+    <ErrorBoundary>
+      <AppProvider>
+        <BrowserRouter>
+          <AuthGuard />
+        </BrowserRouter>
+      </AppProvider>
+    </ErrorBoundary>
   );
 }
 

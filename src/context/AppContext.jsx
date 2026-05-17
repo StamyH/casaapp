@@ -82,5 +82,7 @@ export function AppProvider({ children }) {
 
 // Hook — invece di scrivere useContext(AppContext) ogni volta, basta useApp()
 export function useApp() {
-  return useContext(AppContext);
+  const context = useContext(AppContext);
+  if (!context) throw new Error('useApp deve essere usato dentro AppProvider');
+  return context;
 }
