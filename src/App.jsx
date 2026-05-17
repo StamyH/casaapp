@@ -2,6 +2,9 @@ import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { AppProvider, useApp } from './context/AppContext';
+import { SpeseProvider } from './context/SpeseContext';
+import { AttivitaProvider } from './context/AttivitaContext';
+import { ImpostazioniProvider, useImpostazioni } from './context/ImpostazioniContext';
 import Home from './pages/Home';
 import Spese from './pages/Spese';
 import Attivita from './pages/Attivita';
@@ -16,11 +19,11 @@ import BottomNav from './components/Layout/BottomNav';
 import ErrorBoundary from './components/ErrorBoundary';
 
 function AuthGuard() {
-  const { utente, impostazioni } = useApp();
+  const { utente } = useApp();
+  const { impostazioni } = useImpostazioni();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Rileva preferenza sistema
   const preferenzaSistema = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   const modalitaEffettiva = impostazioni.modalita === 'auto' ? preferenzaSistema : impostazioni.modalita;
 
@@ -74,9 +77,15 @@ function App() {
   return (
     <ErrorBoundary>
       <AppProvider>
-        <BrowserRouter>
-          <AuthGuard />
-        </BrowserRouter>
+        <SpeseProvider>
+          <AttivitaProvider>
+            <ImpostazioniProvider>
+              <BrowserRouter>
+                <AuthGuard />
+              </BrowserRouter>
+            </ImpostazioniProvider>
+          </AttivitaProvider>
+        </SpeseProvider>
       </AppProvider>
     </ErrorBoundary>
   );

@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { Box, Fab, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import { useApp } from '../context/AppContext';
+import { useAttivita } from '../context/AttivitaContext';
 import TaskList from '../components/Attivita/TaskList';
 import AggiuntaTask from '../components/Attivita/AggiuntaTask';
 
 function Attivita() {
-  const { attivita, utente } = useApp();
+  const { utente } = useApp();
+  const { attivita } = useAttivita();
   const [apriForm, setApriForm] = useState(false);
   const [filtroUtente, setFiltroUtente] = useState('tutti');
 

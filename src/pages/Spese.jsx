@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Box, Typography, Fab, MenuItem, TextField } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import { useApp } from '../context/AppContext';
+import { useSpese } from '../context/SpeseContext';
+import { useImpostazioni } from '../context/ImpostazioniContext';
 import SpesaCard from '../components/Spese/SpesaCard';
 import Bilancio from '../components/Spese/Bilancio';
 import AggiuntaSpesa from '../components/Spese/AggiuntaSpesa';
 import { raggruppaPerMese } from '../utils/helpers';
 
 function Spese() {
-  const { spese, impostazioni } = useApp();
+  const { spese } = useSpese();
+  const { impostazioni } = useImpostazioni();
   const [apriForm, setApriForm] = useState(false);
   const [filtroCategoria, setFiltroCategoria] = useState('tutte');
 

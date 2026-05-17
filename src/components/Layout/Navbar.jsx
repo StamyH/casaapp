@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, Avatar, IconButton, Box } from '@mui/material';
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import { useApp } from '../../context/AppContext';
+import { useImpostazioni } from '../../context/ImpostazioniContext';
 
 const TITOLI = {
   '/': 'Home',
@@ -16,7 +17,8 @@ const TITOLI = {
 };
 
 function Navbar() {
-  const { utente, impostazioni } = useApp();
+  const { utente } = useApp();
+  const { impostazioni } = useImpostazioni();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -58,7 +60,7 @@ function Navbar() {
               sx={{
                 width: 34,
                 height: 34,
-                bgcolor: impostazioni.colore,
+                bgcolor: utente === 'Riccardo' ? impostazioni.coloreRiccardo : impostazioni.coloreFederico,
                 fontSize: '0.9rem',
                 fontWeight: 700,
               }}

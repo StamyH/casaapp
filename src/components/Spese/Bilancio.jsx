@@ -2,10 +2,10 @@ import React from 'react';
 import { Card, CardContent, Box, Typography, Divider } from '@mui/material';
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
 import { formattaImporto, calcolaBilancio, calcolaQuote } from '../../utils/helpers';
-import { useApp } from '../../context/AppContext';
+import { useSpese } from '../../context/SpeseContext';
 
 function Bilancio() {
-  const { spese } = useApp();
+  const { spese } = useSpese();
   const bilancio = calcolaBilancio(spese);
   const inPari = bilancio.importoDebito < 0.01;
 

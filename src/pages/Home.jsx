@@ -1,12 +1,16 @@
 import React from 'react';
 import { Box, Typography, Card, CardContent, Chip, Divider, Checkbox } from '@mui/material';
 import { useApp } from '../context/AppContext';
+import { useSpese } from '../context/SpeseContext';
+import { useAttivita } from '../context/AttivitaContext';
 import { formattaImporto, calcolaBilancio } from '../utils/helpers';
 
 const GIORNI_SETTIMANA = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
 
 function Home() {
-  const { utente, spese, attivita, toggleAttivita } = useApp();
+  const { utente } = useApp();
+  const { spese } = useSpese();
+  const { attivita, toggleAttivita } = useAttivita();
   const bilancio = calcolaBilancio(spese);
   const oggi = new Date();
   const giornoOggi = oggi.getDay();

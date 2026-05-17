@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, Typography } from '@mui/material';
-import { useApp } from '../context/AppContext';
+import { useImpostazioni } from '../context/ImpostazioniContext';
 import { useNavigate } from 'react-router-dom';
 
 function ImpostazioniCasa() {
-  const { impostazioni, aggiornaImpostazioni } = useApp();
+  const { impostazioni, aggiornaImpostazioni } = useImpostazioni();
   const [nomeCasa, setNomeCasa] = useState(impostazioni.nomeCasa);
   const [errore, setErrore] = useState('');
   const navigate = useNavigate();

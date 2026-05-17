@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Box, TextField, Typography, Chip, IconButton } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import { useApp } from '../context/AppContext';
+import { useImpostazioni } from '../context/ImpostazioniContext';
 
 function ImpostazioniCategorie() {
-  const { impostazioni, aggiornaImpostazioni } = useApp();
+  const { impostazioni, aggiornaImpostazioni } = useImpostazioni();
   const [nuovaCategoria, setNuovaCategoria] = useState('');
   const [errore, setErrore] = useState('');
 
