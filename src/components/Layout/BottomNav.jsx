@@ -9,6 +9,7 @@ import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
+  const tabAttivo = ['/', '/spese', '/attivita', '/impostazioni'].findLast(p => location.pathname.startsWith(p));
 
   return (
     <Paper
@@ -16,7 +17,7 @@ function BottomNav() {
       elevation={8}
     >
       <BottomNavigation
-        value={location.pathname}
+        value={tabAtiivo}
         onChange={(event, newPath) => navigate(newPath)}
         sx={{ borderRadius: '16px 16px 0 0' }}
       >
