@@ -27,7 +27,7 @@ jobs:
         run: npm ci
 
       - name: Controlla vulnerabilità
-        run: npm audit --audit-level=high --omit=dev
+        run: npm audit --audit-level=critical
 
       - name: Esegui test
         run: npm test -- --watchAll=false
