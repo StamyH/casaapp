@@ -10,6 +10,12 @@ const ATTIVITA_INIZIALI = [
   { id: 5, titolo: 'Controllo caldaia', frequenza: 'specifica', giornoSettimana: null, giornoMese: null, dataSpecifica: '2024-02-15', assegnato: 'Federico', completato: false },
 ];
 
+function inizioSettimana(date) {
+  const d = new Date(date);
+  d.setDate(d.getDate() - (d.getDay() || 7) + 1);
+  return d.toISOString().split('T')[0];
+}
+
 export function AttivitaProvider({ children }) {
   const [attivita, setAttivita] = useState(() => {
     try {
@@ -23,6 +29,31 @@ export function AttivitaProvider({ children }) {
   useEffect(() => {
     localStorage.setItem('casaapp_attivita', JSON.stringify(attivita));
   }, [attivita]);
+
+  useEffect(() => {
+    const oggiStr = new Date().toISOString().split('T')[0];
+    const ultimoReset = localStorage.getItem('casaapp_ultimo_reset');
+  
+    if (ultimoReset === oggiStr) return;
+  
+    const oggi = new Date();
+    const ultima = ultimoReset ? new Date(ultimoReset) : null;
+  
+    const nuovaSettimana = !ultima || inizioSettimana(oggi) !== inizioSettimana(ultima);
+    const nuovoMese = !ultima ||
+      oggi.getMonth() !== ultima.getMonth() ||
+      oggi.getFullYear() !== ultima.getFullYear();
+  
+    setAttivita(prev => prev.map(att => {
+      if (!att.completato) return att;
+      if (att.frequenza === 'giornaliera') return { ...att, completato: false };
+      if (att.frequenza === 'settimanale' && nuovaSettimana) return { ...att, completato: false };
+      if (att.frequenza === 'mensile' && nuovoMese) return { ...att, completato: false };
+      return att;
+    }));
+  
+    localStorage.setItem('casaapp_ultimo_reset', oggiStr);
+  }, []);
 
   const aggiungiAttivita = (nuovaAttivita) => {
     setAttivita(prev => [...prev, { ...nuovaAttivita, id: Date.now(), completato: false }]);
