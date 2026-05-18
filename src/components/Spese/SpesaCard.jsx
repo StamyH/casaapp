@@ -7,14 +7,10 @@ import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import { formattaImporto, formattaData, calcolaQuote } from '../../utils/helpers';
 import { useApp } from '../../context/AppContext';
 import { useSpese } from '../../context/SpeseContext';
+import { useImpostazioni } from '../../context/ImpostazioniContext';
 
 // Icone e colori per ogni categoria
-const CATEGORIE = {
-  spesa: { icona: '🛒', colore: '#66BB6A' },
-  bolletta: { icona: '⚡', colore: '#FFA726' },
-  affitto: { icona: '🏠', colore: '#5C6BC0' },
-  altro: { icona: '📦', colore: '#78909C' },
-};
+const PALETTE = ['#66BB6A', '#FFA726', '#5C6BC0', '#78909C', '#EC407A', '#26A69A', '#FF7043', '#AB47BC', '#42A5F5'];
 
 // Etichette leggibili per il tipo di divisione
 const DIVISIONE_LABEL = {
@@ -27,7 +23,10 @@ const DIVISIONE_LABEL = {
 function SpesaCard({ spesa }) {
   const { utente } = useApp();
   const { eliminaSpesa } = useSpese();
-  const categoria = CATEGORIE[spesa.categoria] || CATEGORIE.altro;
+  const { impostazioni } = useImpostazioni();
+  const idx = impostazioni.categorie.findIndex(c => c.nome === spesa.categoria);
+  const catObj = impostazioni.categorie[idx] || { nome: spesa.categoria, icona: '📦' };
+  const colore = PALETTE[idx >= 0 ? idx % PALETTE.length : PALETTE.length - 1];
   const quote = calcolaQuote(spesa.importo, spesa.pagatore, spesa.divisione, spesa.percentuale);
 
   return (
@@ -53,10 +52,10 @@ function SpesaCard({ spesa }) {
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: '1.4rem',
-            bgcolor: `${categoria.colore}20`,
+            bgcolor: `${colore}20`,
             flexShrink: 0,
           }}>
-            {categoria.icona}
+            {catObj.icona}
           </Box>
 
           {/* Contenuto principale */}
@@ -86,7 +85,7 @@ function SpesaCard({ spesa }) {
               <Chip
                 label={DIVISIONE_LABEL[spesa.divisione] || 'Metà/Metà'}
                 size="small"
-                sx={{ bgcolor: `${categoria.colore}15`, color: categoria.colore, fontWeight: 600 }}
+                sx={{ bgcolor: `${colore}15`, color: colore, fontWeight: 600 }}
               />
               <Typography variant="caption" color="text.secondary">
                 Riccardo: {formattaImporto(quote['Riccardo'] || 0)} · Federico: {formattaImporto(quote['Federico'] || 0)}

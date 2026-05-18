@@ -6,7 +6,12 @@ const IMPOSTAZIONI_INIZIALI = {
   nomeCasa: 'Casa Riccardo & Federico',
   colore: '#5C6BC0',
   modalita: 'auto',
-  categorie: ['spesa', 'bolletta', 'affitto', 'altro'],
+  categorie: [
+    { nome: 'spesa', icona: '🛒' },
+    { nome: 'bolletta', icona: '⚡' },
+    { nome: 'affitto', icona: '🏠' },
+    { nome: 'altro', icona: '📦' },
+  ],
   coloreRiccardo: '#5C6BC0',
   coloreFederico: '#26A69A',
 };
@@ -15,7 +20,12 @@ export function ImpostazioniProvider({ children }) {
   const [impostazioni, setImpostazioni] = useState(() => {
     try {
       const saved = localStorage.getItem('casaapp_impostazioni');
-      return saved ? { ...IMPOSTAZIONI_INIZIALI, ...JSON.parse(saved) } : IMPOSTAZIONI_INIZIALI;
+      if (!saved) return IMPOSTAZIONI_INIZIALI;
+      const parsed = JSON.parse(saved);
+      if (parsed.categorie && typeof parsed.categorie[0] === 'string') {
+        parsed.categorie = parsed.categorie.map(nome => ({ nome, icona: '📦' }));
+      }
+      return { ...IMPOSTAZIONI_INIZIALI, ...parsed };
     } catch {
       return IMPOSTAZIONI_INIZIALI;
     }

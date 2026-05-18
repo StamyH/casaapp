@@ -40,8 +40,8 @@ function Spese() {
       >
         <MenuItem value="tutte">Tutte le categorie</MenuItem>
         {impostazioni.categorie.map(cat => (
-          <MenuItem key={cat} value={cat}>
-            {cat.charAt(0).toUpperCase() + cat.slice(1)}
+          <MenuItem key={cat.nome} value={cat.nome}>
+            {cat.icona} {cat.nome.charAt(0).toUpperCase() + cat.nome.slice(1)}
           </MenuItem>
         ))}
       </TextField>
