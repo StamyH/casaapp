@@ -13,6 +13,7 @@ function Spese() {
   const { impostazioni } = useImpostazioni();
   const [apriForm, setApriForm] = useState(false);
   const [filtroCategoria, setFiltroCategoria] = useState('tutte');
+  const [spesaInModifica, setSpesaInModifica] = useState(null);
 
   // Filtra per categoria se selezionata
   const speseFiltrate = filtroCategoria === 'tutte'
@@ -74,7 +75,7 @@ function Spese() {
 
             {/* Card spese */}
             {speseDelMese.map(spesa => (
-              <SpesaCard key={spesa.id} spesa={spesa} />
+              <SpesaCard key={spesa.id} spesa={spesa} onModifica={setSpesaInModifica}/>
             ))}
           </Box>
         ))
@@ -96,8 +97,9 @@ function Spese() {
 
       {/* Form aggiunta spesa */}
       <AggiuntaSpesa
-        aperto={apriForm}
-        onChiudi={() => setApriForm(false)}
+        aperto={apriForm || !!spesaInModifica}
+        onChiudi={() => { setApriForm(false); setSpesaInModifica(null); }}
+        spesaInModifica={spesaInModifica}
       />
     </Box>
   );

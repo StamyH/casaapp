@@ -3,7 +3,7 @@ import {
   Card, CardContent, Box, Typography,
   Chip, IconButton
 } from '@mui/material';
-import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { formattaImporto, formattaData, calcolaQuote } from '../../utils/helpers';
 import { useApp } from '../../context/AppContext';
 import { useSpese } from '../../context/SpeseContext';
@@ -20,7 +20,7 @@ const DIVISIONE_LABEL = {
   percentuale: 'Personalizzata',
 };
 
-function SpesaCard({ spesa }) {
+function SpesaCard({ spesa, onModifica }) {
   const { utente } = useApp();
   const { eliminaSpesa } = useSpese();
   const { impostazioni } = useImpostazioni();
@@ -97,10 +97,10 @@ function SpesaCard({ spesa }) {
           {utente === spesa.pagatore && (
             <IconButton
               size="small"
-              onClick={() => eliminaSpesa(spesa.id)}
-              sx={{ color: 'error.light', flexShrink: 0 }}
+              onClick={() => onModifica(spesa)}
+              sx={{ color: 'primary.main', flexShrink: 0 }}
             >
-              <DeleteRoundedIcon fontSize="small" />
+              <EditRoundedIcon fontSize="small" />
             </IconButton>
           )}
         </Box>

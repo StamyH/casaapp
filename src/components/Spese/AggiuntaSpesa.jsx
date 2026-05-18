@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Drawer, Box, Typography, TextField, Button,
   MenuItem, ToggleButton, ToggleButtonGroup,
@@ -17,20 +17,42 @@ const DIVISIONI = [
   { value: 'percentuale', label: 'Custom %' },
 ];
 
-function AggiuntaSpesa({ aperto, onChiudi }) {
+function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
   const { utente } = useApp();
-  const { aggiungiSpesa } = useSpese();
+  const { aggiungiSpesa, modificaSpesa, eliminaSpesa } = useSpese();
   const { impostazioni } = useImpostazioni();
 
   const [form, setForm] = useState({
     descrizione: '',
     importo: '',
-    categoria: impostazioni.categorie[0] || 'altro',
+    categoria: impostazioni.categorie[0]?.nome || 'altro',
     divisione: 'metà',
     percentuale: 50,
   });
+  
+  useEffect(() => {
+    setConfermaElimina(false);
+    if (spesaInModifica) {
+      setForm({
+        descrizione: spesaInModifica.descrizione,
+        importo: String(spesaInModifica.importo),
+        categoria: spesaInModifica.categoria,
+        divisione: spesaInModifica.divisione,
+        percentuale: spesaInModifica.percentuale,
+      });
+    } else {
+      setForm({
+        descrizione: '',
+        importo: '',
+        categoria: impostazioni.categorie[0]?.nome || 'altro',
+        divisione: 'metà',
+        percentuale: 50,
+      });
+    }
+  }, [spesaInModifica, aperto]);
 
   const [errori, setErrori] = useState({});
+  const [confermaElimina, setConfermaElimina] = useState(false);
   const altroUtente = utente === 'Riccardo' ? 'Federico' : 'Riccardo';
 
   const aggiorna = (campo, valore) => {
@@ -60,15 +82,25 @@ function AggiuntaSpesa({ aperto, onChiudi }) {
     
     setErrori({});
     
-    aggiungiSpesa({
-      descrizione: form.descrizione.trim(),
-      importo: importoNum,
-      categoria: form.categoria,
-      pagatore: utente,
-      divisione: form.divisione,
-      percentuale: form.percentuale,
-      data: new Date().toISOString().split('T')[0],
-    });
+    if (spesaInModifica) {
+      modificaSpesa(spesaInModifica.id, {
+        descrizione: form.descrizione.trim(),
+        importo: importoNum,
+        categoria: form.categoria,
+        divisione: form.divisione,
+        percentuale: form.percentuale,
+      });
+    } else {
+      aggiungiSpesa({
+        descrizione: form.descrizione.trim(),
+        importo: importoNum,
+        categoria: form.categoria,
+        pagatore: utente,
+        divisione: form.divisione,
+        percentuale: form.percentuale,
+        data: new Date().toISOString().split('T')[0],
+      });
+    }
     
     setForm({
       descrizione: '',
@@ -95,7 +127,7 @@ function AggiuntaSpesa({ aperto, onChiudi }) {
         {/* Header */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h6" fontWeight={700}>
-            💸 Nuova spesa
+            {spesaInModifica ? '✏️ Modifica spesa' : '💸 Nuova spesa'}
           </Typography>
           <IconButton onClick={onChiudi} size="small">
             <CloseRoundedIcon />
@@ -219,8 +251,46 @@ function AggiuntaSpesa({ aperto, onChiudi }) {
           onClick={handleSubmit}
           sx={{ borderRadius: 3, py: 1.5, fontWeight: 700 }}
         >
-          Aggiungi spesa
+          {spesaInModifica ? 'Salva modifiche' : 'Aggiungi spesa'}
         </Button>
+
+        {spesaInModifica && !confermaElimina && (
+          <Button
+            fullWidth
+            variant="text"
+            color="error"
+            onClick={() => setConfermaElimina(true)}
+            sx={{ mt: 1 }}
+          >
+            Elimina spesa
+          </Button>
+        )}
+
+{confermaElimina && (
+          <Box sx={{ mt: 2, p: 2, borderRadius: 2, bgcolor: 'error.light', display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Typography variant="body2" fontWeight={700} color="error.contrastText">
+              Sei sicuro di voler eliminare questa spesa?
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                fullWidth
+                variant="outlined"
+                onClick={() => setConfermaElimina(false)}
+                sx={{ borderColor: 'error.contrastText', color: 'error.contrastText' }}
+              >
+                Annulla
+              </Button>
+              <Button
+                fullWidth
+                variant="contained"
+                color="error"
+                onClick={() => { eliminaSpesa(spesaInModifica.id); onChiudi(); }}
+              >
+                Elimina
+              </Button>
+            </Box>
+          </Box>
+        )}
       </Box>
     </Drawer>
   );
