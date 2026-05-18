@@ -25,7 +25,7 @@ function AggiuntaSpesa({ aperto, onChiudi }) {
   const [form, setForm] = useState({
     descrizione: '',
     importo: '',
-    categoria: 'spesa',
+    categoria: impostazioni.categorie[0] || 'altro',
     divisione: 'metà',
     percentuale: 50,
   });
@@ -73,7 +73,7 @@ function AggiuntaSpesa({ aperto, onChiudi }) {
     setForm({
       descrizione: '',
       importo: '',
-      categoria: 'spesa',
+      categoria: impostazioni.categorie[0] || 'altro',
       divisione: 'metà',
       percentuale: 50,
     });
