@@ -3,9 +3,16 @@ import { Card, CardContent, Box, Typography, Divider } from '@mui/material';
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
 import { formattaImporto, calcolaBilancio, calcolaQuote } from '../../utils/helpers';
 import { useSpese } from '../../context/SpeseContext';
+import { useImpostazioni } from '../../context/ImpostazioniContext';
+import { useApp } from '../../context/AppContext';
 
 function Bilancio() {
   const { spese } = useSpese();
+  const { impostazioni } = useImpostazioni();
+  const { utente } = useApp();
+  const isFederico = utente === 'Federico';
+  const coloreApp = impostazioni[isFederico ? 'coloreAppFederico' : 'coloreAppRiccardo'] || '#5C6BC0';
+  const coloreSecondario = impostazioni[isFederico ? 'coloreSecondarioFederico' : 'coloreSecondarioRiccardo'] || '#26A69A';
   const bilancio = calcolaBilancio(spese);
   const inPari = bilancio.importoDebito < 0.01;
 
@@ -32,13 +39,13 @@ function Bilancio() {
       sx={{
         mb: 3,
         borderRadius: 3,
-        background: 'linear-gradient(135deg, #5C6BC0 0%, #26A69A 100%)',
+        background: `linear-gradient(135deg, ${coloreApp} 0%, ${coloreSecondario} 100%)`,
         color: 'white',
       }}
     >
       <CardContent sx={{ p: 3 }}>
         <Typography variant="subtitle2" sx={{ opacity: 0.8, mb: 2 }}>
-          📊 Bilancio del mese
+          📊 Bilancio di {new Date().toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })}
         </Typography>
 
         {/* Situazione attuale */}

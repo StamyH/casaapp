@@ -33,12 +33,15 @@ function AuthGuard() {
     return () => mediaQuery.removeEventListener('change', handler);
   }, [mediaQuery]);
   
-  const modalitaEffettiva = impostazioni.modalita === 'auto' ? preferenzaSistema : impostazioni.modalita;
+  const chiaveApp = utente === 'Federico' ? 'coloreAppFederico' : 'coloreAppRiccardo';
+  const chiaveModalita = utente === 'Federico' ? 'modalitaFederico' : 'modalitaRiccardo';
+  const modalitaUtente = impostazioni[chiaveModalita] || 'auto';
+  const modalitaEffettiva = modalitaUtente === 'auto' ? preferenzaSistema : modalitaUtente;
 
   const theme = createTheme({
     palette: {
       mode: modalitaEffettiva,
-      primary: { main: impostazioni.colore },
+      primary: { main: impostazioni[chiaveApp] || '#5C6BC0' },
       secondary: { main: '#26A69A' },
       background: {
         default: modalitaEffettiva === 'dark' ? '#121212' : '#F5F5F5',

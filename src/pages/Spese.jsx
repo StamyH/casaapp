@@ -26,6 +26,11 @@ function Spese() {
   return (
     <Box sx={{ p: 2 }}>
 
+      {/* Mese corrente */}
+      <Typography variant="h6" fontWeight={700} mb={2} textTransform="capitalize">
+        {new Date().toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })}
+      </Typography>
+
       {/* Bilancio in cima */}
       <Bilancio />
 

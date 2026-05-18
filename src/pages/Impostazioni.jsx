@@ -1,11 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Card, CardContent, List, ListItem, ListItemText, ListItemIcon, ListItemButton, Divider } from '@mui/material';
+import { Box, Typography, Card, CardContent, List, ListItem, ListItemText, ListItemIcon, ListItemButton, Divider, IconButton } from '@mui/material';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import PaletteRoundedIcon from '@mui/icons-material/PaletteRounded';
 import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { useApp } from '../context/AppContext';
 import { useImpostazioni } from '../context/ImpostazioniContext';
 
@@ -44,6 +45,9 @@ function Impostazioni() {
   const { utente } = useApp();
   const { impostazioni } = useImpostazioni();
   const navigate = useNavigate();
+  const isFederico = utente === 'Federico';
+  const coloreApp = impostazioni[isFederico ? 'coloreAppFederico' : 'coloreAppRiccardo'] || '#5C6BC0';
+  const coloreSecondario = impostazioni[isFederico ? 'coloreSecondarioFederico' : 'coloreSecondarioRiccardo'] || '#26A69A';
 
   return (
     <Box sx={{ p: 2 }}>
@@ -54,7 +58,7 @@ function Impostazioni() {
         sx={{
           mb: 3,
           borderRadius: 3,
-          background: 'linear-gradient(135deg, #5C6BC0 0%, #26A69A 100%)',
+          background: `linear-gradient(135deg, ${coloreApp} 0%, ${coloreSecondario} 100%)`,
           color: 'white',
         }}
       >
@@ -65,9 +69,18 @@ function Impostazioni() {
           <Typography variant="h6" fontWeight={700}>
             👤 {utente}
           </Typography>
-          <Typography variant="caption" sx={{ opacity: 0.8 }}>
-            {impostazioni.nomeCasa}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Typography variant="caption" sx={{ opacity: 0.8 }}>
+              {impostazioni.nomeCasa}
+            </Typography>
+            <IconButton
+              size="small"
+              onClick={() => navigate('/impostazioni/casa')}
+              sx={{ color: 'rgba(255,255,255,0.7)', p: 0.25 }}
+            >
+              <EditRoundedIcon sx={{ fontSize: 14 }} />
+            </IconButton>
+          </Box>
         </CardContent>
       </Card>
 
