@@ -3,25 +3,22 @@ import { Box, Typography, Card, CardContent, Chip, Divider, Checkbox } from '@mu
 import { useApp } from '../context/AppContext';
 import { useSpese } from '../context/SpeseContext';
 import { useAttivita } from '../context/AttivitaContext';
-import { useImpostazioni } from '../context/ImpostazioniContext';
 import { formattaImporto, calcolaBilancio } from '../utils/helpers';
 
 const GIORNI_SETTIMANA = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
 
 function Home() {
-  const { utente } = useApp();
+  const { utenteAttivo, utenti } = useApp();
   const { spese } = useSpese();
   const { attivita, toggleAttivita } = useAttivita();
-  const { impostazioni } = useImpostazioni();
-  const isFederico = utente === 'Federico';
-  const coloreApp = impostazioni[isFederico ? 'coloreAppFederico' : 'coloreAppRiccardo'] || '#5C6BC0';
-  const coloreSecondario = impostazioni[isFederico ? 'coloreSecondarioFederico' : 'coloreSecondarioRiccardo'] || '#26A69A';
-  const bilancio = calcolaBilancio(spese);
+  const bilancio = calcolaBilancio(spese, utenti);
   const oggi = new Date();
   const giornoOggi = oggi.getDay();
   const giornoMeseOggi = oggi.getDate();
 
-  // Attività di oggi — giornaliere + settimanali che cadono oggi + specifiche di oggi
+  const coloreApp = utenteAttivo?.coloreApp || '#5C6BC0';
+  const coloreSecondario = utenteAttivo?.coloreSecondario || '#26A69A';
+
   const attivitaOggi = attivita.filter(t => {
     if (t.frequenza === 'giornaliera') return true;
     if (t.frequenza === 'settimanale' && t.giornoSettimana === giornoOggi) return true;
@@ -30,7 +27,6 @@ function Home() {
     return false;
   });
 
-  // Prossime attività settimanali e mensili (non di oggi)
   const prossimeAttivita = attivita.filter(t => {
     if (t.frequenza === 'settimanale' && t.giornoSettimana !== giornoOggi) return true;
     if (t.frequenza === 'mensile' && t.giornoMese !== giornoMeseOggi) return true;
@@ -43,22 +39,19 @@ function Home() {
   return (
     <Box sx={{ p: 2 }}>
 
-      {/* Saluto */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="h5" fontWeight={800}>
-          👋 Ciao, {utente}!
+          👋 Ciao, {utenteAttivo?.nome}!
         </Typography>
         <Typography variant="h6" fontWeight={600} color="text.secondary" textTransform="capitalize">
           {oggi.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
         </Typography>
       </Box>
 
-      {/* Card bilancio */}
       <Card
         elevation={0}
         sx={{
-          mb: 2,
-          borderRadius: 3,
+          mb: 2, borderRadius: 3,
           background: `linear-gradient(135deg, ${coloreApp} 0%, ${coloreSecondario} 100%)`,
           color: 'white',
         }}
@@ -76,13 +69,10 @@ function Home() {
         </CardContent>
       </Card>
 
-      {/* Attività di oggi */}
       <Card elevation={0} sx={{ mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
         <CardContent sx={{ p: 2.5 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-            <Typography variant="subtitle1" fontWeight={700}>
-              ☀️ Oggi
-            </Typography>
+            <Typography variant="subtitle1" fontWeight={700}>☀️ Oggi</Typography>
             <Chip
               label={`${attivitaOggi.filter(t => t.completato).length}/${attivitaOggi.length}`}
               size="small"
@@ -102,12 +92,9 @@ function Home() {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Checkbox
                       checked={task.completato}
-                      onChange={() => toggleAttivita(task.id, utente)}
+                      onChange={() => toggleAttivita(task.id, utenteAttivo?.nome)}
                       size="small"
-                      sx={{
-                        p: 0.5,
-                        '&.Mui-checked': { color: 'success.main' },
-                      }}
+                      sx={{ p: 0.5, '&.Mui-checked': { color: 'success.main' } }}
                     />
                     <Typography
                       variant="body2"
@@ -129,20 +116,15 @@ function Home() {
         </CardContent>
       </Card>
 
-      {/* Prossime attività */}
       {prossimeAttivita.length > 0 && (
         <Card elevation={0} sx={{ mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
           <CardContent sx={{ p: 2.5 }}>
-            <Typography variant="subtitle1" fontWeight={700} mb={1.5}>
-              📅 In arrivo
-            </Typography>
+            <Typography variant="subtitle1" fontWeight={700} mb={1.5}>📅 In arrivo</Typography>
             {prossimeAttivita.map((task, i) => (
               <Box key={task.id}>
                 {i > 0 && <Divider sx={{ my: 1 }} />}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="body2">
-                    {task.titolo}
-                  </Typography>
+                  <Typography variant="body2">{task.titolo}</Typography>
                   <Chip
                     label={
                       task.frequenza === 'settimanale'

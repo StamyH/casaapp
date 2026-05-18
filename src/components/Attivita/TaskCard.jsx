@@ -6,7 +6,6 @@ import {
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { useApp } from '../../context/AppContext';
 import { useAttivita } from '../../context/AttivitaContext';
-import { useImpostazioni } from '../../context/ImpostazioniContext';
 
 const FREQUENZE = {
   giornaliera: { icona: '☀️', colore: '#FF7043' },
@@ -14,10 +13,9 @@ const FREQUENZE = {
   mensile: { icona: '🗓️', colore: '#26A69A' },
 };
 
-function AvatarUtente({ nome, impostazioni, size = 22 }) {
-  const colore = nome === 'Riccardo'
-    ? impostazioni.coloreRiccardo
-    : impostazioni.coloreFederico;
+function AvatarUtente({ nome, utenti, size = 22 }) {
+  const utente = utenti.find(u => u.nome === nome);
+  const colore = utente?.coloreAvatar || '#90A4AE';
   return (
     <Box sx={{
       width: size, height: size, borderRadius: '50%',
@@ -31,9 +29,8 @@ function AvatarUtente({ nome, impostazioni, size = 22 }) {
 }
 
 function TaskCard({ task, onModifica }) {
-  const { utente } = useApp();
+  const { utenteAttivo, utenti } = useApp();
   const { toggleAttivita } = useAttivita();
-  const { impostazioni } = useImpostazioni();
   const frequenza = FREQUENZE[task.frequenza] || FREQUENZE.giornaliera;
 
   return (
@@ -51,10 +48,9 @@ function TaskCard({ task, onModifica }) {
       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
 
-          {/* Checkbox */}
           <Checkbox
             checked={task.completato}
-            onChange={() => toggleAttivita(task.id, utente)}
+            onChange={() => toggleAttivita(task.id, utenteAttivo?.nome)}
             sx={{
               color: frequenza.colore,
               '&.Mui-checked': { color: 'success.main' },
@@ -62,7 +58,6 @@ function TaskCard({ task, onModifica }) {
             }}
           />
 
-          {/* Contenuto */}
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography
               fontWeight={600}
@@ -75,23 +70,21 @@ function TaskCard({ task, onModifica }) {
             </Typography>
             {task.completato && task.completatoDa && (
               <Typography variant="caption" color="success.main" fontWeight={600}>
-                 ✓ Fatto da {task.completatoDa}
+                ✓ Fatto da {task.completatoDa}
               </Typography>
             )}
 
             <Box sx={{ display: 'flex', gap: 1, mt: 0.5, flexWrap: 'wrap', alignItems: 'center' }}>
-
-              {/* Avatar utente/i */}
               {task.assegnato === 'entrambi' ? (
                 <Box sx={{ display: 'flex', gap: 0.5 }}>
-                  <AvatarUtente nome="Riccardo" impostazioni={impostazioni} />
-                  <AvatarUtente nome="Federico" impostazioni={impostazioni} />
+                  {utenti.map(u => (
+                    <AvatarUtente key={u.id} nome={u.nome} utenti={utenti} />
+                  ))}
                 </Box>
               ) : (
-                <AvatarUtente nome={task.assegnato} impostazioni={impostazioni} />
+                <AvatarUtente nome={task.assegnato} utenti={utenti} />
               )}
 
-              {/* Chip giorno/data */}
               {task.frequenza === 'settimanale' && task.giornoSettimana !== null && (
                 <Chip label={`ogni ${['Dom','Lun','Mar','Mer','Gio','Ven','Sab'][task.giornoSettimana]}`} size="small" sx={{ fontSize: '0.7rem' }} />
               )}
@@ -104,8 +97,7 @@ function TaskCard({ task, onModifica }) {
             </Box>
           </Box>
 
-          {/* Elimina */}
-          {(task.assegnato === utente || task.assegnato === 'entrambi') && (
+          {(task.assegnato === utenteAttivo?.nome || task.assegnato === 'entrambi') && (
             <IconButton
               size="small"
               onClick={() => onModifica(task)}

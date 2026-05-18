@@ -4,7 +4,6 @@ import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
 import SettingsBrightnessRoundedIcon from '@mui/icons-material/SettingsBrightnessRounded';
 import { useApp } from '../context/AppContext';
-import { useImpostazioni } from '../context/ImpostazioniContext';
 
 const COLORI = [
   { valore: '#5C6BC0', secondario: '#26A69A', nome: 'Indaco' },
@@ -15,15 +14,14 @@ const COLORI = [
   { valore: '#42A5F5', secondario: '#26A69A', nome: 'Azzurro' },
 ];
 
-function SelettoreColore({ valore, secondario, nome, selezionato, onClick }) {
+function SelettoreColore({ valore, nome, selezionato, onClick }) {
   return (
     <Box
       onClick={onClick}
       sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, cursor: 'pointer' }}
     >
       <Box sx={{
-        width: 48, height: 48, borderRadius: '50%',
-        bgcolor: valore,
+        width: 48, height: 48, borderRadius: '50%', bgcolor: valore,
         border: selezionato ? '3px solid' : '3px solid transparent',
         borderColor: selezionato ? 'text.primary' : 'transparent',
         transition: 'all 0.2s ease',
@@ -35,27 +33,21 @@ function SelettoreColore({ valore, secondario, nome, selezionato, onClick }) {
 }
 
 function ImpostazioniTema() {
-  const { impostazioni, aggiornaImpostazioni } = useImpostazioni();
-  const { utente } = useApp();
-  const isFederico = utente === 'Federico';
-  const chiaveAvatar = isFederico ? 'coloreFederico' : 'coloreRiccardo';
-  const chiaveApp = isFederico ? 'coloreAppFederico' : 'coloreAppRiccardo';
-  const chiaveSecondario = isFederico ? 'coloreSecondarioFederico' : 'coloreSecondarioRiccardo';
-  const chiaveModalita = isFederico ? 'modalitaFederico' : 'modalitaRiccardo';
-  const coloreAvatar = impostazioni[chiaveAvatar];
+  const { utenteAttivo, modificaUtente } = useApp();
+
+  if (!utenteAttivo) return null;
+
+  const aggiorna = (dati) => modificaUtente(utenteAttivo.id, dati);
 
   return (
     <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
 
-      {/* Modalità */}
       <Box>
-        <Typography variant="subtitle2" fontWeight={700} mb={1.5}>
-          Modalità
-        </Typography>
+        <Typography variant="subtitle2" fontWeight={700} mb={1.5}>Modalità</Typography>
         <ToggleButtonGroup
-          value={impostazioni[chiaveModalita]}
+          value={utenteAttivo.modalita}
           exclusive
-          onChange={(e, val) => val && aggiornaImpostazioni({ [chiaveModalita]: val })}
+          onChange={(e, val) => val && aggiorna({ modalita: val })}
           fullWidth
         >
           <ToggleButton value="light" sx={{ gap: 1, py: 1.2 }}>
@@ -70,11 +62,8 @@ function ImpostazioniTema() {
         </ToggleButtonGroup>
       </Box>
 
-      {/* Colore dell'app */}
       <Box>
-        <Typography variant="subtitle2" fontWeight={700} mb={0.5}>
-          Colore dell'app
-        </Typography>
+        <Typography variant="subtitle2" fontWeight={700} mb={0.5}>Colore dell'app</Typography>
         <Typography variant="caption" color="text.secondary" display="block" mb={2}>
           Colore dei pulsanti e degli elementi principali
         </Typography>
@@ -83,42 +72,38 @@ function ImpostazioniTema() {
             <SelettoreColore
               key={colore.valore}
               valore={colore.valore}
-              secondario={colore.secondario}
               nome={colore.nome}
-              selezionato={impostazioni[chiaveApp] === colore.valore}
-              onClick={() => aggiornaImpostazioni({ [chiaveApp]: colore.valore, [chiaveSecondario]: colore.secondario })}
+              selezionato={utenteAttivo.coloreApp === colore.valore}
+              onClick={() => aggiorna({ coloreApp: colore.valore, coloreSecondario: colore.secondario })}
             />
           ))}
         </Box>
       </Box>
 
-      {/* Colore avatar personale */}
       <Box>
-        <Typography variant="subtitle2" fontWeight={700} mb={0.5}>
-          Colore del tuo avatar
-        </Typography>
+        <Typography variant="subtitle2" fontWeight={700} mb={0.5}>Colore del tuo avatar</Typography>
         <Typography variant="caption" color="text.secondary" display="block" mb={2}>
           Come appari nei task e nelle spese condivise
         </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-            <Avatar sx={{ bgcolor: coloreAvatar, width: 40, height: 40, fontWeight: 700 }}>
-              {utente?.[0]}
-            </Avatar>
-            <Typography variant="body2" color="text.secondary">{utente}</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-            {COLORI.map(colore => (
-              <SelettoreColore
-                key={colore.valore}
-                valore={colore.valore}
-                secondario={colore.secondario}
-                nome={colore.nome}
-                selezionato={coloreAvatar === colore.valore}
-                onClick={() => aggiornaImpostazioni({ [chiaveAvatar]: colore.valore })}
-              />
-            ))}
-          </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+          <Avatar sx={{ bgcolor: utenteAttivo.coloreAvatar, width: 40, height: 40, fontWeight: 700 }}>
+            {utenteAttivo.nome?.[0]}
+          </Avatar>
+          <Typography variant="body2" color="text.secondary">{utenteAttivo.nome}</Typography>
+        </Box>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+          {COLORI.map(colore => (
+            <SelettoreColore
+              key={colore.valore}
+              valore={colore.valore}
+              nome={colore.nome}
+              selezionato={utenteAttivo.coloreAvatar === colore.valore}
+              onClick={() => aggiorna({ coloreAvatar: colore.valore })}
+            />
+          ))}
+        </Box>
       </Box>
+
     </Box>
   );
 }

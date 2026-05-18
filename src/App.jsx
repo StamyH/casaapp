@@ -4,7 +4,7 @@ import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { AppProvider, useApp } from './context/AppContext';
 import { SpeseProvider } from './context/SpeseContext';
 import { AttivitaProvider } from './context/AttivitaContext';
-import { ImpostazioniProvider, useImpostazioni } from './context/ImpostazioniContext';
+import { ImpostazioniProvider } from './context/ImpostazioniContext';
 import Home from './pages/Home';
 import Spese from './pages/Spese';
 import Attivita from './pages/Attivita';
@@ -13,14 +13,14 @@ import ImpostazioniProfilo from './pages/ImpostazioniProfilo';
 import ImpostazioniTema from './pages/ImpostazioniTema';
 import ImpostazioniCategorie from './pages/ImpostazioniCategorie';
 import ImpostazioniCasa from './pages/ImpostazioniCasa';
+import ImpostazioniUtenti from './pages/ImpostazioniUtenti';
 import Benvenuto from './pages/Benvenuto';
 import Navbar from './components/Layout/Navbar';
 import BottomNav from './components/Layout/BottomNav';
 import ErrorBoundary from './components/ErrorBoundary';
 
 function AuthGuard() {
-  const { utente } = useApp();
-  const { impostazioni } = useImpostazioni();
+  const { utenteAttivo } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -32,16 +32,14 @@ function AuthGuard() {
     mediaQuery.addEventListener('change', handler);
     return () => mediaQuery.removeEventListener('change', handler);
   }, [mediaQuery]);
-  
-  const chiaveApp = utente === 'Federico' ? 'coloreAppFederico' : 'coloreAppRiccardo';
-  const chiaveModalita = utente === 'Federico' ? 'modalitaFederico' : 'modalitaRiccardo';
-  const modalitaUtente = impostazioni[chiaveModalita] || 'auto';
+
+  const modalitaUtente = utenteAttivo?.modalita || 'auto';
   const modalitaEffettiva = modalitaUtente === 'auto' ? preferenzaSistema : modalitaUtente;
 
   const theme = createTheme({
     palette: {
       mode: modalitaEffettiva,
-      primary: { main: impostazioni[chiaveApp] || '#5C6BC0' },
+      primary: { main: utenteAttivo?.coloreApp || '#5C6BC0' },
       secondary: { main: '#26A69A' },
       background: {
         default: modalitaEffettiva === 'dark' ? '#121212' : '#F5F5F5',
@@ -55,10 +53,10 @@ function AuthGuard() {
   });
 
   useEffect(() => {
-    if (!utente && location.pathname !== '/benvenuto') {
+    if (!utenteAttivo && location.pathname !== '/benvenuto') {
       navigate('/benvenuto');
     }
-  }, [utente, navigate, location]);
+  }, [utenteAttivo, navigate, location]);
 
   const mostraNav = location.pathname !== '/benvenuto';
 
@@ -77,6 +75,7 @@ function AuthGuard() {
           <Route path="/impostazioni/tema" element={<ImpostazioniTema />} />
           <Route path="/impostazioni/categorie" element={<ImpostazioniCategorie />} />
           <Route path="/impostazioni/casa" element={<ImpostazioniCasa />} />
+          <Route path="/impostazioni/utenti" element={<ImpostazioniUtenti />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

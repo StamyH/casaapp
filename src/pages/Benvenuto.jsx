@@ -1,18 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Button, Avatar } from '@mui/material';
+import { Box, Typography, Button, Avatar, IconButton, TextField, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import { useApp } from '../context/AppContext';
 import { useImpostazioni } from '../context/ImpostazioniContext';
 
-// Schermata iniziale — selezione utente
-// Viene mostrata solo se nessun utente è ancora attivo
 function Benvenuto() {
-  const { setUtente } = useApp();
+  const { utenti, setUtenteAttivoId, aggiungiUtente } = useApp();
   const { impostazioni } = useImpostazioni();
   const navigate = useNavigate();
+  const [dialogAperto, setDialogAperto] = useState(false);
+  const [nuovoNome, setNuovoNome] = useState('');
 
-  const selezionaUtente = (nome) => {
-    setUtente(nome);
+  const selezionaUtente = (id) => {
+    setUtenteAttivoId(id);
+    navigate('/');
+  };
+
+  const creaUtente = () => {
+    const nome = nuovoNome.trim();
+    if (!nome) return;
+    const id = aggiungiUtente(nome);
+    setDialogAperto(false);
+    setNuovoNome('');
+    setUtenteAttivoId(id);
     navigate('/');
   };
 
@@ -27,25 +38,17 @@ function Benvenuto() {
       gap: 4,
       p: 3,
     }}>
-      {/* Titolo */}
       <Box sx={{ textAlign: 'center', color: 'white' }}>
-        <Typography variant="h3" fontWeight={800} mb={1}>
-          🏠
-        </Typography>
-        <Typography variant="h5" fontWeight={700}>
-          {impostazioni.nomeCasa}
-        </Typography>
-        <Typography variant="body1" sx={{ opacity: 0.8, mt: 1 }}>
-          Chi sei?
-        </Typography>
+        <Typography variant="h3" fontWeight={800} mb={1}>🏠</Typography>
+        <Typography variant="h5" fontWeight={700}>{impostazioni.nomeCasa}</Typography>
+        <Typography variant="body1" sx={{ opacity: 0.8, mt: 1 }}>Chi sei?</Typography>
       </Box>
 
-      {/* Bottoni utente */}
-      <Box sx={{ display: 'flex', gap: 3 }}>
-        {['Riccardo', 'Federico'].map((nome) => (
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 2 }}>
+        {utenti.map((u) => (
           <Button
-            key={nome}
-            onClick={() => selezionaUtente(nome)}
+            key={u.id}
+            onClick={() => selezionaUtente(u.id)}
             sx={{
               display: 'flex',
               flexDirection: 'column',
@@ -66,20 +69,52 @@ function Benvenuto() {
               }
             }}
           >
-            <Avatar sx={{
-              width: 64,
-              height: 64,
-              fontSize: '1.8rem',
-              background: 'rgba(255,255,255,0.3)',
-            }}>
-              {nome[0]}
+            <Avatar sx={{ width: 64, height: 64, fontSize: '1.8rem', bgcolor: u.coloreAvatar }}>
+              {u.nome[0]}
             </Avatar>
-            <Typography fontWeight={700} fontSize='1.1rem'>
-              {nome}
-            </Typography>
+            <Typography fontWeight={700} fontSize='1.1rem'>{u.nome}</Typography>
           </Button>
         ))}
+
+        {/* Aggiungi utente */}
+        <IconButton
+          onClick={() => setDialogAperto(true)}
+          sx={{
+            width: 130,
+            height: 150,
+            borderRadius: 4,
+            background: 'rgba(255,255,255,0.1)',
+            border: '2px dashed rgba(255,255,255,0.4)',
+            color: 'white',
+            flexDirection: 'column',
+            gap: 1,
+            display: 'flex',
+            '&:hover': { background: 'rgba(255,255,255,0.2)' },
+          }}
+        >
+          <AddRoundedIcon sx={{ fontSize: 32 }} />
+          <Typography variant="caption" fontWeight={600}>Nuovo utente</Typography>
+        </IconButton>
       </Box>
+
+      <Dialog open={dialogAperto} onClose={() => setDialogAperto(false)} fullWidth maxWidth="xs">
+        <DialogTitle fontWeight={700}>Nuovo utente</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            fullWidth
+            label="Nome"
+            value={nuovoNome}
+            onChange={e => setNuovoNome(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && creaUtente()}
+            sx={{ mt: 1 }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setDialogAperto(false)}>Annulla</Button>
+          <Button variant="contained" onClick={creaUtente} disabled={!nuovoNome.trim()}>Crea</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
