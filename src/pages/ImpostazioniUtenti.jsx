@@ -7,9 +7,13 @@ import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import { useApp } from '../context/AppContext';
+import { useSpese } from '../context/SpeseContext';
+import { useAttivita } from '../context/AttivitaContext';
 
 function ImpostazioniUtenti() {
   const { utenti, utenteAttivo, aggiungiUtente, modificaUtente, eliminaUtente } = useApp();
+  const { aggiornaRiferimentiUtente: aggiornaSpese } = useSpese();
+  const { aggiornaRiferimentiUtente: aggiornaAttivita } = useAttivita();
   const [dialogAggiungi, setDialogAggiungi] = useState(false);
   const [dialogModifica, setDialogModifica] = useState(null);
   const [confermaElimina, setConfermaElimina] = useState(null);
@@ -27,7 +31,12 @@ function ImpostazioniUtenti() {
   const handleModifica = () => {
     const nome = nomeModifica.trim();
     if (!nome || !dialogModifica) return;
+    const vecchioNome = dialogModifica.nome;
     modificaUtente(dialogModifica.id, { nome });
+    if (nome !== vecchioNome) {
+      aggiornaSpese(vecchioNome, nome);
+      aggiornaAttivita(vecchioNome, nome);
+    }
     setDialogModifica(null);
     setNomeModifica('');
   };

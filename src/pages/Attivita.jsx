@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { Box, Fab, Typography, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import { useAttivita } from '../context/AttivitaContext';
+import { useApp } from '../context/AppContext';
 import TaskList from '../components/Attivita/TaskList';
 import AggiuntaTask from '../components/Attivita/AggiuntaTask';
 
 function Attivita() {
   const { attivita } = useAttivita();
+  const { utenti } = useApp();
   const [apriForm, setApriForm] = useState(false);
   const [filtroUtente, setFiltroUtente] = useState('tutti');
   const [attivitaInModifica, setAttivitaInModifica] = useState(null);
@@ -26,12 +28,11 @@ function Attivita() {
         <ToggleButton value="tutti" sx={{ fontSize: '0.8rem', py: 1 }}>
           👥 Tutti
         </ToggleButton>
-        <ToggleButton value="Riccardo" sx={{ fontSize: '0.8rem', py: 1 }}>
-          👤 Riccardo
-        </ToggleButton>
-        <ToggleButton value="Federico" sx={{ fontSize: '0.8rem', py: 1 }}>
-          👤 Federico
-        </ToggleButton>
+        {utenti.map(u => (
+          <ToggleButton key={u.id} value={u.nome} sx={{ fontSize: '0.8rem', py: 1 }}>
+            👤 {u.nome}
+          </ToggleButton>
+        ))}
       </ToggleButtonGroup>
 
       {/* Lista task */}

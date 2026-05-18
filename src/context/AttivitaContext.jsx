@@ -9,13 +9,32 @@ function inizioSettimana(date) {
   return d.toISOString().split('T')[0];
 }
 
+function attivitaIniziali() {
+  const traUnMese = new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0];
+
+  let nomeA = 'Riccardo', nomeB = 'Federico';
+  try {
+    const utenti = JSON.parse(localStorage.getItem('casaapp_utenti') || '[]');
+    if (utenti[0]?.nome) nomeA = utenti[0].nome;
+    if (utenti[1]?.nome) nomeB = utenti[1].nome;
+  } catch {}
+
+  return [
+    { id: 1, titolo: 'Lavare i piatti', frequenza: 'giornaliera', giornoSettimana: null, giornoMese: null, dataSpecifica: null, assegnato: nomeA, completato: false },
+    { id: 2, titolo: 'Portare la spazzatura', frequenza: 'settimanale', giornoSettimana: 1, giornoMese: null, dataSpecifica: null, assegnato: nomeB, completato: false },
+    { id: 3, titolo: 'Pulire il bagno', frequenza: 'settimanale', giornoSettimana: 6, giornoMese: null, dataSpecifica: null, assegnato: 'entrambi', completato: false },
+    { id: 4, titolo: 'Pagare affitto', frequenza: 'mensile', giornoSettimana: null, giornoMese: 1, dataSpecifica: null, assegnato: nomeA, completato: false },
+    { id: 5, titolo: 'Controllo caldaia', frequenza: 'specifica', giornoSettimana: null, giornoMese: null, dataSpecifica: traUnMese, assegnato: nomeB, completato: false },
+  ];
+}
+
 export function AttivitaProvider({ children }) {
   const [attivita, setAttivita] = useState(() => {
     try {
       const saved = localStorage.getItem('casaapp_attivita');
-      return saved ? JSON.parse(saved) : [];
+      return saved ? JSON.parse(saved) : attivitaIniziali();
     } catch {
-      return [];
+      return attivitaIniziali();
     }
   });
 
@@ -69,8 +88,16 @@ export function AttivitaProvider({ children }) {
     setAttivita(prev => prev.map(a => a.id === id ? { ...a, ...datiAggiornati } : a));
   };
 
+  const aggiornaRiferimentiUtente = (vecchioNome, nuovoNome) => {
+    setAttivita(prev => prev.map(a => ({
+      ...a,
+      assegnato: a.assegnato === vecchioNome ? nuovoNome : a.assegnato,
+      completatoDa: a.completatoDa === vecchioNome ? nuovoNome : a.completatoDa,
+    })));
+  };
+
   return (
-    <AttivitaContext.Provider value={{ attivita, aggiungiAttivita, toggleAttivita, eliminaAttivita, modificaAttivita }}>
+    <AttivitaContext.Provider value={{ attivita, aggiungiAttivita, toggleAttivita, eliminaAttivita, modificaAttivita, aggiornaRiferimentiUtente }}>
       {children}
     </AttivitaContext.Provider>
   );
