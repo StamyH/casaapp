@@ -6,6 +6,7 @@ const SEZIONI = [
   { frequenza: 'giornaliera', titolo: '☀️ Oggi', colore: '#FF7043' },
   { frequenza: 'settimanale', titolo: '📅 Questa settimana', colore: '#5C6BC0' },
   { frequenza: 'mensile', titolo: '🗓️ Questo mese', colore: '#26A69A' },
+  { frequenza: 'specifica', titolo: '📌 Data specifica', colore: '#AB47BC' },
 ];
 
 function TaskList({ attivita, filtroUtente, onModifica, mostraCompletate }) {

@@ -11,39 +11,40 @@ beforeEach(() => {
 describe('ImpostazioniContext', () => {
   test('valori iniziali corretti', () => {
     const { result } = renderHook(() => useImpostazioni(), { wrapper });
-    expect(result.current.impostazioni.modalitaRiccardo).toBe('auto');
-    expect(result.current.impostazioni.modalitaFederico).toBe('auto');
     expect(result.current.impostazioni.categorie.length).toBeGreaterThan(0);
     expect(result.current.impostazioni.categorie[0]).toHaveProperty('nome');
     expect(result.current.impostazioni.categorie[0]).toHaveProperty('icona');
+    expect(result.current.impostazioni.nomeCasa).toBeTruthy();
   });
 
-  test('aggiorna modalità per utente', () => {
+  test('aggiorna il nome della casa', () => {
     const { result } = renderHook(() => useImpostazioni(), { wrapper });
 
     act(() => {
-      result.current.aggiornaImpostazioni({ modalitaRiccardo: 'dark' });
+      result.current.aggiornaImpostazioni({ nomeCasa: 'Casa Nuova' });
     });
 
-    expect(result.current.impostazioni.modalitaRiccardo).toBe('dark');
-    expect(result.current.impostazioni.modalitaFederico).toBe('auto');
+    expect(result.current.impostazioni.nomeCasa).toBe('Casa Nuova');
   });
 
-  test('aggiorna il colore app per utente', () => {
+  test('aggiunge una categoria', () => {
     const { result } = renderHook(() => useImpostazioni(), { wrapper });
+    const numPrima = result.current.impostazioni.categorie.length;
 
     act(() => {
-      result.current.aggiornaImpostazioni({ coloreAppRiccardo: '#FF7043', coloreSecondarioRiccardo: '#EC407A' });
+      result.current.aggiornaImpostazioni({
+        categorie: [...result.current.impostazioni.categorie, { nome: 'palestra', icona: '🏋️' }],
+      });
     });
 
-    expect(result.current.impostazioni.coloreAppRiccardo).toBe('#FF7043');
-    expect(result.current.impostazioni.coloreSecondarioRiccardo).toBe('#EC407A');
+    expect(result.current.impostazioni.categorie.length).toBe(numPrima + 1);
+    expect(result.current.impostazioni.categorie.find(c => c.nome === 'palestra')).toBeTruthy();
   });
 
   test('migrazione vecchie categorie da stringhe a oggetti', () => {
     localStorage.setItem('casaapp_impostazioni', JSON.stringify({
       categorie: ['spesa', 'bolletta'],
-      modalita: 'light',
+      nomeCasa: 'Casa Test',
     }));
 
     const { result } = renderHook(() => useImpostazioni(), { wrapper });

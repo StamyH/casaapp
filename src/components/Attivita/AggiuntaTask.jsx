@@ -5,18 +5,13 @@ import {
 } from '@mui/material';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { useAttivita } from '../../context/AttivitaContext';
+import { useApp } from '../../context/AppContext';
 
 const FREQUENZE = [
   { value: 'giornaliera', label: '☀️ Giornaliera' },
   { value: 'settimanale', label: '📅 Settimanale' },
   { value: 'mensile', label: '🗓️ Mensile' },
   { value: 'specifica', label: '📌 Data specifica' },
-];
-
-const ASSEGNAZIONI = [
-  { value: 'Riccardo', label: '👤 Riccardo' },
-  { value: 'Federico', label: '👤 Federico' },
-  { value: 'entrambi', label: '👥 Entrambi' },
 ];
 
 const GIORNI_SETTIMANA = [
@@ -31,8 +26,14 @@ const GIORNI_SETTIMANA = [
 
 function AggiuntaTask({ aperto, onChiudi, attivitaInModifica }) {
   const { aggiungiAttivita, modificaAttivita, eliminaAttivita } = useAttivita();
+  const { utenti } = useApp();
   const [errori, setErrori] = useState({});
   const [confermaElimina, setConfermaElimina] = useState(false);
+
+  const assegnazioni = [
+    ...utenti.map(u => ({ value: u.nome, label: `👤 ${u.nome}` })),
+    { value: 'entrambi', label: '👥 Tutti' },
+  ];
 
   const [form, setForm] = useState({
     titolo: '',
@@ -72,11 +73,11 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica }) {
 
   const handleSubmit = () => {
     const nuoviErrori = {};
-  
+
     if (!form.titolo.trim()) {
-      nuoviErrori.titolo = 'Inserisci un titolo per l\'attività';
+      nuoviErrori.titolo = "Inserisci un titolo per l'attività";
     }
-  
+
     if (form.frequenza === 'specifica') {
       if (!form.dataSpecifica) {
         nuoviErrori.dataSpecifica = 'Seleziona una data';
@@ -84,14 +85,14 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica }) {
         nuoviErrori.dataSpecifica = 'La data non può essere nel passato';
       }
     }
-  
+
     if (Object.keys(nuoviErrori).length > 0) {
       setErrori(nuoviErrori);
       return;
     }
-  
+
     setErrori({});
-  
+
     const dati = {
       titolo: form.titolo.trim(),
       frequenza: form.frequenza,
@@ -100,15 +101,13 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica }) {
       dataSpecifica: form.frequenza === 'specifica' ? form.dataSpecifica : null,
       assegnato: form.assegnato,
     };
-    
+
     if (attivitaInModifica) {
       modificaAttivita(attivitaInModifica.id, dati);
     } else {
       aggiungiAttivita(dati);
     }
-    
-    onChiudi();
-  
+
     onChiudi();
   };
 
@@ -117,23 +116,19 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica }) {
       anchor="bottom"
       open={aperto}
       onClose={onChiudi}
-      PaperProps={{
-        sx: { borderRadius: '24px 24px 0 0', maxHeight: '90vh' }
-      }}
+      PaperProps={{ sx: { borderRadius: '24px 24px 0 0', maxHeight: '90vh' } }}
     >
       <Box sx={{ p: 3, overflowY: 'auto' }}>
 
-        {/* Header */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h6" fontWeight={700}>
-          {attivitaInModifica ? '✏️ Modifica attività' : '✅ Nuova attività'}
+            {attivitaInModifica ? '✏️ Modifica attività' : '✅ Nuova attività'}
           </Typography>
           <IconButton onClick={onChiudi} size="small">
             <CloseRoundedIcon />
           </IconButton>
         </Box>
 
-        {/* Titolo */}
         <TextField
           label="Titolo attività"
           fullWidth
@@ -145,10 +140,7 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica }) {
           helperText={errori.titolo}
         />
 
-        {/* Frequenza */}
-        <Typography variant="subtitle2" fontWeight={600} mb={1}>
-          Frequenza
-        </Typography>
+        <Typography variant="subtitle2" fontWeight={600} mb={1}>Frequenza</Typography>
         <ToggleButtonGroup
           value={form.frequenza}
           exclusive
@@ -157,22 +149,15 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica }) {
           sx={{ mb: 2 }}
         >
           {FREQUENZE.map(f => (
-            <ToggleButton
-              key={f.value}
-              value={f.value}
-              sx={{ fontSize: '0.7rem', py: 1 }}
-            >
+            <ToggleButton key={f.value} value={f.value} sx={{ fontSize: '0.7rem', py: 1 }}>
               {f.label}
             </ToggleButton>
           ))}
         </ToggleButtonGroup>
 
-        {/* Giorno della settimana — solo se settimanale */}
         {form.frequenza === 'settimanale' && (
           <Box sx={{ mb: 2 }}>
-            <Typography variant="caption" color="text.secondary" mb={1} display="block">
-              Quale giorno?
-            </Typography>
+            <Typography variant="caption" color="text.secondary" mb={1} display="block">Quale giorno?</Typography>
             <ToggleButtonGroup
               value={form.giornoSettimana}
               exclusive
@@ -180,11 +165,7 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica }) {
               fullWidth
             >
               {GIORNI_SETTIMANA.map(g => (
-                <ToggleButton
-                  key={g.value}
-                  value={g.value}
-                  sx={{ fontSize: '0.65rem', py: 0.8, minWidth: 0 }}
-                >
+                <ToggleButton key={g.value} value={g.value} sx={{ fontSize: '0.65rem', py: 0.8, minWidth: 0 }}>
                   {g.label}
                 </ToggleButton>
               ))}
@@ -192,12 +173,9 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica }) {
           </Box>
         )}
 
-        {/* Giorno del mese — solo se mensile */}
         {form.frequenza === 'mensile' && (
           <Box sx={{ mb: 2 }}>
-            <Typography variant="caption" color="text.secondary" mb={1} display="block">
-              Quale giorno del mese?
-            </Typography>
+            <Typography variant="caption" color="text.secondary" mb={1} display="block">Quale giorno del mese?</Typography>
             <TextField
               type="number"
               fullWidth
@@ -212,12 +190,9 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica }) {
           </Box>
         )}
 
-        {/* Data specifica — solo se specifica */}
         {form.frequenza === 'specifica' && (
           <Box sx={{ mb: 2 }}>
-            <Typography variant="caption" color="text.secondary" mb={1} display="block">
-              Seleziona la data
-            </Typography>
+            <Typography variant="caption" color="text.secondary" mb={1} display="block">Seleziona la data</Typography>
             <TextField
               type="date"
               fullWidth
@@ -231,29 +206,21 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica }) {
           </Box>
         )}
 
-        {/* Assegnazione */}
-        <Typography variant="subtitle2" fontWeight={600} mb={1} mt={2}>
-          Assegna a
-        </Typography>
+        <Typography variant="subtitle2" fontWeight={600} mb={1} mt={2}>Assegna a</Typography>
         <ToggleButtonGroup
           value={form.assegnato}
           exclusive
           onChange={(e, val) => val && aggiorna('assegnato', val)}
           fullWidth
-          sx={{ mb: 3 }}
+          sx={{ mb: 3, flexWrap: 'wrap' }}
         >
-          {ASSEGNAZIONI.map(a => (
-            <ToggleButton
-              key={a.value}
-              value={a.value}
-              sx={{ fontSize: '0.75rem', py: 1 }}
-            >
+          {assegnazioni.map(a => (
+            <ToggleButton key={a.value} value={a.value} sx={{ fontSize: '0.75rem', py: 1 }}>
               {a.label}
             </ToggleButton>
           ))}
         </ToggleButtonGroup>
 
-        {/* Bottone salva */}
         <Button
           fullWidth
           variant="contained"
@@ -263,14 +230,9 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica }) {
         >
           {attivitaInModifica ? 'Salva modifiche' : 'Aggiungi attività'}
         </Button>
+
         {attivitaInModifica && !confermaElimina && (
-          <Button
-            fullWidth
-            variant="text"
-            color="error"
-            onClick={() => setConfermaElimina(true)}
-            sx={{ mt: 1 }}
-          >
+          <Button fullWidth variant="text" color="error" onClick={() => setConfermaElimina(true)} sx={{ mt: 1 }}>
             Elimina attività
           </Button>
         )}
@@ -281,20 +243,10 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica }) {
               Sei sicuro di voler eliminare questa attività?
             </Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => setConfermaElimina(false)}
-                sx={{ borderColor: 'error.contrastText', color: 'error.contrastText' }}
-              >
+              <Button fullWidth variant="outlined" onClick={() => setConfermaElimina(false)} sx={{ borderColor: 'error.contrastText', color: 'error.contrastText' }}>
                 Annulla
               </Button>
-              <Button
-                fullWidth
-                variant="contained"
-                color="error"
-                onClick={() => { eliminaAttivita(attivitaInModifica.id); onChiudi(); }}
-              >
+              <Button fullWidth variant="contained" color="error" onClick={() => { eliminaAttivita(attivitaInModifica.id); onChiudi(); }}>
                 Elimina
               </Button>
             </Box>

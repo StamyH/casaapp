@@ -5,7 +5,6 @@ import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import SwapHorizRoundedIcon from '@mui/icons-material/SwapHorizRounded';
 import { useApp } from '../../context/AppContext';
-import { useImpostazioni } from '../../context/ImpostazioniContext';
 
 const TITOLI = {
   '/': 'Home',
@@ -16,18 +15,17 @@ const TITOLI = {
   '/impostazioni/tema': 'Tema',
   '/impostazioni/categorie': 'Categorie spese',
   '/impostazioni/casa': 'La tua casa',
+  '/impostazioni/utenti': 'Utenti',
 };
 
 function Navbar() {
-  const { utente, setUtente } = useApp();
-  const { impostazioni } = useImpostazioni();
+  const { utenteAttivo, setUtenteAttivoId } = useApp();
   const location = useLocation();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
 
   const titolo = TITOLI[location.pathname] || 'CasaApp';
   const isSottoPagina = location.pathname.split('/').length > 2;
-  const coloreAvatar = utente === 'Riccardo' ? impostazioni.coloreRiccardo : impostazioni.coloreFederico;
 
   const apriMenu = (e) => setAnchorEl(e.currentTarget);
   const chiudiMenu = () => setAnchorEl(null);
@@ -39,7 +37,7 @@ function Navbar() {
 
   const logout = () => {
     chiudiMenu();
-    setUtente(null);
+    setUtenteAttivoId(null);
     navigate('/benvenuto');
   };
 
@@ -62,10 +60,10 @@ function Navbar() {
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography variant="body2" color="text.secondary">{utente}</Typography>
+          <Typography variant="body2" color="text.secondary">{utenteAttivo?.nome}</Typography>
           <IconButton onClick={apriMenu} size="small">
-            <Avatar sx={{ width: 34, height: 34, bgcolor: coloreAvatar, fontSize: '0.9rem', fontWeight: 700 }}>
-              {utente?.[0]}
+            <Avatar sx={{ width: 34, height: 34, bgcolor: utenteAttivo?.coloreAvatar, fontSize: '0.9rem', fontWeight: 700 }}>
+              {utenteAttivo?.nome?.[0]}
             </Avatar>
           </IconButton>
         </Box>
@@ -78,7 +76,7 @@ function Navbar() {
           anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         >
           <MenuItem disabled sx={{ opacity: 1 }}>
-            <Typography variant="caption" color="text.secondary">Connesso come <strong>{utente}</strong></Typography>
+            <Typography variant="caption" color="text.secondary">Connesso come <strong>{utenteAttivo?.nome}</strong></Typography>
           </MenuItem>
           <Divider />
           <MenuItem onClick={cambiaUtente}>
