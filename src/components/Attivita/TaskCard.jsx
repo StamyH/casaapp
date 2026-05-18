@@ -54,7 +54,7 @@ function TaskCard({ task, onModifica }) {
           {/* Checkbox */}
           <Checkbox
             checked={task.completato}
-            onChange={() => toggleAttivita(task.id)}
+            onChange={() => toggleAttivita(task.id, utente)}
             sx={{
               color: frequenza.colore,
               '&.Mui-checked': { color: 'success.main' },
@@ -73,6 +73,12 @@ function TaskCard({ task, onModifica }) {
             >
               {task.titolo}
             </Typography>
+            {task.completato && task.completatoDa && (
+              <Typography variant="caption" color="success.main" fontWeight={600}>
+                 ✓ Fatto da {task.completatoDa}
+              </Typography>
+            )}
+
             <Box sx={{ display: 'flex', gap: 1, mt: 0.5, flexWrap: 'wrap', alignItems: 'center' }}>
 
               {/* Avatar utente/i */}

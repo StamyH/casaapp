@@ -59,9 +59,12 @@ export function AttivitaProvider({ children }) {
     setAttivita(prev => [...prev, { ...nuovaAttivita, id: Date.now(), completato: false }]);
   };
 
-  const toggleAttivita = (id) => {
+  const toggleAttivita = (id, utente) => {
     setAttivita(prev =>
-      prev.map(att => att.id === id ? { ...att, completato: !att.completato } : att)
+      prev.map(att => att.id === id
+        ? { ...att, completato: !att.completato, completatoDa: !att.completato ? utente : null }
+        : att
+      )
     );
   };
 
