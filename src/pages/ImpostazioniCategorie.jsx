@@ -27,7 +27,6 @@ function ImpostazioniCategorie() {
   const elimina = (cat) => {
     if (impostazioni.categorie.length <= 1) return;
     const rimanenti = impostazioni.categorie.filter(c => c !== cat);
-    console.log('Riassegno:', cat, '→', rimanenti[0]);
     riassegnaCategoria(cat, rimanenti[0]);
     aggiornaImpostazioni({ categorie: rimanenti });
   };
