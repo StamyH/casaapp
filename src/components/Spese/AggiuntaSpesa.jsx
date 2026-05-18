@@ -49,7 +49,7 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
         percentuale: 50,
       });
     }
-  }, [spesaInModifica, aperto]);
+  }, [spesaInModifica, aperto, impostazioni.categorie]);
 
   const [errori, setErrori] = useState({});
   const [confermaElimina, setConfermaElimina] = useState(false);

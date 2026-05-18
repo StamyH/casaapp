@@ -6,7 +6,6 @@ import {
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { formattaImporto, formattaData, calcolaQuote } from '../../utils/helpers';
 import { useApp } from '../../context/AppContext';
-import { useSpese } from '../../context/SpeseContext';
 import { useImpostazioni } from '../../context/ImpostazioniContext';
 
 // Icone e colori per ogni categoria
@@ -22,7 +21,6 @@ const DIVISIONE_LABEL = {
 
 function SpesaCard({ spesa, onModifica }) {
   const { utente } = useApp();
-  const { eliminaSpesa } = useSpese();
   const { impostazioni } = useImpostazioni();
   const idx = impostazioni.categorie.findIndex(c => c.nome === spesa.categoria);
   const catObj = impostazioni.categorie[idx] || { nome: spesa.categoria, icona: '📦' };

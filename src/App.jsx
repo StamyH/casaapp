@@ -31,7 +31,7 @@ function AuthGuard() {
     const handler = (e) => setPreferenzaSistema(e.matches ? 'dark' : 'light');
     mediaQuery.addEventListener('change', handler);
     return () => mediaQuery.removeEventListener('change', handler);
-  }, []);
+  }, [mediaQuery]);
   
   const modalitaEffettiva = impostazioni.modalita === 'auto' ? preferenzaSistema : impostazioni.modalita;
 
