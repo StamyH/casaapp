@@ -7,22 +7,23 @@ import { useApp } from '../context/AppContext';
 import { useImpostazioni } from '../context/ImpostazioniContext';
 
 const COLORI = [
-  { valore: '#5C6BC0', nome: 'Indaco' },
-  { valore: '#26A69A', nome: 'Verde acqua' },
-  { valore: '#FF7043', nome: 'Arancione' },
-  { valore: '#EC407A', nome: 'Rosa' },
-  { valore: '#AB47BC', nome: 'Viola' },
-  { valore: '#42A5F5', nome: 'Azzurro' },
+  { valore: '#5C6BC0', secondario: '#26A69A', nome: 'Indaco' },
+  { valore: '#26A69A', secondario: '#42A5F5', nome: 'Verde acqua' },
+  { valore: '#FF7043', secondario: '#EC407A', nome: 'Arancione' },
+  { valore: '#EC407A', secondario: '#AB47BC', nome: 'Rosa' },
+  { valore: '#AB47BC', secondario: '#5C6BC0', nome: 'Viola' },
+  { valore: '#42A5F5', secondario: '#26A69A', nome: 'Azzurro' },
 ];
 
-function SelettoreColore({ valore, nome, selezionato, onClick }) {
+function SelettoreColore({ valore, secondario, nome, selezionato, onClick }) {
   return (
     <Box
       onClick={onClick}
       sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, cursor: 'pointer' }}
     >
       <Box sx={{
-        width: 48, height: 48, borderRadius: '50%', bgcolor: valore,
+        width: 48, height: 48, borderRadius: '50%',
+        bgcolor: valore,
         border: selezionato ? '3px solid' : '3px solid transparent',
         borderColor: selezionato ? 'text.primary' : 'transparent',
         transition: 'all 0.2s ease',
@@ -36,8 +37,12 @@ function SelettoreColore({ valore, nome, selezionato, onClick }) {
 function ImpostazioniTema() {
   const { impostazioni, aggiornaImpostazioni } = useImpostazioni();
   const { utente } = useApp();
-  const chiaveColore = utente === 'Riccardo' ? 'coloreRiccardo' : 'coloreFederico';
-  const coloreAvatar = impostazioni[chiaveColore];
+  const isFederico = utente === 'Federico';
+  const chiaveAvatar = isFederico ? 'coloreFederico' : 'coloreRiccardo';
+  const chiaveApp = isFederico ? 'coloreAppFederico' : 'coloreAppRiccardo';
+  const chiaveSecondario = isFederico ? 'coloreSecondarioFederico' : 'coloreSecondarioRiccardo';
+  const chiaveModalita = isFederico ? 'modalitaFederico' : 'modalitaRiccardo';
+  const coloreAvatar = impostazioni[chiaveAvatar];
 
   return (
     <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -48,9 +53,9 @@ function ImpostazioniTema() {
           Modalità
         </Typography>
         <ToggleButtonGroup
-          value={impostazioni.modalita}
+          value={impostazioni[chiaveModalita]}
           exclusive
-          onChange={(e, val) => val && aggiornaImpostazioni({ modalita: val })}
+          onChange={(e, val) => val && aggiornaImpostazioni({ [chiaveModalita]: val })}
           fullWidth
         >
           <ToggleButton value="light" sx={{ gap: 1, py: 1.2 }}>
@@ -78,9 +83,10 @@ function ImpostazioniTema() {
             <SelettoreColore
               key={colore.valore}
               valore={colore.valore}
+              secondario={colore.secondario}
               nome={colore.nome}
-              selezionato={impostazioni.colore === colore.valore}
-              onClick={() => aggiornaImpostazioni({ colore: colore.valore })}
+              selezionato={impostazioni[chiaveApp] === colore.valore}
+              onClick={() => aggiornaImpostazioni({ [chiaveApp]: colore.valore, [chiaveSecondario]: colore.secondario })}
             />
           ))}
         </Box>
@@ -105,9 +111,10 @@ function ImpostazioniTema() {
               <SelettoreColore
                 key={colore.valore}
                 valore={colore.valore}
+                secondario={colore.secondario}
                 nome={colore.nome}
                 selezionato={coloreAvatar === colore.valore}
-                onClick={() => aggiornaImpostazioni({ [chiaveColore]: colore.valore })}
+                onClick={() => aggiornaImpostazioni({ [chiaveAvatar]: colore.valore })}
               />
             ))}
           </Box>

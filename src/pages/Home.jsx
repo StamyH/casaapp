@@ -3,6 +3,7 @@ import { Box, Typography, Card, CardContent, Chip, Divider, Checkbox } from '@mu
 import { useApp } from '../context/AppContext';
 import { useSpese } from '../context/SpeseContext';
 import { useAttivita } from '../context/AttivitaContext';
+import { useImpostazioni } from '../context/ImpostazioniContext';
 import { formattaImporto, calcolaBilancio } from '../utils/helpers';
 
 const GIORNI_SETTIMANA = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
@@ -11,6 +12,10 @@ function Home() {
   const { utente } = useApp();
   const { spese } = useSpese();
   const { attivita, toggleAttivita } = useAttivita();
+  const { impostazioni } = useImpostazioni();
+  const isFederico = utente === 'Federico';
+  const coloreApp = impostazioni[isFederico ? 'coloreAppFederico' : 'coloreAppRiccardo'] || '#5C6BC0';
+  const coloreSecondario = impostazioni[isFederico ? 'coloreSecondarioFederico' : 'coloreSecondarioRiccardo'] || '#26A69A';
   const bilancio = calcolaBilancio(spese);
   const oggi = new Date();
   const giornoOggi = oggi.getDay();
@@ -54,13 +59,13 @@ function Home() {
         sx={{
           mb: 2,
           borderRadius: 3,
-          background: 'linear-gradient(135deg, #5C6BC0 0%, #26A69A 100%)',
+          background: `linear-gradient(135deg, ${coloreApp} 0%, ${coloreSecondario} 100%)`,
           color: 'white',
         }}
       >
         <CardContent sx={{ p: 2.5 }}>
           <Typography variant="caption" sx={{ opacity: 0.8 }}>
-            📊 Bilancio del mese
+            📊 Bilancio di {new Date().toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })}
           </Typography>
           <Typography variant="h6" fontWeight={700} mt={0.5}>
             {inPari

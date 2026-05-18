@@ -2,13 +2,6 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AttivitaContext = createContext();
 
-const ATTIVITA_INIZIALI = [
-  { id: 1, titolo: 'Lavare i piatti', frequenza: 'giornaliera', giornoSettimana: null, giornoMese: null, dataSpecifica: null, assegnato: 'Riccardo', completato: false },
-  { id: 2, titolo: 'Portare la spazzatura', frequenza: 'settimanale', giornoSettimana: 1, giornoMese: null, dataSpecifica: null, assegnato: 'Federico', completato: false },
-  { id: 3, titolo: 'Pulire il bagno', frequenza: 'settimanale', giornoSettimana: 6, giornoMese: null, dataSpecifica: null, assegnato: 'entrambi', completato: false },
-  { id: 4, titolo: 'Pagare affitto', frequenza: 'mensile', giornoSettimana: null, giornoMese: 1, dataSpecifica: null, assegnato: 'Riccardo', completato: false },
-  { id: 5, titolo: 'Controllo caldaia', frequenza: 'specifica', giornoSettimana: null, giornoMese: null, dataSpecifica: '2024-02-15', assegnato: 'Federico', completato: false },
-];
 
 function inizioSettimana(date) {
   const d = new Date(date);
@@ -20,9 +13,9 @@ export function AttivitaProvider({ children }) {
   const [attivita, setAttivita] = useState(() => {
     try {
       const saved = localStorage.getItem('casaapp_attivita');
-      return saved ? JSON.parse(saved) : ATTIVITA_INIZIALI;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return ATTIVITA_INIZIALI;
+      return [];
     }
   });
 

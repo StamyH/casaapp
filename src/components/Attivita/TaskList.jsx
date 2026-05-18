@@ -43,7 +43,11 @@ function TaskList({ attivita, filtroUtente, onModifica, mostraCompletate }) {
               >
                 {titolo}{frequenza === 'giornaliera' && (
                   <Typography component="span" variant="caption" color="text.secondary" fontWeight={400} ml={1}>
-                    : {new Date().toLocaleDateString('it-IT', { day: 'numeric', month: 'long' })}
+                    — {new Date().toLocaleDateString('it-IT', { day: 'numeric', month: 'long' })}
+                  </Typography>
+                )}{frequenza === 'mensile' && (
+                  <Typography component="span" variant="caption" color="text.secondary" fontWeight={400} ml={1}>
+                    — {new Date().toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })}
                   </Typography>
                 )}
               </Typography>
