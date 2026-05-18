@@ -41,7 +41,11 @@ function TaskList({ attivita, filtroUtente, onModifica, mostraCompletate }) {
                 fontWeight={700}
                 sx={{ color: colore }}
               >
-                {titolo}
+                {titolo}{frequenza === 'giornaliera' && (
+                  <Typography component="span" variant="caption" color="text.secondary" fontWeight={400} ml={1}>
+                    : {new Date().toLocaleDateString('it-IT', { day: 'numeric', month: 'long' })}
+                  </Typography>
+                )}
               </Typography>
               <Typography variant="caption" color="text.secondary">
                 {completati}/{totale} completati

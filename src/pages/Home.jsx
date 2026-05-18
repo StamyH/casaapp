@@ -43,7 +43,7 @@ function Home() {
         <Typography variant="h5" fontWeight={800}>
           👋 Ciao, {utente}!
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="h6" fontWeight={600} color="text.secondary" textTransform="capitalize">
           {oggi.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
         </Typography>
       </Box>
@@ -97,7 +97,7 @@ function Home() {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Checkbox
                       checked={task.completato}
-                      onChange={() => toggleAttivita(task.id)}
+                      onChange={() => toggleAttivita(task.id, utente)}
                       size="small"
                       sx={{
                         p: 0.5,
