@@ -11,31 +11,33 @@ beforeEach(() => {
 describe('ImpostazioniContext', () => {
   test('valori iniziali corretti', () => {
     const { result } = renderHook(() => useImpostazioni(), { wrapper });
-    expect(result.current.impostazioni.modalita).toBe('auto');
+    expect(result.current.impostazioni.modalitaRiccardo).toBe('auto');
+    expect(result.current.impostazioni.modalitaFederico).toBe('auto');
     expect(result.current.impostazioni.categorie.length).toBeGreaterThan(0);
     expect(result.current.impostazioni.categorie[0]).toHaveProperty('nome');
     expect(result.current.impostazioni.categorie[0]).toHaveProperty('icona');
   });
 
-  test('aggiorna una singola impostazione', () => {
+  test('aggiorna modalità per utente', () => {
     const { result } = renderHook(() => useImpostazioni(), { wrapper });
 
     act(() => {
-      result.current.aggiornaImpostazioni({ modalita: 'dark' });
+      result.current.aggiornaImpostazioni({ modalitaRiccardo: 'dark' });
     });
 
-    expect(result.current.impostazioni.modalita).toBe('dark');
-    expect(result.current.impostazioni.categorie.length).toBeGreaterThan(0);
+    expect(result.current.impostazioni.modalitaRiccardo).toBe('dark');
+    expect(result.current.impostazioni.modalitaFederico).toBe('auto');
   });
 
-  test('aggiorna il colore dell\'app', () => {
+  test('aggiorna il colore app per utente', () => {
     const { result } = renderHook(() => useImpostazioni(), { wrapper });
 
     act(() => {
-      result.current.aggiornaImpostazioni({ colore: '#FF7043' });
+      result.current.aggiornaImpostazioni({ coloreAppRiccardo: '#FF7043', coloreSecondarioRiccardo: '#EC407A' });
     });
 
-    expect(result.current.impostazioni.colore).toBe('#FF7043');
+    expect(result.current.impostazioni.coloreAppRiccardo).toBe('#FF7043');
+    expect(result.current.impostazioni.coloreSecondarioRiccardo).toBe('#EC407A');
   });
 
   test('migrazione vecchie categorie da stringhe a oggetti', () => {
