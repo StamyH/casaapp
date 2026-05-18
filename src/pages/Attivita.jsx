@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Fab, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Box, Fab, Typography, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import { useAttivita } from '../context/AttivitaContext';
 import TaskList from '../components/Attivita/TaskList';
@@ -10,6 +10,7 @@ function Attivita() {
   const [apriForm, setApriForm] = useState(false);
   const [filtroUtente, setFiltroUtente] = useState('tutti');
   const [attivitaInModifica, setAttivitaInModifica] = useState(null);
+  const [mostraCompletate, setMostraCompletate] = useState(true);
 
   return (
     <Box sx={{ p: 2 }}>
@@ -34,8 +35,23 @@ function Attivita() {
       </ToggleButtonGroup>
 
       {/* Lista task */}
-      <TaskList attivita={attivita} filtroUtente={filtroUtente} onModifica={setAttivitaInModifica}/>
-
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+        <Typography
+          variant="caption"
+          color="primary"
+          sx={{ cursor: 'pointer', fontWeight: 600 }}
+          onClick={() => setMostraCompletate(p => !p)}
+        >
+          {mostraCompletate ? 'Nascondi completate' : 'Mostra completate'}
+        </Typography>
+      </Box>
+      <TaskList 
+        attivita={attivita} 
+        filtroUtente={filtroUtente} 
+        onModifica={setAttivitaInModifica} 
+        mostraCompletate={mostraCompletate} 
+      />
+      
       {/* Bottone aggiunta task — fisso in basso a destra */}
       <Fab
         color="primary"

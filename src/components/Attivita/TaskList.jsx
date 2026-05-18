@@ -8,13 +8,11 @@ const SEZIONI = [
   { frequenza: 'mensile', titolo: '🗓️ Questo mese', colore: '#26A69A' },
 ];
 
-function TaskList({ attivita, filtroUtente, onModifica }) {
-  // Filtra per utente se specificato
-  const attivitaFiltrate = filtroUtente === 'tutti'
+function TaskList({ attivita, filtroUtente, onModifica, mostraCompletate }) {
+  const attivitaFiltrate = (filtroUtente === 'tutti'
     ? attivita
-    : attivita.filter(t =>
-        t.assegnato === filtroUtente || t.assegnato === 'entrambi'
-      );
+    : attivita.filter(t => t.assegnato === filtroUtente || t.assegnato === 'entrambi')
+  ).filter(t => mostraCompletate || !t.completato);
 
   return (
     <Box>
