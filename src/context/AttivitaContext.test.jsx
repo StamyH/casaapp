@@ -75,3 +75,53 @@ describe('AttivitaContext', () => {
     expect(result.current.attivita.find(a => a.id === id)).toBeUndefined();
   });
 });
+
+  test('modifica un\'attività esistente', () => {
+    const { result } = renderHook(() => useAttivita(), { wrapper });
+
+    act(() => {
+      result.current.aggiungiAttivita({
+        titolo: 'Da modificare',
+        frequenza: 'giornaliera',
+        giornoSettimana: null,
+        giornoMese: null,
+        dataSpecifica: null,
+        assegnato: 'Riccardo',
+      });
+    });
+
+    const id = result.current.attivita[result.current.attivita.length - 1].id;
+
+    act(() => {
+      result.current.modificaAttivita(id, { titolo: 'Modificata', assegnato: 'Federico' });
+    });
+
+    const task = result.current.attivita.find(a => a.id === id);
+    expect(task.titolo).toBe('Modificata');
+    expect(task.assegnato).toBe('Federico');
+    expect(task.frequenza).toBe('giornaliera');
+  });
+
+  test('toggle disattiva e rimuove completatoDa', () => {
+    const { result } = renderHook(() => useAttivita(), { wrapper });
+
+    act(() => {
+      result.current.aggiungiAttivita({
+        titolo: 'Task doppio toggle',
+        frequenza: 'giornaliera',
+        giornoSettimana: null,
+        giornoMese: null,
+        dataSpecifica: null,
+        assegnato: 'entrambi',
+      });
+    });
+
+    const id = result.current.attivita[result.current.attivita.length - 1].id;
+
+    act(() => { result.current.toggleAttivita(id, 'Riccardo'); });
+    act(() => { result.current.toggleAttivita(id, 'Riccardo'); });
+
+    const task = result.current.attivita.find(a => a.id === id);
+    expect(task.completato).toBe(false);
+    expect(task.completatoDa).toBeNull();
+  });

@@ -75,3 +75,30 @@ describe('SpeseContext', () => {
     expect(spesa.categoria).toBe('bolletta');
   });
 });
+
+  test('modifica una spesa esistente', () => {
+    const { result } = renderHook(() => useSpese(), { wrapper });
+
+    act(() => {
+      result.current.aggiungiSpesa({
+        descrizione: 'Da modificare',
+        importo: 50,
+        categoria: 'spesa',
+        pagatore: 'Riccardo',
+        divisione: 'metà',
+        percentuale: 50,
+        data: '2026-05-18',
+      });
+    });
+
+    const id = result.current.spese[result.current.spese.length - 1].id;
+
+    act(() => {
+      result.current.modificaSpesa(id, { descrizione: 'Modificata', importo: 99 });
+    });
+
+    const spesa = result.current.spese.find(s => s.id === id);
+    expect(spesa.descrizione).toBe('Modificata');
+    expect(spesa.importo).toBe(99);
+    expect(spesa.categoria).toBe('spesa');
+  });
