@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { AppProvider, useApp } from './context/AppContext';
 import { SpeseProvider } from './context/SpeseContext';
@@ -66,6 +66,7 @@ function AuthGuard() {
           <Route path="/impostazioni/tema" element={<ImpostazioniTema />} />
           <Route path="/impostazioni/categorie" element={<ImpostazioniCategorie />} />
           <Route path="/impostazioni/casa" element={<ImpostazioniCasa />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
       {mostraNav && <BottomNav />}
