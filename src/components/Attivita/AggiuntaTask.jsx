@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Drawer, Box, Typography, TextField, Button,
   ToggleButton, ToggleButtonGroup, IconButton
@@ -29,9 +29,10 @@ const GIORNI_SETTIMANA = [
   { value: 0, label: 'Dom' },
 ];
 
-function AggiuntaTask({ aperto, onChiudi }) {
-  const { aggiungiAttivita } = useAttivita();
+function AggiuntaTask({ aperto, onChiudi, attivitaInModifica }) {
+  const { aggiungiAttivita, modificaAttivita, eliminaAttivita } = useAttivita();
   const [errori, setErrori] = useState({});
+  const [confermaElimina, setConfermaElimina] = useState(false);
 
   const [form, setForm] = useState({
     titolo: '',
@@ -41,6 +42,29 @@ function AggiuntaTask({ aperto, onChiudi }) {
     dataSpecifica: '',
     assegnato: 'entrambi',
   });
+
+  useEffect(() => {
+    setConfermaElimina(false);
+    if (attivitaInModifica) {
+      setForm({
+        titolo: attivitaInModifica.titolo,
+        frequenza: attivitaInModifica.frequenza,
+        giornoSettimana: attivitaInModifica.giornoSettimana ?? 1,
+        giornoMese: attivitaInModifica.giornoMese ?? 1,
+        dataSpecifica: attivitaInModifica.dataSpecifica ?? '',
+        assegnato: attivitaInModifica.assegnato,
+      });
+    } else {
+      setForm({
+        titolo: '',
+        frequenza: 'giornaliera',
+        giornoSettimana: 1,
+        giornoMese: 1,
+        dataSpecifica: '',
+        assegnato: 'entrambi',
+      });
+    }
+  }, [attivitaInModifica, aperto]);
 
   const aggiorna = (campo, valore) => {
     setForm(prev => ({ ...prev, [campo]: valore }));
@@ -68,23 +92,22 @@ function AggiuntaTask({ aperto, onChiudi }) {
   
     setErrori({});
   
-    aggiungiAttivita({
+    const dati = {
       titolo: form.titolo.trim(),
       frequenza: form.frequenza,
       giornoSettimana: form.frequenza === 'settimanale' ? form.giornoSettimana : null,
       giornoMese: form.frequenza === 'mensile' ? form.giornoMese : null,
       dataSpecifica: form.frequenza === 'specifica' ? form.dataSpecifica : null,
       assegnato: form.assegnato,
-    });
-  
-    setForm({
-      titolo: '',
-      frequenza: 'giornaliera',
-      giornoSettimana: 1,
-      giornoMese: 1,
-      dataSpecifica: '',
-      assegnato: 'entrambi',
-    });
+    };
+    
+    if (attivitaInModifica) {
+      modificaAttivita(attivitaInModifica.id, dati);
+    } else {
+      aggiungiAttivita(dati);
+    }
+    
+    onChiudi();
   
     onChiudi();
   };
@@ -103,7 +126,7 @@ function AggiuntaTask({ aperto, onChiudi }) {
         {/* Header */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h6" fontWeight={700}>
-            ✅ Nuova attività
+          {attivitaInModifica ? '✏️ Modifica attività' : '✅ Nuova attività'}
           </Typography>
           <IconButton onClick={onChiudi} size="small">
             <CloseRoundedIcon />
@@ -238,8 +261,45 @@ function AggiuntaTask({ aperto, onChiudi }) {
           onClick={handleSubmit}
           sx={{ borderRadius: 3, py: 1.5, fontWeight: 700 }}
         >
-          Aggiungi attività
+          {attivitaInModifica ? 'Salva modifiche' : 'Aggiungi attività'}
         </Button>
+        {attivitaInModifica && !confermaElimina && (
+          <Button
+            fullWidth
+            variant="text"
+            color="error"
+            onClick={() => setConfermaElimina(true)}
+            sx={{ mt: 1 }}
+          >
+            Elimina attività
+          </Button>
+        )}
+
+        {confermaElimina && (
+          <Box sx={{ mt: 2, p: 2, borderRadius: 2, bgcolor: 'error.light', display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Typography variant="body2" fontWeight={700} color="error.contrastText">
+              Sei sicuro di voler eliminare questa attività?
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                fullWidth
+                variant="outlined"
+                onClick={() => setConfermaElimina(false)}
+                sx={{ borderColor: 'error.contrastText', color: 'error.contrastText' }}
+              >
+                Annulla
+              </Button>
+              <Button
+                fullWidth
+                variant="contained"
+                color="error"
+                onClick={() => { eliminaAttivita(attivitaInModifica.id); onChiudi(); }}
+              >
+                Elimina
+              </Button>
+            </Box>
+          </Box>
+        )}
       </Box>
     </Drawer>
   );

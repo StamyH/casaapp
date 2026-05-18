@@ -69,8 +69,12 @@ export function AttivitaProvider({ children }) {
     setAttivita(prev => prev.filter(a => a.id !== id));
   };
 
+  const modificaAttivita = (id, datiAggiornati) => {
+    setAttivita(prev => prev.map(a => a.id === id ? { ...a, ...datiAggiornati } : a));
+  };
+
   return (
-    <AttivitaContext.Provider value={{ attivita, aggiungiAttivita, toggleAttivita, eliminaAttivita }}>
+    <AttivitaContext.Provider value={{ attivita, aggiungiAttivita, toggleAttivita, eliminaAttivita, modificaAttivita }}>
       {children}
     </AttivitaContext.Provider>
   );

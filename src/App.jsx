@@ -24,7 +24,15 @@ function AuthGuard() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const preferenzaSistema = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  const [preferenzaSistema, setPreferenzaSistema] = useState(mediaQuery.matches ? 'dark' : 'light');
+
+  useEffect(() => {
+    const handler = (e) => setPreferenzaSistema(e.matches ? 'dark' : 'light');
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+  
   const modalitaEffettiva = impostazioni.modalita === 'auto' ? preferenzaSistema : impostazioni.modalita;
 
   const theme = createTheme({

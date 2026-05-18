@@ -8,7 +8,7 @@ const SEZIONI = [
   { frequenza: 'mensile', titolo: '🗓️ Questo mese', colore: '#26A69A' },
 ];
 
-function TaskList({ attivita, filtroUtente }) {
+function TaskList({ attivita, filtroUtente, onModifica }) {
   // Filtra per utente se specificato
   const attivitaFiltrate = filtroUtente === 'tutti'
     ? attivita
@@ -52,7 +52,7 @@ function TaskList({ attivita, filtroUtente }) {
 
             {/* Task */}
             {taskDiQuestaFrequenza.map(task => (
-              <TaskCard key={task.id} task={task} />
+              <TaskCard key={task.id} task={task} onModifica={onModifica} />
             ))}
           </Box>
         );

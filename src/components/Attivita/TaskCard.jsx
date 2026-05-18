@@ -3,7 +3,7 @@ import {
   Card, CardContent, Box, Typography,
   Chip, IconButton, Checkbox
 } from '@mui/material';
-import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { useApp } from '../../context/AppContext';
 import { useAttivita } from '../../context/AttivitaContext';
 import { useImpostazioni } from '../../context/ImpostazioniContext';
@@ -30,9 +30,9 @@ function AvatarUtente({ nome, impostazioni, size = 22 }) {
   );
 }
 
-function TaskCard({ task }) {
+function TaskCard({ task, onModifica }) {
   const { utente } = useApp();
-  const { toggleAttivita, eliminaAttivita } = useAttivita();
+  const { toggleAttivita } = useAttivita();
   const { impostazioni } = useImpostazioni();
   const frequenza = FREQUENZE[task.frequenza] || FREQUENZE.giornaliera;
 
@@ -102,10 +102,10 @@ function TaskCard({ task }) {
           {(task.assegnato === utente || task.assegnato === 'entrambi') && (
             <IconButton
               size="small"
-              onClick={() => eliminaAttivita(task.id)}
-              sx={{ color: 'error.light', flexShrink: 0 }}
+              onClick={() => onModifica(task)}
+              sx={{ color: 'primary.main', flexShrink: 0 }}
             >
-              <DeleteRoundedIcon fontSize="small" />
+              <EditRoundedIcon fontSize="small" />
             </IconButton>
           )}
 

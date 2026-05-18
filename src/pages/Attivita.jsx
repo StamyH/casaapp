@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { Box, Fab, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import { useApp } from '../context/AppContext';
 import { useAttivita } from '../context/AttivitaContext';
 import TaskList from '../components/Attivita/TaskList';
 import AggiuntaTask from '../components/Attivita/AggiuntaTask';
 
 function Attivita() {
-  const { utente } = useApp();
   const { attivita } = useAttivita();
   const [apriForm, setApriForm] = useState(false);
   const [filtroUtente, setFiltroUtente] = useState('tutti');
+  const [attivitaInModifica, setAttivitaInModifica] = useState(null);
 
   return (
     <Box sx={{ p: 2 }}>
@@ -35,7 +34,7 @@ function Attivita() {
       </ToggleButtonGroup>
 
       {/* Lista task */}
-      <TaskList attivita={attivita} filtroUtente={filtroUtente} />
+      <TaskList attivita={attivita} filtroUtente={filtroUtente} onModifica={setAttivitaInModifica}/>
 
       {/* Bottone aggiunta task — fisso in basso a destra */}
       <Fab
@@ -53,8 +52,9 @@ function Attivita() {
 
       {/* Form aggiunta task */}
       <AggiuntaTask
-        aperto={apriForm}
-        onChiudi={() => setApriForm(false)}
+        aperto={apriForm || !!attivitaInModifica}
+        onChiudi={() => { setApriForm(false); setAttivitaInModifica(null); }}
+        attivitaInModifica={attivitaInModifica}
       />
     </Box>
   );
