@@ -43,7 +43,7 @@
 
 ### Gestione
 - [x] Spunta completamento
-- [ ] Reset automatico alla scadenza per task ricorrenti
+- [x] Reset automatico alla scadenza per task ricorrenti
 - [ ] Notifica visiva se in ritardo
 
 ---
@@ -53,6 +53,7 @@
 ### Profili utente
 - [x] Visualizzare nome e avatar utente
 - [x] Scegliere colore avatar (da pagina Tema)
+- [x] Menu utente con cambio profilo e logout
 - [ ] Modificare il nome utente (attualmente solo dalla schermata di selezione)
 
 ### Categorie spese

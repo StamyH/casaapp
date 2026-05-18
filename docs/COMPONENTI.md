@@ -113,11 +113,13 @@ Funzioni di utilità per calcolo bilancio e formattazione dati.
 
 ## Test
 
-### `tests/spese.test.js`
-Test logica spese: calcolo bilancio, quote, divisione.
+## Test
 
-### `tests/attivita.test.js`
-Test logica attività: completamento, reset.
+### `src/utils/helpers.test.js`
+Test funzioni helper: formattazione importi, calcolo quote per tutti i tipi di divisione, calcolo bilancio.
 
-### `tests/utils.test.js`
-Test funzioni helper.
+### `src/context/SpeseContext.test.jsx`
+Test contesto spese: aggiunta, eliminazione e riassegnazione categoria delle spese.
+
+### `src/context/AttivitaContext.test.jsx`
+Test contesto attività: aggiunta, eliminazione, toggle con tracciamento di chi ha completato.
