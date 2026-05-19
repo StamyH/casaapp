@@ -9,69 +9,63 @@ const SEZIONI = [
   { frequenza: 'specifica', titolo: '📌 Data specifica', colore: '#AB47BC' },
 ];
 
+const PRIORITA_ORDINE = { alta: 0, media: 1, bassa: 2 };
+
 function TaskList({ attivita, filtroUtente, onModifica, mostraCompletate }) {
+  const oggi = new Date().toISOString().split('T')[0];
+
   const attivitaFiltrate = (filtroUtente === 'tutti'
     ? attivita
     : attivita.filter(t => t.assegnato === filtroUtente || t.assegnato === 'entrambi')
-  ).filter(t => mostraCompletate || !t.completato);
+  ).filter(t => {
+    if (!mostraCompletate && t.completato) return false;
+    if (t.dataFine && t.frequenza !== 'specifica' && t.dataFine < oggi) return false;
+    return true;
+  });
 
   return (
     <Box>
       {SEZIONI.map(({ frequenza, titolo, colore }) => {
-        const taskDiQuestaFrequenza = attivitaFiltrate.filter(
-          t => t.frequenza === frequenza
-        );
+        const tasks = attivitaFiltrate
+          .filter(t => t.frequenza === frequenza)
+          .sort((a, b) => (PRIORITA_ORDINE[a.priorita ?? 'media'] ?? 1) - (PRIORITA_ORDINE[b.priorita ?? 'media'] ?? 1));
 
-        // Non mostrare la sezione se non ci sono task
-        if (taskDiQuestaFrequenza.length === 0) return null;
+        if (tasks.length === 0) return null;
 
-        const completati = taskDiQuestaFrequenza.filter(t => t.completato).length;
-        const totale = taskDiQuestaFrequenza.length;
+        const completati = tasks.filter(t => t.completato).length;
 
         return (
           <Box key={frequenza} mb={3}>
-            {/* Intestazione sezione */}
-            <Box sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              mb: 1.5,
-            }}>
-              <Typography
-                variant="subtitle2"
-                fontWeight={700}
-                sx={{ color: colore }}
-              >
-                {titolo}{frequenza === 'giornaliera' && (
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+              <Typography variant="subtitle2" fontWeight={700} sx={{ color: colore }}>
+                {titolo}
+                {frequenza === 'giornaliera' && (
                   <Typography component="span" variant="caption" color="text.secondary" fontWeight={400} ml={1}>
                     — {new Date().toLocaleDateString('it-IT', { day: 'numeric', month: 'long' })}
                   </Typography>
-                )}{frequenza === 'mensile' && (
+                )}
+                {frequenza === 'mensile' && (
                   <Typography component="span" variant="caption" color="text.secondary" fontWeight={400} ml={1}>
                     — {new Date().toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })}
                   </Typography>
                 )}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {completati}/{totale} completati
+                {completati}/{tasks.length} completati
               </Typography>
             </Box>
 
-            {/* Task */}
-            {taskDiQuestaFrequenza.map(task => (
+            {tasks.map(task => (
               <TaskCard key={task.id} task={task} onModifica={onModifica} />
             ))}
           </Box>
         );
       })}
 
-      {/* Messaggio se non ci sono task */}
       {attivitaFiltrate.length === 0 && (
         <Box sx={{ textAlign: 'center', mt: 6 }}>
           <Typography fontSize="2.5rem">✅</Typography>
-          <Typography color="text.secondary" mt={1}>
-            Nessuna attività assegnata
-          </Typography>
+          <Typography color="text.secondary" mt={1}>Nessuna attività trovata</Typography>
         </Box>
       )}
     </Box>
