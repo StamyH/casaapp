@@ -8,12 +8,7 @@ import { ImpostazioniProvider } from './context/ImpostazioniContext';
 import Home from './pages/Home';
 import Spese from './pages/Spese';
 import Attivita from './pages/Attivita';
-import Impostazioni from './pages/Impostazioni';
-import ImpostazioniProfilo from './pages/ImpostazioniProfilo';
-import ImpostazioniTema from './pages/ImpostazioniTema';
-import ImpostazioniCategorie from './pages/ImpostazioniCategorie';
-import ImpostazioniCasa from './pages/ImpostazioniCasa';
-import ImpostazioniUtenti from './pages/ImpostazioniUtenti';
+import Statistiche from './pages/Statistiche';
 import Benvenuto from './pages/Benvenuto';
 import Navbar from './components/Layout/Navbar';
 import BottomNav from './components/Layout/BottomNav';
@@ -70,12 +65,7 @@ function AuthGuard() {
           <Route path="/" element={<Home />} />
           <Route path="/spese" element={<Spese />} />
           <Route path="/attivita" element={<Attivita />} />
-          <Route path="/impostazioni" element={<Impostazioni />} />
-          <Route path="/impostazioni/profilo" element={<ImpostazioniProfilo />} />
-          <Route path="/impostazioni/tema" element={<ImpostazioniTema />} />
-          <Route path="/impostazioni/categorie" element={<ImpostazioniCategorie />} />
-          <Route path="/impostazioni/casa" element={<ImpostazioniCasa />} />
-          <Route path="/impostazioni/utenti" element={<ImpostazioniUtenti />} />
+          <Route path="/statistiche" element={<Statistiche />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
