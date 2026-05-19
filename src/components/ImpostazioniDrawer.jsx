@@ -3,6 +3,7 @@ import {
   Drawer, Box, Typography, Avatar, Button, Divider,
   ToggleButton, ToggleButtonGroup, IconButton, TextField, Chip,
   Dialog, DialogTitle, DialogContent, DialogActions,
+  MenuItem, Snackbar, Alert,
 } from '@mui/material';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
@@ -73,6 +74,10 @@ function ImpostazioniDrawer({ aperto, onChiudi }) {
   const [icona, setIcona] = useState('📦');
   const [erroreCategoria, setErroreCategoria] = useState('');
 
+  const [dialogEliminaCategoria, setDialogEliminaCategoria] = useState(null);
+  const [categoriaFallback, setCategoriaFallback] = useState('');
+  const [snackbar, setSnackbar] = useState('');
+
   const handleAggiungiUtente = () => {
     const nome = nuovoNome.trim();
     if (!nome) return;
@@ -92,6 +97,7 @@ function ImpostazioniDrawer({ aperto, onChiudi }) {
     }
     setDialogModifica(null);
     setNomeModifica('');
+    setSnackbar('Nome aggiornato!');
   };
 
   const handleEliminaUtente = (id) => {
@@ -115,8 +121,16 @@ function ImpostazioniDrawer({ aperto, onChiudi }) {
   const eliminaCategoria = (cat) => {
     if (impostazioni.categorie.length <= 1) return;
     const rimanenti = impostazioni.categorie.filter(c => c.nome !== cat.nome);
-    riassegnaCategoria(cat.nome, rimanenti[0].nome);
+    setCategoriaFallback(rimanenti[0].nome);
+    setDialogEliminaCategoria(cat);
+  };
+
+  const confermaCategoriaFallback = () => {
+    if (!dialogEliminaCategoria || !categoriaFallback) return;
+    const rimanenti = impostazioni.categorie.filter(c => c.nome !== dialogEliminaCategoria.nome);
+    riassegnaCategoria(dialogEliminaCategoria.nome, categoriaFallback);
     aggiornaImpostazioni({ categorie: rimanenti });
+    setDialogEliminaCategoria(null);
   };
 
   const cambiaUtente = () => {
@@ -393,6 +407,43 @@ function ImpostazioniDrawer({ aperto, onChiudi }) {
           <Button variant="contained" color="error" onClick={() => handleEliminaUtente(confermaElimina.id)}>Elimina</Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog open={!!dialogEliminaCategoria} onClose={() => setDialogEliminaCategoria(null)} fullWidth maxWidth="xs">
+        <DialogTitle fontWeight={700}>Elimina categoria</DialogTitle>
+        <DialogContent>
+          <Typography mb={2}>
+            Le spese in <strong>{dialogEliminaCategoria?.icona} {dialogEliminaCategoria?.nome}</strong> verranno spostate in:
+          </Typography>
+          <TextField
+            select fullWidth size="small"
+            value={categoriaFallback}
+            onChange={e => setCategoriaFallback(e.target.value)}
+            label="Nuova categoria"
+          >
+            {impostazioni.categorie
+              .filter(c => c.nome !== dialogEliminaCategoria?.nome)
+              .map(c => (
+                <MenuItem key={c.nome} value={c.nome}>{c.icona} {c.nome.charAt(0).toUpperCase() + c.nome.slice(1)}</MenuItem>
+              ))
+            }
+          </TextField>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setDialogEliminaCategoria(null)}>Annulla</Button>
+          <Button variant="contained" color="error" onClick={confermaCategoriaFallback}>Elimina</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={!!snackbar}
+        autoHideDuration={2500}
+        onClose={() => setSnackbar('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="success" variant="filled" onClose={() => setSnackbar('')} sx={{ borderRadius: 3 }}>
+          {snackbar}
+        </Alert>
+      </Snackbar>
     </>
   );
 }

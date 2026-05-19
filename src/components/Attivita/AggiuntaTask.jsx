@@ -6,6 +6,7 @@ import {
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { useAttivita } from '../../context/AttivitaContext';
 import { useApp } from '../../context/AppContext';
+import { oggiLocale } from '../../utils/helpers';
 
 const FREQUENZE = [
   { value: 'giornaliera', label: '☀️ Giornaliera' },
@@ -81,7 +82,7 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica }) {
     if (form.frequenza === 'specifica') {
       if (!form.dataSpecifica) {
         nuoviErrori.dataSpecifica = 'Seleziona una data';
-      } else if (form.dataSpecifica < new Date().toISOString().split('T')[0]) {
+      } else if (form.dataSpecifica < oggiLocale()) {
         nuoviErrori.dataSpecifica = 'La data non può essere nel passato';
       }
     }
@@ -199,7 +200,7 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica }) {
               size="small"
               value={form.dataSpecifica}
               onChange={e => { aggiorna('dataSpecifica', e.target.value); setErrori(p => ({ ...p, dataSpecifica: '' })); }}
-              inputProps={{ min: new Date().toISOString().split('T')[0] }}
+              inputProps={{ min: oggiLocale() }}
               error={!!errori.dataSpecifica}
               helperText={errori.dataSpecifica}
             />
