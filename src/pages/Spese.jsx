@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
-import { Box, Typography, Fab, MenuItem, TextField, IconButton, Tooltip } from '@mui/material';
+import {
+  Box, Typography, Fab, MenuItem, TextField, IconButton,
+  Tooltip, Collapse, Button, Chip,
+} from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
+import FilterListRoundedIcon from '@mui/icons-material/FilterListRounded';
+import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
+import ExpandLessRoundedIcon from '@mui/icons-material/ExpandLessRounded';
 import { useSpese } from '../context/SpeseContext';
 import { useApp } from '../context/AppContext';
 import { useImpostazioni } from '../context/ImpostazioniContext';
@@ -17,6 +23,12 @@ const ORDINAMENTI = [
   { value: 'importo_asc', label: 'Importo ↑' },
 ];
 
+const FILTRI_VUOTI = { ricerca: '', categoria: 'tutte', pagatore: 'tutti', ordinamento: 'data_desc' };
+
+function contaFiltriAttivi(f) {
+  return [f.ricerca !== '', f.categoria !== 'tutte', f.pagatore !== 'tutti', f.ordinamento !== 'data_desc'].filter(Boolean).length;
+}
+
 function Spese() {
   const { spese } = useSpese();
   const { utenti } = useApp();
@@ -24,23 +36,38 @@ function Spese() {
 
   const [apriForm, setApriForm] = useState(false);
   const [spesaInModifica, setSpesaInModifica] = useState(null);
-  const [ricerca, setRicerca] = useState('');
-  const [filtroCategoria, setFiltroCategoria] = useState('tutte');
-  const [filtroPagatore, setFiltroPagatore] = useState('tutti');
-  const [ordinamento, setOrdinamento] = useState('data_desc');
+  const [filtriAperti, setFiltriAperti] = useState(false);
+  const [filtriStaged, setFiltriStaged] = useState(FILTRI_VUOTI);
+  const [filtriAttivi, setFiltriAttivi] = useState(FILTRI_VUOTI);
+
+  const filtriModificati = JSON.stringify(filtriStaged) !== JSON.stringify(filtriAttivi);
+  const filtriAttiviCount = contaFiltriAttivi(filtriAttivi);
+
+  const aggiornaStagedFiltro = (campo, valore) => {
+    setFiltriStaged(prev => ({ ...prev, [campo]: valore }));
+  };
+
+  const applicaFiltri = () => {
+    setFiltriAttivi({ ...filtriStaged });
+  };
+
+  const azzeraFiltri = () => {
+    setFiltriStaged(FILTRI_VUOTI);
+    setFiltriAttivi(FILTRI_VUOTI);
+  };
 
   const speseElaborate = spese
     .filter(s => {
-      if (filtroCategoria !== 'tutte' && s.categoria !== filtroCategoria) return false;
-      if (filtroPagatore !== 'tutti' && s.pagatore !== filtroPagatore) return false;
-      if (ricerca && !s.descrizione.toLowerCase().includes(ricerca.toLowerCase())) return false;
+      if (filtriAttivi.categoria !== 'tutte' && s.categoria !== filtriAttivi.categoria) return false;
+      if (filtriAttivi.pagatore !== 'tutti' && s.pagatore !== filtriAttivi.pagatore) return false;
+      if (filtriAttivi.ricerca && !s.descrizione.toLowerCase().includes(filtriAttivi.ricerca.toLowerCase())) return false;
       return true;
     })
     .sort((a, b) => {
-      if (ordinamento === 'data_desc') return new Date(b.data) - new Date(a.data);
-      if (ordinamento === 'data_asc') return new Date(a.data) - new Date(b.data);
-      if (ordinamento === 'importo_desc') return b.importo - a.importo;
-      if (ordinamento === 'importo_asc') return a.importo - b.importo;
+      if (filtriAttivi.ordinamento === 'data_desc') return new Date(b.data) - new Date(a.data);
+      if (filtriAttivi.ordinamento === 'data_asc') return new Date(a.data) - new Date(b.data);
+      if (filtriAttivi.ordinamento === 'importo_desc') return b.importo - a.importo;
+      if (filtriAttivi.ordinamento === 'importo_asc') return a.importo - b.importo;
       return 0;
     });
 
@@ -83,65 +110,106 @@ function Spese() {
 
       <Bilancio />
 
-      {/* Ricerca */}
-      <TextField
-        fullWidth
-        size="small"
-        placeholder="Cerca spesa..."
-        value={ricerca}
-        onChange={e => setRicerca(e.target.value)}
-        sx={{ mb: 1.5 }}
-      />
-
-      {/* Filtri */}
-      <Box sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
-        <TextField
-          select fullWidth size="small"
-          value={filtroCategoria}
-          onChange={e => setFiltroCategoria(e.target.value)}
-          label="Categoria"
-        >
-          <MenuItem value="tutte">Tutte</MenuItem>
-          {impostazioni.categorie.map(cat => (
-            <MenuItem key={cat.nome} value={cat.nome}>
-              {cat.icona} {cat.nome.charAt(0).toUpperCase() + cat.nome.slice(1)}
-            </MenuItem>
-          ))}
-        </TextField>
-
-        <TextField
-          select fullWidth size="small"
-          value={filtroPagatore}
-          onChange={e => setFiltroPagatore(e.target.value)}
-          label="Pagatore"
-        >
-          <MenuItem value="tutti">Tutti</MenuItem>
-          {utenti.map(u => (
-            <MenuItem key={u.id} value={u.nome}>{u.nome}</MenuItem>
-          ))}
-        </TextField>
+      {/* Banner filtri */}
+      <Box
+        onClick={() => setFiltriAperti(p => !p)}
+        sx={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          p: 1.5, mb: 1.5, borderRadius: 3,
+          border: '1px solid', borderColor: filtriAttiviCount > 0 ? 'primary.main' : 'divider',
+          cursor: 'pointer',
+          bgcolor: filtriAttiviCount > 0 ? 'primary.light' : 'background.paper',
+          transition: 'all 0.2s ease',
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <FilterListRoundedIcon sx={{ fontSize: '1.1rem', color: filtriAttiviCount > 0 ? 'primary.main' : 'text.secondary' }} />
+          <Typography variant="body2" fontWeight={600} color={filtriAttiviCount > 0 ? 'primary.main' : 'text.primary'}>
+            Filtri e ordinamento
+          </Typography>
+          {filtriAttiviCount > 0 && (
+            <Chip label={`${filtriAttiviCount} attivo${filtriAttiviCount > 1 ? 'i' : ''}`} size="small" color="primary" sx={{ height: 20, fontSize: '0.65rem' }} />
+          )}
+          {filtriModificati && (
+            <Chip label="non applicato" size="small" color="warning" sx={{ height: 20, fontSize: '0.65rem' }} />
+          )}
+        </Box>
+        {filtriAperti ? <ExpandLessRoundedIcon sx={{ color: 'text.secondary' }} /> : <ExpandMoreRoundedIcon sx={{ color: 'text.secondary' }} />}
       </Box>
 
-      <TextField
-        select fullWidth size="small"
-        value={ordinamento}
-        onChange={e => setOrdinamento(e.target.value)}
-        label="Ordina per"
-        sx={{ mb: 3 }}
-      >
-        {ORDINAMENTI.map(o => (
-          <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>
-        ))}
-      </TextField>
+      {/* Pannello filtri */}
+      <Collapse in={filtriAperti}>
+        <Box sx={{ p: 2, mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+
+          <TextField
+            fullWidth size="small"
+            placeholder="Cerca spesa..."
+            label="Ricerca"
+            value={filtriStaged.ricerca}
+            onChange={e => aggiornaStagedFiltro('ricerca', e.target.value)}
+          />
+
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <TextField
+              select fullWidth size="small"
+              value={filtriStaged.categoria}
+              onChange={e => aggiornaStagedFiltro('categoria', e.target.value)}
+              label="Categoria"
+            >
+              <MenuItem value="tutte">Tutte</MenuItem>
+              {impostazioni.categorie.map(cat => (
+                <MenuItem key={cat.nome} value={cat.nome}>
+                  {cat.icona} {cat.nome.charAt(0).toUpperCase() + cat.nome.slice(1)}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <TextField
+              select fullWidth size="small"
+              value={filtriStaged.pagatore}
+              onChange={e => aggiornaStagedFiltro('pagatore', e.target.value)}
+              label="Pagatore"
+            >
+              <MenuItem value="tutti">Tutti</MenuItem>
+              {utenti.map(u => (
+                <MenuItem key={u.id} value={u.nome}>{u.nome}</MenuItem>
+              ))}
+            </TextField>
+          </Box>
+
+          <TextField
+            select fullWidth size="small"
+            value={filtriStaged.ordinamento}
+            onChange={e => aggiornaStagedFiltro('ordinamento', e.target.value)}
+            label="Ordina per"
+          >
+            {ORDINAMENTI.map(o => (
+              <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>
+            ))}
+          </TextField>
+
+          <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
+            <Button fullWidth variant="outlined" size="small" onClick={azzeraFiltri} sx={{ borderRadius: 2 }}>
+              Azzera
+            </Button>
+            <Button
+              fullWidth variant="contained" size="small"
+              onClick={applicaFiltri}
+              disabled={!filtriModificati}
+              sx={{ borderRadius: 2 }}
+            >
+              Applica
+            </Button>
+          </Box>
+        </Box>
+      </Collapse>
 
       {/* Lista spese raggruppate per mese */}
       {Object.keys(spesePerMese).length === 0 ? (
         <Box sx={{ textAlign: 'center', mt: 6 }}>
           <Typography fontSize="2.5rem">💸</Typography>
           <Typography color="text.secondary" mt={1}>
-            {ricerca || filtroCategoria !== 'tutte' || filtroPagatore !== 'tutti'
-              ? 'Nessuna spesa trovata'
-              : 'Nessuna spesa registrata'}
+            {filtriAttiviCount > 0 ? 'Nessuna spesa trovata' : 'Nessuna spesa registrata'}
           </Typography>
         </Box>
       ) : (
