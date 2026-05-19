@@ -60,7 +60,7 @@ function AuthGuard() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       {mostraNav && <Navbar />}
-      <div style={{ paddingBottom: mostraNav ? '70px' : '0' }}>
+      <div style={{ paddingBottom: mostraNav ? 'calc(70px + env(safe-area-inset-bottom))' : '0' }}>
         <Routes>
           <Route path="/benvenuto" element={<Benvenuto />} />
           <Route path="/" element={<Home />} />

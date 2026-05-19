@@ -9,6 +9,7 @@ const TITOLI = {
   '/': 'Home',
   '/spese': 'Spese',
   '/attivita': 'Attività',
+  '/calendario': 'Calendario',
   '/statistiche': 'Statistiche',
 };
 
@@ -26,7 +27,13 @@ function Navbar() {
       <AppBar
         position="sticky"
         elevation={0}
-        sx={{ background: 'white', borderBottom: '1px solid', borderColor: 'divider' }}
+        sx={{
+          bgcolor: 'background.paper',
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+          // Estende la navbar sotto la status bar (black-translucent su iOS)
+          paddingTop: 'env(safe-area-inset-top)',
+        }}
       >
         <Toolbar sx={{ justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
