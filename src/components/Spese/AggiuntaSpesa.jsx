@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Drawer, Box, Typography, TextField, Button,
   MenuItem, ToggleButton, ToggleButtonGroup,
-  Slider, Divider, IconButton, Switch, FormControlLabel,
+  Slider, Divider, IconButton, Switch, FormControlLabel, Chip,
 } from '@mui/material';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { useApp } from '../../context/AppContext';
@@ -10,7 +10,7 @@ import { useSpese } from '../../context/SpeseContext';
 import { useImpostazioni } from '../../context/ImpostazioniContext';
 import { formattaImporto, calcolaQuote } from '../../utils/helpers';
 
-const DIVISIONI = [
+const DIVISIONI_BASE = [
   { value: 'metà', label: '50/50' },
   { value: 'tutto_mio', label: 'Tutto mio' },
   { value: 'tutto_altro', label: 'Tutto suo' },
@@ -29,7 +29,7 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
     divisione: 'metà',
     percentuale: 50,
     pagatore: utenteAttivo?.nome || '',
-    altroUtenteNome: utenti.find(u => u.nome !== utenteAttivo?.nome)?.nome || '',
+    partecipanti: utenti.filter(u => u.nome !== utenteAttivo?.nome).map(u => u.nome),
     ricorrente: false,
   });
 
@@ -41,14 +41,17 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
     setConfermaElimina(false);
     setErrori({});
     if (spesaInModifica) {
+      const parts = spesaInModifica.partecipanti
+        ? spesaInModifica.partecipanti.filter(p => p !== spesaInModifica.pagatore)
+        : [spesaInModifica.altroUtente || utenti.find(u => u.nome !== spesaInModifica.pagatore)?.nome || ''].filter(Boolean);
       setForm({
         descrizione: spesaInModifica.descrizione,
         importo: String(spesaInModifica.importo),
         categoria: spesaInModifica.categoria,
-        divisione: spesaInModifica.divisione,
+        divisione: spesaInModifica.divisione === 'equa' ? 'metà' : spesaInModifica.divisione,
         percentuale: spesaInModifica.percentuale,
         pagatore: spesaInModifica.pagatore,
-        altroUtenteNome: spesaInModifica.altroUtente || utenti.find(u => u.nome !== spesaInModifica.pagatore)?.nome || '',
+        partecipanti: parts,
         ricorrente: spesaInModifica.ricorrente || false,
       });
     } else {
@@ -56,23 +59,36 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
     }
   }, [spesaInModifica, aperto]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const aggiorna = (campo, valore) => {
-    setForm(prev => ({ ...prev, [campo]: valore }));
-  };
+  const aggiorna = (campo, valore) => setForm(prev => ({ ...prev, [campo]: valore }));
 
   const aggiornaPagatore = (nuovoPagatore) => {
-    const altriRispettoAlNuovo = utenti.filter(u => u.nome !== nuovoPagatore);
     setForm(prev => ({
       ...prev,
       pagatore: nuovoPagatore,
-      altroUtenteNome: altriRispettoAlNuovo[0]?.nome || '',
+      partecipanti: utenti.filter(u => u.nome !== nuovoPagatore).map(u => u.nome),
     }));
   };
 
-  const altriUtenti = utenti.filter(u => u.nome !== form.pagatore);
+  const togglePartecipante = (nome) => {
+    setForm(prev => {
+      const presente = prev.partecipanti.includes(nome);
+      if (presente && prev.partecipanti.length <= 1) return prev;
+      return {
+        ...prev,
+        partecipanti: presente
+          ? prev.partecipanti.filter(p => p !== nome)
+          : [...prev.partecipanti, nome],
+      };
+    });
+  };
 
-  const quote = form.importo && form.altroUtenteNome
-    ? calcolaQuote(parseFloat(form.importo), form.pagatore, form.altroUtenteNome, form.divisione, form.percentuale)
+  const altriUtenti = utenti.filter(u => u.nome !== form.pagatore);
+  const multiSplit = form.partecipanti.length > 1;
+  const divisioneEffettiva = multiSplit ? 'equa' : form.divisione;
+  const tuttiPartecipanti = [form.pagatore, ...form.partecipanti];
+
+  const quote = form.importo && form.partecipanti.length > 0
+    ? calcolaQuote(parseFloat(form.importo), form.pagatore, tuttiPartecipanti, divisioneEffettiva, form.percentuale)
     : null;
 
   const handleSubmit = () => {
@@ -89,10 +105,11 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
       descrizione: form.descrizione.trim(),
       importo: importoNum,
       categoria: form.categoria,
-      divisione: form.divisione,
+      divisione: divisioneEffettiva,
       percentuale: form.percentuale,
       pagatore: form.pagatore,
-      altroUtente: form.altroUtenteNome,
+      partecipanti: tuttiPartecipanti,
+      altroUtente: form.partecipanti[0] || '',
       ricorrente: form.ricorrente,
     };
 
@@ -101,7 +118,6 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
     } else {
       aggiungiSpesa({ ...dati, data: new Date().toISOString().split('T')[0] });
     }
-
     onChiudi();
   };
 
@@ -173,43 +189,57 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
           </TextField>
         </Box>
 
-        {altriUtenti.length > 1 && (
-          <TextField
-            label="Dividi con"
-            fullWidth
-            select
-            value={form.altroUtenteNome}
-            onChange={e => aggiorna('altroUtenteNome', e.target.value)}
-            sx={{ mb: 2 }}
-          >
-            {altriUtenti.map(u => (
-              <MenuItem key={u.id} value={u.nome}>{u.nome}</MenuItem>
-            ))}
-          </TextField>
+        {altriUtenti.length > 0 && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="caption" color="text.secondary" mb={1} display="block">
+              Dividi con
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              {altriUtenti.map(u => (
+                <Chip
+                  key={u.id}
+                  label={u.nome}
+                  onClick={() => togglePartecipante(u.nome)}
+                  color={form.partecipanti.includes(u.nome) ? 'primary' : 'default'}
+                  variant={form.partecipanti.includes(u.nome) ? 'filled' : 'outlined'}
+                  sx={{ fontWeight: 600 }}
+                />
+              ))}
+            </Box>
+          </Box>
         )}
 
         <Divider sx={{ mb: 2 }} />
 
         <Typography variant="subtitle2" fontWeight={600} mb={1}>Come dividere?</Typography>
-        <ToggleButtonGroup
-          value={form.divisione}
-          exclusive
-          onChange={(e, val) => val && aggiorna('divisione', val)}
-          fullWidth
-          sx={{ mb: 2 }}
-        >
-          {DIVISIONI.map(d => (
-            <ToggleButton key={d.value} value={d.value} sx={{ fontSize: '0.75rem', py: 1 }}>
-              {d.label}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
 
-        {form.divisione === 'percentuale' && (
+        {multiSplit ? (
+          <Box sx={{ p: 1.5, mb: 2, borderRadius: 2, bgcolor: 'action.hover' }}>
+            <Typography variant="body2" color="text.secondary">
+              Divisione equa tra {tuttiPartecipanti.length} persone
+            </Typography>
+          </Box>
+        ) : (
+          <ToggleButtonGroup
+            value={form.divisione}
+            exclusive
+            onChange={(e, val) => val && aggiorna('divisione', val)}
+            fullWidth
+            sx={{ mb: 2 }}
+          >
+            {DIVISIONI_BASE.map(d => (
+              <ToggleButton key={d.value} value={d.value} sx={{ fontSize: '0.75rem', py: 1 }}>
+                {d.label}
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+        )}
+
+        {!multiSplit && form.divisione === 'percentuale' && (
           <Box sx={{ px: 1, mb: 2 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
               <Typography variant="caption">{form.pagatore}: {form.percentuale}%</Typography>
-              <Typography variant="caption">{form.altroUtenteNome}: {100 - form.percentuale}%</Typography>
+              <Typography variant="caption">{form.partecipanti[0]}: {100 - form.percentuale}%</Typography>
             </Box>
             <Slider
               value={form.percentuale}
@@ -226,14 +256,16 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
             <Typography variant="caption" color="text.secondary" display="block" mb={1}>
               Anteprima divisione
             </Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Typography variant="body2">
-                {form.pagatore}: <strong>{formattaImporto(quote[form.pagatore] || 0)}</strong>
-              </Typography>
-              <Typography variant="body2">
-                {form.altroUtenteNome}: <strong>{formattaImporto(quote[form.altroUtenteNome] || 0)}</strong>
-              </Typography>
-            </Box>
+            {tuttiPartecipanti.map(nome => (
+              <Box key={nome} sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography variant="body2">
+                  {nome}{nome === form.pagatore ? ' (ha pagato)' : ''}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>{formattaImporto(quote[nome] || 0)}</strong>
+                </Typography>
+              </Box>
+            ))}
           </Box>
         )}
 
