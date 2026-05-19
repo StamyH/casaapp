@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Box, Fab, Typography, MenuItem, TextField,
-  Collapse, Button, Chip, IconButton, Switch, FormControlLabel,
+  Collapse, Button, Chip, Switch, FormControlLabel,
 } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import FilterListRoundedIcon from '@mui/icons-material/FilterListRounded';
@@ -11,6 +11,7 @@ import { useAttivita } from '../context/AttivitaContext';
 import { useApp } from '../context/AppContext';
 import TaskList from '../components/Attivita/TaskList';
 import AggiuntaTask from '../components/Attivita/AggiuntaTask';
+import RiepilogoAttivita from '../components/Attivita/RiepilogoAttivita';
 
 const ORDINAMENTI = [
   { value: 'priorita', label: 'Priorità' },
@@ -78,6 +79,8 @@ function Attivita() {
     <Box sx={{ p: 2 }}>
 
       <Typography variant="h5" fontWeight={800} mb={2}>Attività</Typography>
+
+      <RiepilogoAttivita />
 
       {/* Banner filtri */}
       <Box
