@@ -14,10 +14,10 @@ function speseIniziali() {
   } catch {}
 
   return [
-    { id: 1, descrizione: 'Spesa supermercato', importo: 85.50, categoria: 'spesa', pagatore: nomeA, altroUtente: nomeB, divisione: 'metà', percentuale: 50, data: `${mm(oggi)}-15` },
-    { id: 2, descrizione: 'Bolletta luce', importo: 120.00, categoria: 'bolletta', pagatore: nomeB, altroUtente: nomeA, divisione: 'metà', percentuale: 50, data: `${mm(oggi)}-10` },
-    { id: 3, descrizione: 'Affitto', importo: 800.00, categoria: 'affitto', pagatore: nomeA, altroUtente: nomeB, divisione: 'metà', percentuale: 50, data: `${mm(oggi)}-01` },
-    { id: 4, descrizione: 'Netflix', importo: 18.00, categoria: 'altro', pagatore: nomeB, altroUtente: nomeA, divisione: 'tutto_altro', percentuale: 100, data: `${mm(oggi)}-05` },
+    { id: 1, descrizione: 'Spesa supermercato', importo: 85.50, categoria: 'spesa', pagatore: nomeA, altroUtente: nomeB, divisione: 'metà', percentuale: 50, data: `${mm(oggi)}-15`, ricorrente: false },
+    { id: 2, descrizione: 'Bolletta luce', importo: 120.00, categoria: 'bolletta', pagatore: nomeB, altroUtente: nomeA, divisione: 'metà', percentuale: 50, data: `${mm(oggi)}-10`, ricorrente: false },
+    { id: 3, descrizione: 'Affitto', importo: 800.00, categoria: 'affitto', pagatore: nomeA, altroUtente: nomeB, divisione: 'metà', percentuale: 50, data: `${mm(oggi)}-01`, ricorrente: true },
+    { id: 4, descrizione: 'Netflix', importo: 18.00, categoria: 'altro', pagatore: nomeB, altroUtente: nomeA, divisione: 'tutto_altro', percentuale: 100, data: `${mm(oggi)}-05`, ricorrente: true },
   ];
 }
 
@@ -34,6 +34,41 @@ export function SpeseProvider({ children }) {
   useEffect(() => {
     localStorage.setItem('casaapp_spese', JSON.stringify(spese));
   }, [spese]);
+
+  // Genera automaticamente le spese ricorrenti del mese corrente
+  useEffect(() => {
+    const oggi = new Date();
+    const meseCorrente = `${oggi.getFullYear()}-${String(oggi.getMonth() + 1).padStart(2, '0')}`;
+    const ultimaEspansione = localStorage.getItem('casaapp_ultima_espansione_ricorrenti');
+
+    if (ultimaEspansione === meseCorrente) return;
+
+    const d = new Date(oggi.getFullYear(), oggi.getMonth() - 1, 1);
+    const mesePrecedente = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+
+    setSpese(prev => {
+      const ricorrentiPrec = prev.filter(s =>
+        s.ricorrente && s.data?.startsWith(mesePrecedente)
+      );
+      const esistentiMese = prev.filter(s => s.data?.startsWith(meseCorrente));
+
+      const nuove = ricorrentiPrec
+        .filter(s => !esistentiMese.some(e =>
+          e.ricorrente &&
+          e.descrizione === s.descrizione &&
+          e.categoria === s.categoria &&
+          e.pagatore === s.pagatore
+        ))
+        .map((s, i) => ({
+          ...s,
+          id: Date.now() + i + 1,
+          data: `${meseCorrente}-01`,
+        }));
+
+      localStorage.setItem('casaapp_ultima_espansione_ricorrenti', meseCorrente);
+      return nuove.length > 0 ? [...prev, ...nuove] : prev;
+    });
+  }, []);
 
   const aggiungiSpesa = (nuovaSpesa) => {
     setSpese(prev => [...prev, { ...nuovaSpesa, id: Date.now() }]);
