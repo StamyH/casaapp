@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AttivitaContext = createContext();
 
-
 function inizioSettimana(date) {
   const d = new Date(date);
   d.setDate(d.getDate() - (d.getDay() || 7) + 1);
@@ -38,32 +37,45 @@ export function AttivitaProvider({ children }) {
     }
   });
 
+  const [storicoCompletamenti, setStoricoCompletamenti] = useState(() => {
+    try {
+      const saved = localStorage.getItem('casaapp_storico_attivita');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
   useEffect(() => {
     localStorage.setItem('casaapp_attivita', JSON.stringify(attivita));
   }, [attivita]);
 
   useEffect(() => {
+    localStorage.setItem('casaapp_storico_attivita', JSON.stringify(storicoCompletamenti));
+  }, [storicoCompletamenti]);
+
+  useEffect(() => {
     const oggiStr = new Date().toISOString().split('T')[0];
     const ultimoReset = localStorage.getItem('casaapp_ultimo_reset');
-  
+
     if (ultimoReset === oggiStr) return;
-  
+
     const oggi = new Date();
     const ultima = ultimoReset ? new Date(ultimoReset) : null;
-  
+
     const nuovaSettimana = !ultima || inizioSettimana(oggi) !== inizioSettimana(ultima);
     const nuovoMese = !ultima ||
       oggi.getMonth() !== ultima.getMonth() ||
       oggi.getFullYear() !== ultima.getFullYear();
-  
+
     setAttivita(prev => prev.map(att => {
       if (!att.completato) return att;
-      if (att.frequenza === 'giornaliera') return { ...att, completato: false };
-      if (att.frequenza === 'settimanale' && nuovaSettimana) return { ...att, completato: false };
-      if (att.frequenza === 'mensile' && nuovoMese) return { ...att, completato: false };
+      if (att.frequenza === 'giornaliera') return { ...att, completato: false, completatoDa: null };
+      if (att.frequenza === 'settimanale' && nuovaSettimana) return { ...att, completato: false, completatoDa: null };
+      if (att.frequenza === 'mensile' && nuovoMese) return { ...att, completato: false, completatoDa: null };
       return att;
     }));
-  
+
     localStorage.setItem('casaapp_ultimo_reset', oggiStr);
   }, []);
 
@@ -72,12 +84,34 @@ export function AttivitaProvider({ children }) {
   };
 
   const toggleAttivita = (id, utente) => {
+    const att = attivita.find(a => a.id === id);
+    if (!att) return;
+
+    const nuovoStato = !att.completato;
+    const oggi = new Date().toISOString().split('T')[0];
+
     setAttivita(prev =>
-      prev.map(att => att.id === id
-        ? { ...att, completato: !att.completato, completatoDa: !att.completato ? utente : null }
-        : att
+      prev.map(a => a.id === id
+        ? { ...a, completato: nuovoStato, completatoDa: nuovoStato ? utente : null }
+        : a
       )
     );
+
+    if (nuovoStato) {
+      setStoricoCompletamenti(prev => [...prev, {
+        id: Date.now(),
+        taskId: id,
+        taskTitolo: att.titolo,
+        completatoDa: utente || 'sconosciuto',
+        data: oggi,
+      }]);
+    } else {
+      setStoricoCompletamenti(prev => {
+        const idx = [...prev].reverse().findIndex(s => s.taskId === id);
+        if (idx === -1) return prev;
+        return prev.filter((_, i) => i !== prev.length - 1 - idx);
+      });
+    }
   };
 
   const eliminaAttivita = (id) => {
@@ -94,10 +128,14 @@ export function AttivitaProvider({ children }) {
       assegnato: a.assegnato === vecchioNome ? nuovoNome : a.assegnato,
       completatoDa: a.completatoDa === vecchioNome ? nuovoNome : a.completatoDa,
     })));
+    setStoricoCompletamenti(prev => prev.map(s => ({
+      ...s,
+      completatoDa: s.completatoDa === vecchioNome ? nuovoNome : s.completatoDa,
+    })));
   };
 
   return (
-    <AttivitaContext.Provider value={{ attivita, aggiungiAttivita, toggleAttivita, eliminaAttivita, modificaAttivita, aggiornaRiferimentiUtente }}>
+    <AttivitaContext.Provider value={{ attivita, storicoCompletamenti, aggiungiAttivita, toggleAttivita, eliminaAttivita, modificaAttivita, aggiornaRiferimentiUtente }}>
       {children}
     </AttivitaContext.Provider>
   );
