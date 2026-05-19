@@ -5,9 +5,31 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Nessun bounce scroll — comportamento nativo app */
+  overscroll-behavior: none;
+
+  /* Nessuna selezione testo accidentale su elementi UI */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Permetti selezione testo solo dove ha senso */
+input, textarea, p, span, h1, h2, h3, h4, h5, h6 {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Rimuove il flash blu al tap su iOS */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Previene zoom automatico al focus su input (iOS zooma se font-size < 16px) */
+input, textarea, select {
+  font-size: 16px;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
