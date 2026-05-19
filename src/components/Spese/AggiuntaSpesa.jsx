@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Drawer, Box, Typography, TextField, Button,
   MenuItem, ToggleButton, ToggleButtonGroup,
-  Slider, Divider, IconButton
+  Slider, Divider, IconButton, Switch, FormControlLabel,
 } from '@mui/material';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { useApp } from '../../context/AppContext';
@@ -22,22 +22,24 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
   const { aggiungiSpesa, modificaSpesa, eliminaSpesa } = useSpese();
   const { impostazioni } = useImpostazioni();
 
-  const altriUtenti = utenti.filter(u => u.id !== utenteAttivo?.id);
-
-  const [form, setForm] = useState({
+  const formIniziale = () => ({
     descrizione: '',
     importo: '',
     categoria: impostazioni.categorie[0]?.nome || 'altro',
     divisione: 'metà',
     percentuale: 50,
-    altroUtenteNome: altriUtenti[0]?.nome || '',
+    pagatore: utenteAttivo?.nome || '',
+    altroUtenteNome: utenti.find(u => u.nome !== utenteAttivo?.nome)?.nome || '',
+    ricorrente: false,
   });
 
+  const [form, setForm] = useState(formIniziale);
   const [errori, setErrori] = useState({});
   const [confermaElimina, setConfermaElimina] = useState(false);
 
   useEffect(() => {
     setConfermaElimina(false);
+    setErrori({});
     if (spesaInModifica) {
       setForm({
         descrizione: spesaInModifica.descrizione,
@@ -45,65 +47,59 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
         categoria: spesaInModifica.categoria,
         divisione: spesaInModifica.divisione,
         percentuale: spesaInModifica.percentuale,
-        altroUtenteNome: spesaInModifica.altroUtente || altriUtenti[0]?.nome || '',
+        pagatore: spesaInModifica.pagatore,
+        altroUtenteNome: spesaInModifica.altroUtente || utenti.find(u => u.nome !== spesaInModifica.pagatore)?.nome || '',
+        ricorrente: spesaInModifica.ricorrente || false,
       });
     } else {
-      setForm({
-        descrizione: '',
-        importo: '',
-        categoria: impostazioni.categorie[0]?.nome || 'altro',
-        divisione: 'metà',
-        percentuale: 50,
-        altroUtenteNome: altriUtenti[0]?.nome || '',
-      });
+      setForm(formIniziale());
     }
-  }, [spesaInModifica, aperto, impostazioni.categorie]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [spesaInModifica, aperto]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const aggiorna = (campo, valore) => {
     setForm(prev => ({ ...prev, [campo]: valore }));
   };
 
+  const aggiornaPagatore = (nuovoPagatore) => {
+    const altriRispettoAlNuovo = utenti.filter(u => u.nome !== nuovoPagatore);
+    setForm(prev => ({
+      ...prev,
+      pagatore: nuovoPagatore,
+      altroUtenteNome: altriRispettoAlNuovo[0]?.nome || '',
+    }));
+  };
+
+  const altriUtenti = utenti.filter(u => u.nome !== form.pagatore);
+
   const quote = form.importo && form.altroUtenteNome
-    ? calcolaQuote(parseFloat(form.importo), utenteAttivo?.nome, form.altroUtenteNome, form.divisione, form.percentuale)
+    ? calcolaQuote(parseFloat(form.importo), form.pagatore, form.altroUtenteNome, form.divisione, form.percentuale)
     : null;
 
   const handleSubmit = () => {
     const nuoviErrori = {};
-
     if (!form.descrizione.trim()) nuoviErrori.descrizione = 'Inserisci una descrizione';
-
     const importoNum = parseFloat(form.importo);
     if (!form.importo || isNaN(importoNum) || importoNum <= 0) {
       nuoviErrori.importo = 'Inserisci un importo valido maggiore di 0';
     }
-
-    if (Object.keys(nuoviErrori).length > 0) {
-      setErrori(nuoviErrori);
-      return;
-    }
-
+    if (Object.keys(nuoviErrori).length > 0) { setErrori(nuoviErrori); return; }
     setErrori({});
 
+    const dati = {
+      descrizione: form.descrizione.trim(),
+      importo: importoNum,
+      categoria: form.categoria,
+      divisione: form.divisione,
+      percentuale: form.percentuale,
+      pagatore: form.pagatore,
+      altroUtente: form.altroUtenteNome,
+      ricorrente: form.ricorrente,
+    };
+
     if (spesaInModifica) {
-      modificaSpesa(spesaInModifica.id, {
-        descrizione: form.descrizione.trim(),
-        importo: importoNum,
-        categoria: form.categoria,
-        divisione: form.divisione,
-        percentuale: form.percentuale,
-        altroUtente: form.altroUtenteNome,
-      });
+      modificaSpesa(spesaInModifica.id, dati);
     } else {
-      aggiungiSpesa({
-        descrizione: form.descrizione.trim(),
-        importo: importoNum,
-        categoria: form.categoria,
-        pagatore: utenteAttivo?.nome,
-        altroUtente: form.altroUtenteNome,
-        divisione: form.divisione,
-        percentuale: form.percentuale,
-        data: new Date().toISOString().split('T')[0],
-      });
+      aggiungiSpesa({ ...dati, data: new Date().toISOString().split('T')[0] });
     }
 
     onChiudi();
@@ -114,7 +110,7 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
       anchor="bottom"
       open={aperto}
       onClose={onChiudi}
-      PaperProps={{ sx: { borderRadius: '24px 24px 0 0', maxHeight: '90vh' } }}
+      PaperProps={{ sx: { borderRadius: '24px 24px 0 0', maxHeight: '92vh' } }}
     >
       <Box sx={{ p: 3, overflowY: 'auto' }}>
 
@@ -122,9 +118,7 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
           <Typography variant="h6" fontWeight={700}>
             {spesaInModifica ? '✏️ Modifica spesa' : '💸 Nuova spesa'}
           </Typography>
-          <IconButton onClick={onChiudi} size="small">
-            <CloseRoundedIcon />
-          </IconButton>
+          <IconButton onClick={onChiudi} size="small"><CloseRoundedIcon /></IconButton>
         </Box>
 
         <TextField
@@ -151,20 +145,33 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
           helperText={errori.importo}
         />
 
-        <TextField
-          label="Categoria"
-          fullWidth
-          select
-          value={form.categoria}
-          onChange={e => aggiorna('categoria', e.target.value)}
-          sx={{ mb: 2 }}
-        >
-          {impostazioni.categorie.map(cat => (
-            <MenuItem key={cat.nome} value={cat.nome}>
-              {cat.icona} {cat.nome.charAt(0).toUpperCase() + cat.nome.slice(1)}
-            </MenuItem>
-          ))}
-        </TextField>
+        <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
+          <TextField
+            label="Categoria"
+            fullWidth
+            select
+            value={form.categoria}
+            onChange={e => aggiorna('categoria', e.target.value)}
+          >
+            {impostazioni.categorie.map(cat => (
+              <MenuItem key={cat.nome} value={cat.nome}>
+                {cat.icona} {cat.nome.charAt(0).toUpperCase() + cat.nome.slice(1)}
+              </MenuItem>
+            ))}
+          </TextField>
+
+          <TextField
+            label="Chi ha pagato"
+            fullWidth
+            select
+            value={form.pagatore}
+            onChange={e => aggiornaPagatore(e.target.value)}
+          >
+            {utenti.map(u => (
+              <MenuItem key={u.id} value={u.nome}>{u.nome}</MenuItem>
+            ))}
+          </TextField>
+        </Box>
 
         {altriUtenti.length > 1 && (
           <TextField
@@ -181,7 +188,7 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
           </TextField>
         )}
 
-        <Divider sx={{ mb: 3 }} />
+        <Divider sx={{ mb: 2 }} />
 
         <Typography variant="subtitle2" fontWeight={600} mb={1}>Come dividere?</Typography>
         <ToggleButtonGroup
@@ -201,8 +208,8 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
         {form.divisione === 'percentuale' && (
           <Box sx={{ px: 1, mb: 2 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-              <Typography variant="caption">La mia quota: {form.percentuale}%</Typography>
-              <Typography variant="caption">Sua quota: {100 - form.percentuale}%</Typography>
+              <Typography variant="caption">{form.pagatore}: {form.percentuale}%</Typography>
+              <Typography variant="caption">{form.altroUtenteNome}: {100 - form.percentuale}%</Typography>
             </Box>
             <Slider
               value={form.percentuale}
@@ -215,13 +222,13 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
         )}
 
         {quote && (
-          <Box sx={{ p: 2, borderRadius: 2, bgcolor: 'action.hover', mb: 3 }}>
+          <Box sx={{ p: 2, borderRadius: 2, bgcolor: 'action.hover', mb: 2 }}>
             <Typography variant="caption" color="text.secondary" display="block" mb={1}>
               Anteprima divisione
             </Typography>
             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
               <Typography variant="body2">
-                {utenteAttivo?.nome}: <strong>{formattaImporto(quote[utenteAttivo?.nome] || 0)}</strong>
+                {form.pagatore}: <strong>{formattaImporto(quote[form.pagatore] || 0)}</strong>
               </Typography>
               <Typography variant="body2">
                 {form.altroUtenteNome}: <strong>{formattaImporto(quote[form.altroUtenteNome] || 0)}</strong>
@@ -229,6 +236,27 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
             </Box>
           </Box>
         )}
+
+        <Divider sx={{ mb: 2 }} />
+
+        <FormControlLabel
+          control={
+            <Switch
+              checked={form.ricorrente}
+              onChange={e => aggiorna('ricorrente', e.target.checked)}
+              color="primary"
+            />
+          }
+          label={
+            <Box>
+              <Typography variant="body2" fontWeight={600}>Spesa ricorrente</Typography>
+              <Typography variant="caption" color="text.secondary">
+                Viene riproposta automaticamente ogni mese
+              </Typography>
+            </Box>
+          }
+          sx={{ mb: 3, alignItems: 'flex-start', ml: 0 }}
+        />
 
         <Button
           fullWidth

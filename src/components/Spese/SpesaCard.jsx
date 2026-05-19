@@ -1,9 +1,8 @@
 import React from 'react';
-import {
-  Card, CardContent, Box, Typography,
-  Chip, IconButton
-} from '@mui/material';
+import { Card, CardContent, Box, Typography, Chip, IconButton } from '@mui/material';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import RepeatRoundedIcon from '@mui/icons-material/RepeatRounded';
+import HandshakeRoundedIcon from '@mui/icons-material/HandshakeRounded';
 import { formattaImporto, formattaData, calcolaQuote } from '../../utils/helpers';
 import { useApp } from '../../context/AppContext';
 import { useImpostazioni } from '../../context/ImpostazioniContext';
@@ -18,7 +17,7 @@ const DIVISIONE_LABEL = {
 };
 
 function SpesaCard({ spesa, onModifica }) {
-  const { utenteAttivo, utenti } = useApp();
+  const { utenti } = useApp();
   const { impostazioni } = useImpostazioni();
   const idx = impostazioni.categorie.findIndex(c => c.nome === spesa.categoria);
   const catObj = impostazioni.categorie[idx] || { nome: spesa.categoria, icona: '📦' };
@@ -29,13 +28,37 @@ function SpesaCard({ spesa, onModifica }) {
     ? calcolaQuote(spesa.importo, spesa.pagatore, altroUtente, spesa.divisione, spesa.percentuale)
     : null;
 
+  if (spesa.tipo === 'saldo') {
+    return (
+      <Card elevation={0} sx={{ mb: 2, borderRadius: 3, border: '1px dashed', borderColor: 'success.main', opacity: 0.8 }}>
+        <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ width: 44, height: 44, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'success.light', flexShrink: 0 }}>
+              <HandshakeRoundedIcon sx={{ color: 'success.dark' }} />
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography fontWeight={600} color="success.dark">Saldo debito</Typography>
+              <Typography variant="caption" color="text.secondary">
+                {spesa.pagatore} → {spesa.altroUtente} · {formattaData(spesa.data)}
+              </Typography>
+            </Box>
+            <Typography fontWeight={700} color="success.dark">{formattaImporto(spesa.importo)}</Typography>
+            <IconButton size="small" onClick={() => onModifica(spesa)} sx={{ color: 'text.disabled', flexShrink: 0 }}>
+              <EditRoundedIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card
       elevation={0}
       sx={{
         mb: 2, borderRadius: 3,
         border: '1px solid', borderColor: 'divider',
-        '&:hover': { boxShadow: 3, transition: 'box-shadow 0.2s ease' }
+        '&:hover': { boxShadow: 3, transition: 'box-shadow 0.2s ease' },
       }}
     >
       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
@@ -51,8 +74,15 @@ function SpesaCard({ spesa, onModifica }) {
 
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <Typography fontWeight={600} noWrap>{spesa.descrizione}</Typography>
-              <Typography fontWeight={700} color="text.primary" ml={1}>{formattaImporto(spesa.importo)}</Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0 }}>
+                <Typography fontWeight={600} noWrap>{spesa.descrizione}</Typography>
+                {spesa.ricorrente && (
+                  <RepeatRoundedIcon sx={{ fontSize: '0.9rem', color: 'text.disabled', flexShrink: 0 }} />
+                )}
+              </Box>
+              <Typography fontWeight={700} color="text.primary" ml={1} flexShrink={0}>
+                {formattaImporto(spesa.importo)}
+              </Typography>
             </Box>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
@@ -78,11 +108,9 @@ function SpesaCard({ spesa, onModifica }) {
             </Box>
           </Box>
 
-          {utenteAttivo?.nome === spesa.pagatore && (
-            <IconButton size="small" onClick={() => onModifica(spesa)} sx={{ color: 'primary.main', flexShrink: 0 }}>
-              <EditRoundedIcon fontSize="small" />
-            </IconButton>
-          )}
+          <IconButton size="small" onClick={() => onModifica(spesa)} sx={{ color: 'primary.main', flexShrink: 0 }}>
+            <EditRoundedIcon fontSize="small" />
+          </IconButton>
         </Box>
       </CardContent>
     </Card>
