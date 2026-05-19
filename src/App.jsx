@@ -9,6 +9,7 @@ import Home from './pages/Home';
 import Spese from './pages/Spese';
 import Attivita from './pages/Attivita';
 import Statistiche from './pages/Statistiche';
+import Calendario from './pages/Calendario';
 import Benvenuto from './pages/Benvenuto';
 import Navbar from './components/Layout/Navbar';
 import BottomNav from './components/Layout/BottomNav';
@@ -66,6 +67,7 @@ function AuthGuard() {
           <Route path="/spese" element={<Spese />} />
           <Route path="/attivita" element={<Attivita />} />
           <Route path="/statistiche" element={<Statistiche />} />
+          <Route path="/calendario" element={<Calendario />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

@@ -4,9 +4,10 @@ import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import ReceiptRoundedIcon from '@mui/icons-material/ReceiptRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
 import BarChartRoundedIcon from '@mui/icons-material/BarChartRounded';
 
-const TABS = ['/', '/spese', '/attivita', '/statistiche'];
+const TABS = ['/', '/spese', '/attivita', '/calendario', '/statistiche'];
 
 function BottomNav() {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ function BottomNav() {
         <BottomNavigationAction label="Home" value="/" icon={<HomeRoundedIcon />} />
         <BottomNavigationAction label="Spese" value="/spese" icon={<ReceiptRoundedIcon />} />
         <BottomNavigationAction label="Attività" value="/attivita" icon={<CheckCircleRoundedIcon />} />
+        <BottomNavigationAction label="Calendario" value="/calendario" icon={<CalendarMonthRoundedIcon />} />
         <BottomNavigationAction label="Statistiche" value="/statistiche" icon={<BarChartRoundedIcon />} />
       </BottomNavigation>
     </Paper>

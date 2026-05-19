@@ -1,13 +1,29 @@
 import React from 'react';
 import { Box, Typography, Card, CardContent, Chip, Divider, Checkbox } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useSpese } from '../context/SpeseContext';
 import { useAttivita } from '../context/AttivitaContext';
 import { formattaImporto, calcolaBilancio, oggiLocale } from '../utils/helpers';
+import { getAttivitaPerData } from './Calendario';
 
 const GIORNI_SETTIMANA = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
+const GIORNI_BREVI = ['D', 'L', 'M', 'M', 'G', 'V', 'S'];
+
+function getSettimana(dataStr) {
+  const d = new Date(dataStr + 'T00:00:00');
+  const giorno = d.getDay();
+  const lunedi = new Date(d);
+  lunedi.setDate(d.getDate() - (giorno === 0 ? 6 : giorno - 1));
+  return Array.from({ length: 7 }, (_, i) => {
+    const giornata = new Date(lunedi);
+    giornata.setDate(lunedi.getDate() + i);
+    return `${giornata.getFullYear()}-${String(giornata.getMonth() + 1).padStart(2, '0')}-${String(giornata.getDate()).padStart(2, '0')}`;
+  });
+}
 
 function Home() {
+  const navigate = useNavigate();
   const { utenteAttivo, utenti } = useApp();
   const { spese } = useSpese();
   const { attivita, toggleAttivita } = useAttivita();
@@ -19,6 +35,8 @@ function Home() {
 
   const coloreApp = utenteAttivo?.coloreApp || '#5C6BC0';
   const coloreSecondario = utenteAttivo?.coloreSecondario || '#26A69A';
+
+  const settimana = getSettimana(oggiStr);
 
   const attivitaOggi = attivita.filter(t => {
     if (t.frequenza === 'giornaliera') return true;
@@ -37,6 +55,9 @@ function Home() {
 
   const inPari = bilancio.importoDebito < 0.01;
 
+  const getColoreUtente = (nome) =>
+    utenti.find(u => u.nome === nome)?.coloreAvatar || '#9E9E9E';
+
   return (
     <Box sx={{ p: 2 }}>
 
@@ -49,6 +70,7 @@ function Home() {
         </Typography>
       </Box>
 
+      {/* Bilancio */}
       <Card
         elevation={0}
         sx={{
@@ -70,6 +92,81 @@ function Home() {
         </CardContent>
       </Card>
 
+      {/* Strip settimanale */}
+      <Card elevation={0} sx={{ mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+        <CardContent sx={{ p: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+            <Typography variant="subtitle2" fontWeight={700}>📅 Questa settimana</Typography>
+            <Typography
+              variant="caption"
+              color="primary"
+              fontWeight={700}
+              sx={{ cursor: 'pointer' }}
+              onClick={() => navigate('/calendario')}
+            >
+              Vedi tutto →
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 0.5 }}>
+            {settimana.map((data) => {
+              const d = new Date(data + 'T00:00:00');
+              const tasks = getAttivitaPerData(attivita, data);
+              const isOggi = data === oggiStr;
+              const utentiPresenti = [
+                ...new Set(tasks.map(t =>
+                  t.assegnato === 'entrambi' ? '__tutti__' : t.assegnato
+                )),
+              ].slice(0, 3);
+
+              return (
+                <Box
+                  key={data}
+                  onClick={() => navigate('/calendario', { state: { data } })}
+                  sx={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center',
+                    py: 1, borderRadius: 2, cursor: 'pointer',
+                    bgcolor: isOggi ? 'primary.main' : 'transparent',
+                    '&:hover': { bgcolor: isOggi ? 'primary.dark' : 'action.hover' },
+                    transition: 'background-color 0.15s',
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    color={isOggi ? 'primary.contrastText' : 'text.secondary'}
+                    fontWeight={600}
+                    sx={{ lineHeight: 1.2, fontSize: '0.6rem' }}
+                  >
+                    {GIORNI_BREVI[d.getDay()]}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    fontWeight={isOggi ? 800 : 500}
+                    color={isOggi ? 'primary.contrastText' : 'text.primary'}
+                    sx={{ lineHeight: 1.4 }}
+                  >
+                    {d.getDate()}
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: '2px', mt: '2px', minHeight: 6 }}>
+                    {utentiPresenti.map((nome, idx) => (
+                      <Box
+                        key={idx}
+                        sx={{
+                          width: 4, height: 4, borderRadius: '50%',
+                          bgcolor: nome === '__tutti__'
+                            ? (isOggi ? 'rgba(255,255,255,0.7)' : 'text.disabled')
+                            : getColoreUtente(nome),
+                        }}
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              );
+            })}
+          </Box>
+        </CardContent>
+      </Card>
+
+      {/* Attività di oggi */}
       <Card elevation={0} sx={{ mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
         <CardContent sx={{ p: 2.5 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
@@ -117,6 +214,7 @@ function Home() {
         </CardContent>
       </Card>
 
+      {/* In arrivo */}
       {prossimeAttivita.length > 0 && (
         <Card elevation={0} sx={{ mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
           <CardContent sx={{ p: 2.5 }}>
