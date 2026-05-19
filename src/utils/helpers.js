@@ -1,3 +1,10 @@
+// Restituisce la data odierna come stringa YYYY-MM-DD nel fuso locale
+// (evita il bug UTC di toISOString() che a mezzanotte può dare ieri)
+export const oggiLocale = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
 // Formatta un numero come importo in euro
 // es. 85.5 → "€ 85,50"
 export const formattaImporto = (n) =>

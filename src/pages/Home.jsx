@@ -3,7 +3,7 @@ import { Box, Typography, Card, CardContent, Chip, Divider, Checkbox } from '@mu
 import { useApp } from '../context/AppContext';
 import { useSpese } from '../context/SpeseContext';
 import { useAttivita } from '../context/AttivitaContext';
-import { formattaImporto, calcolaBilancio } from '../utils/helpers';
+import { formattaImporto, calcolaBilancio, oggiLocale } from '../utils/helpers';
 
 const GIORNI_SETTIMANA = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
 
@@ -13,6 +13,7 @@ function Home() {
   const { attivita, toggleAttivita } = useAttivita();
   const bilancio = calcolaBilancio(spese, utenti);
   const oggi = new Date();
+  const oggiStr = oggiLocale();
   const giornoOggi = oggi.getDay();
   const giornoMeseOggi = oggi.getDate();
 
@@ -23,14 +24,14 @@ function Home() {
     if (t.frequenza === 'giornaliera') return true;
     if (t.frequenza === 'settimanale' && t.giornoSettimana === giornoOggi) return true;
     if (t.frequenza === 'mensile' && t.giornoMese === giornoMeseOggi) return true;
-    if (t.frequenza === 'specifica' && t.dataSpecifica === oggi.toISOString().split('T')[0]) return true;
+    if (t.frequenza === 'specifica' && t.dataSpecifica === oggiStr) return true;
     return false;
   });
 
   const prossimeAttivita = attivita.filter(t => {
     if (t.frequenza === 'settimanale' && t.giornoSettimana !== giornoOggi) return true;
     if (t.frequenza === 'mensile' && t.giornoMese !== giornoMeseOggi) return true;
-    if (t.frequenza === 'specifica' && t.dataSpecifica > oggi.toISOString().split('T')[0]) return true;
+    if (t.frequenza === 'specifica' && t.dataSpecifica > oggiStr) return true;
     return false;
   }).slice(0, 3);
 

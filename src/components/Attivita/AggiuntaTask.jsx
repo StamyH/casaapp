@@ -6,6 +6,7 @@ import {
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { useAttivita } from '../../context/AttivitaContext';
 import { useApp } from '../../context/AppContext';
+import { oggiLocale } from '../../utils/helpers';
 
 const FREQUENZE = [
   { value: 'giornaliera', label: '☀️ Giornaliera' },
@@ -74,9 +75,11 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica }) {
     const nuoviErrori = {};
     if (!form.titolo.trim()) nuoviErrori.titolo = "Inserisci un titolo per l'attività";
     if (form.frequenza === 'specifica') {
-      if (!form.dataSpecifica) nuoviErrori.dataSpecifica = 'Seleziona una data';
-      else if (form.dataSpecifica < new Date().toISOString().split('T')[0])
+      if (!form.dataSpecifica) {
+        nuoviErrori.dataSpecifica = 'Seleziona una data';
+      } else if (form.dataSpecifica < oggiLocale()) {
         nuoviErrori.dataSpecifica = 'La data non può essere nel passato';
+      }
     }
     if (Object.keys(nuoviErrori).length > 0) { setErrori(nuoviErrori); return; }
     setErrori({});
@@ -200,7 +203,7 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica }) {
               type="date" fullWidth size="small"
               value={form.dataSpecifica}
               onChange={e => { aggiorna('dataSpecifica', e.target.value); setErrori(p => ({ ...p, dataSpecifica: '' })); }}
-              inputProps={{ min: new Date().toISOString().split('T')[0] }}
+              inputProps={{ min: oggiLocale() }}
               error={!!errori.dataSpecifica}
               helperText={errori.dataSpecifica}
             />
@@ -216,7 +219,7 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica }) {
               type="date" fullWidth size="small"
               value={form.dataFine}
               onChange={e => aggiorna('dataFine', e.target.value)}
-              inputProps={{ min: new Date().toISOString().split('T')[0] }}
+              inputProps={{ min: oggiLocale() }}
             />
           </Box>
         )}

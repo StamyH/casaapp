@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 import TaskCard from './TaskCard';
+import { oggiLocale } from '../../utils/helpers';
 
 const SEZIONI = [
   { frequenza: 'giornaliera', titolo: '☀️ Oggi', colore: '#FF7043' },
@@ -12,13 +13,14 @@ const SEZIONI = [
 const PRIORITA_ORDINE = { alta: 0, media: 1, bassa: 2 };
 
 function TaskList({ attivita, filtroUtente, onModifica, mostraCompletate }) {
-  const oggi = new Date().toISOString().split('T')[0];
+  const oggi = oggiLocale();
 
   const attivitaFiltrate = (filtroUtente === 'tutti'
     ? attivita
     : attivita.filter(t => t.assegnato === filtroUtente || t.assegnato === 'entrambi')
   ).filter(t => {
     if (!mostraCompletate && t.completato) return false;
+    if (t.frequenza === 'specifica' && t.dataSpecifica && t.dataSpecifica < oggi && !t.completato) return false;
     if (t.dataFine && t.frequenza !== 'specifica' && t.dataFine < oggi) return false;
     return true;
   });
