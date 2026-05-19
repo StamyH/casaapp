@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Typography, Card, CardContent, Avatar, Chip, Divider, IconButton } from '@mui/material';
+import { Box, Typography, Card, CardContent, Avatar, Chip, Divider, IconButton, LinearProgress } from '@mui/material';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import { useApp } from '../context/AppContext';
@@ -52,15 +52,51 @@ function TrendChipAssoluto({ attuale, precedente, nomeMesePrec }) {
   );
 }
 
+// Calcola quante volte un task avrebbe dovuto essere completato nel mese indicato
+function calcolaAttesi(task, anno, mese, oggiStr) {
+  const meseKey = chiaveMese(anno, mese);
+  if (task.dataFine && task.dataFine < `${meseKey}-01`) return 0;
+
+  const primoCelMese = new Date(anno, mese, 1);
+  const ultimoDelMese = new Date(anno, mese + 1, 0);
+  // Se il mese è quello corrente, contiamo solo fino a oggi
+  const fineEffettiva = oggiStr < ultimoDelMese.toISOString().split('T')[0]
+    ? new Date(oggiStr)
+    : ultimoDelMese;
+
+  switch (task.frequenza) {
+    case 'giornaliera': {
+      const ms = fineEffettiva - primoCelMese;
+      return Math.floor(ms / 86400000) + 1;
+    }
+    case 'settimanale': {
+      let count = 0;
+      const d = new Date(primoCelMese);
+      while (d <= fineEffettiva) {
+        if (d.getDay() === task.giornoSettimana) count++;
+        d.setDate(d.getDate() + 1);
+      }
+      return count;
+    }
+    case 'mensile':
+      return task.giornoMese <= ultimoDelMese.getDate() ? 1 : 0;
+    case 'specifica':
+      return task.dataSpecifica?.startsWith(meseKey) ? 1 : 0;
+    default:
+      return 0;
+  }
+}
+
 function Statistiche() {
   const [meseOffset, setMeseOffset] = useState(0);
 
   const { utenti } = useApp();
   const { spese } = useSpese();
-  const { storicoCompletamenti } = useAttivita();
+  const { attivita, storicoCompletamenti } = useAttivita();
   const { impostazioni } = useImpostazioni();
 
   const oggi = new Date();
+  const oggiStr = oggi.toISOString().split('T')[0];
   const dataRif = new Date(oggi.getFullYear(), oggi.getMonth() + meseOffset, 1);
   const dataPrecRif = new Date(dataRif.getFullYear(), dataRif.getMonth() - 1, 1);
 
@@ -75,7 +111,7 @@ function Statistiche() {
   const totaleDelMese = speseDelMese.reduce((acc, s) => acc + s.importo, 0);
   const totalePrecedente = speseDelMesePrec.reduce((acc, s) => acc + s.importo, 0);
   const bilancio = calcolaBilancio(speseDelMese, utenti);
-  const inPari = bilancio.importoDebito < 0.01;
+  const inPari = !bilancio.tuttiDebiti?.length || bilancio.importoDebito < 0.01;
 
   const spesePerCat = {};
   speseDelMese.forEach(s => {
@@ -110,6 +146,33 @@ function Statistiche() {
   const maxCompletamenti = Math.max(...statsAttivita.map(s => s.completamenti), 1);
   const totaleCompletamentiMese = completamentiDelMese.length;
   const totaleCompletamentiPrec = completamentiDelMesePrec.length;
+
+  // --- Task più trascurate ---
+  const oggiStrPerAttesi = meseOffset === 0 ? oggiStr : new Date(dataRif.getFullYear(), dataRif.getMonth() + 1, 0).toISOString().split('T')[0];
+  const taskConTasso = attivita
+    .map(task => {
+      const attesi = calcolaAttesi(task, dataRif.getFullYear(), dataRif.getMonth(), oggiStrPerAttesi);
+      if (attesi === 0) return null;
+      const effettivi = completamentiDelMese.filter(c => c.taskId === task.id).length;
+      const tasso = Math.round((effettivi / attesi) * 100);
+      return { task, attesi, effettivi, tasso };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.tasso - b.tasso)
+    .slice(0, 5);
+
+  // --- Andamento ultimi 6 mesi ---
+  const ultimi6Mesi = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(oggi.getFullYear(), oggi.getMonth() - i, 1);
+    const key = chiaveMese(d.getFullYear(), d.getMonth());
+    const label = d.toLocaleDateString('it-IT', { month: 'short' });
+    const completamenti = storicoCompletamenti.filter(s => s.data?.startsWith(key)).length;
+    const totaleSpese = spese.filter(s => s.data?.startsWith(key) && s.tipo !== 'saldo').reduce((acc, s) => acc + s.importo, 0);
+    ultimi6Mesi.push({ key, label, completamenti, totaleSpese });
+  }
+  const maxCompMesi = Math.max(...ultimi6Mesi.map(m => m.completamenti), 1);
+  const maxSpeseMesi = Math.max(...ultimi6Mesi.map(m => m.totaleSpese), 1);
 
   const getIconaCategoria = (nome) =>
     impostazioni.categorie.find(c => c.nome === nome)?.icona || '📦';
@@ -224,7 +287,7 @@ function Statistiche() {
         </Card>
       )}
 
-      {/* Attività */}
+      {/* Attività completate */}
       <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
         <CardContent sx={{ p: 2.5 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -261,6 +324,107 @@ function Statistiche() {
               ))}
             </Box>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Task più trascurate */}
+      {taskConTasso.length > 0 && (
+        <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+          <CardContent sx={{ p: 2.5 }}>
+            <Typography variant="subtitle1" fontWeight={700} mb={0.5}>📉 Attività più trascurate</Typography>
+            <Typography variant="caption" color="text.secondary" display="block" mb={2}>
+              Tasso di completamento rispetto alle attese
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              {taskConTasso.map(({ task, attesi, effettivi, tasso }) => (
+                <Box key={task.id}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="body2" fontWeight={600} sx={{ flex: 1, mr: 1 }} noWrap>
+                      {task.titolo}
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0 }}>
+                      <Typography variant="caption" color="text.secondary">
+                        {effettivi}/{attesi}
+                      </Typography>
+                      <Chip
+                        label={`${tasso}%`}
+                        size="small"
+                        color={tasso >= 80 ? 'success' : tasso >= 50 ? 'warning' : 'error'}
+                        sx={{ height: 20, fontSize: '0.65rem' }}
+                      />
+                    </Box>
+                  </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={tasso}
+                    color={tasso >= 80 ? 'success' : tasso >= 50 ? 'warning' : 'error'}
+                    sx={{ mt: 0.75, height: 6, borderRadius: 3, bgcolor: 'action.hover' }}
+                  />
+                </Box>
+              ))}
+            </Box>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Andamento ultimi 6 mesi */}
+      <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+        <CardContent sx={{ p: 2.5 }}>
+          <Typography variant="subtitle1" fontWeight={700} mb={2}>📈 Andamento ultimi 6 mesi</Typography>
+
+          <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" mb={1}>
+            Attività completate
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end', mb: 2.5 }}>
+            {ultimi6Mesi.map(({ key, label, completamenti }) => (
+              <Box key={key} sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+                <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                  {completamenti > 0 ? completamenti : ''}
+                </Typography>
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: Math.max(4, Math.round((completamenti / maxCompMesi) * 72)),
+                    bgcolor: key === meseKey ? 'primary.main' : 'primary.light',
+                    borderRadius: '4px 4px 0 0',
+                    transition: 'height 0.4s ease',
+                    opacity: completamenti === 0 ? 0.3 : 1,
+                  }}
+                />
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem' }}>
+                  {label}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+
+          <Divider sx={{ mb: 2 }} />
+
+          <Typography variant="caption" color="text.secondary" fontWeight={600} display="block" mb={1}>
+            Spese totali
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end' }}>
+            {ultimi6Mesi.map(({ key, label, totaleSpese }) => (
+              <Box key={key} sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+                <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ fontSize: '0.6rem' }}>
+                  {totaleSpese > 0 ? `€${Math.round(totaleSpese)}` : ''}
+                </Typography>
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: Math.max(4, Math.round((totaleSpese / maxSpeseMesi) * 72)),
+                    bgcolor: key === meseKey ? 'secondary.main' : 'secondary.light',
+                    borderRadius: '4px 4px 0 0',
+                    transition: 'height 0.4s ease',
+                    opacity: totaleSpese === 0 ? 0.3 : 1,
+                  }}
+                />
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem' }}>
+                  {label}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
         </CardContent>
       </Card>
 
