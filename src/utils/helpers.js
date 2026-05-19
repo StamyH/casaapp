@@ -8,79 +8,102 @@ export const formattaImporto = (n) =>
 export const formattaData = (d) =>
   new Date(d).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' });
 
-// Calcola la quota di ogni utente per una singola spesa
-// altroUtente: il nome dell'altro utente coinvolto
-// divisione: 'metà' | 'tutto_mio' | 'tutto_altro' | 'percentuale'
-// percentuale: numero 0-100 (quota di chi ha pagato)
-export const calcolaQuote = (importo, pagatore, altroUtente, divisione, percentuale = 50) => {
-  let quotaPagatore, quotaAltro;
+// Calcola la quota di ogni utente per una singola spesa.
+// partecipantiOrAltro: array di tutti i partecipanti (incluso pagatore) OPPURE stringa del solo altroUtente (compat legacy)
+// divisione: 'equa' | 'metà' | 'tutto_mio' | 'tutto_altro' | 'percentuale'
+// percentuale: quota percentuale del pagatore (usata solo con 'percentuale' e 2 partecipanti)
+export const calcolaQuote = (importo, pagatore, partecipantiOrAltro, divisione, percentuale = 50) => {
+  const partecipanti = typeof partecipantiOrAltro === 'string'
+    ? [pagatore, partecipantiOrAltro]
+    : partecipantiOrAltro;
+
+  const altri = partecipanti.filter(p => p !== pagatore);
+  const result = {};
 
   switch (divisione) {
-    case 'metà':
-      quotaPagatore = importo / 2;
-      quotaAltro = importo / 2;
+    case 'equa':
+    case 'metà': {
+      const quota = importo / partecipanti.length;
+      partecipanti.forEach(p => { result[p] = quota; });
       break;
+    }
     case 'tutto_mio':
-      quotaPagatore = importo;
-      quotaAltro = 0;
+      partecipanti.forEach(p => { result[p] = p === pagatore ? importo : 0; });
       break;
     case 'tutto_altro':
-      quotaPagatore = 0;
-      quotaAltro = importo;
+      partecipanti.forEach(p => {
+        result[p] = p === pagatore ? 0 : importo / (altri.length || 1);
+      });
       break;
     case 'percentuale':
-      quotaPagatore = (importo * percentuale) / 100;
-      quotaAltro = importo - quotaPagatore;
+      result[pagatore] = (importo * percentuale) / 100;
+      altri.forEach(p => { result[p] = (importo - result[pagatore]) / (altri.length || 1); });
       break;
-    default:
-      quotaPagatore = importo / 2;
-      quotaAltro = importo / 2;
+    default: {
+      const quota = importo / partecipanti.length;
+      partecipanti.forEach(p => { result[p] = quota; });
+    }
   }
 
-  return {
-    [pagatore]: quotaPagatore,
-    [altroUtente]: quotaAltro,
-  };
+  return result;
 };
 
-// Calcola il bilancio complessivo per tutti gli utenti
-// Restituisce: debitore, creditore, importoDebito, bilancioPerUtente
+// Calcola il bilancio complessivo per tutti gli utenti.
+// Restituisce: debitore, creditore, importoDebito, bilancioPerUtente, tuttiDebiti
 export const calcolaBilancio = (spese, utenti = []) => {
   const netti = {};
+  utenti.forEach(u => { netti[u.nome] = 0; });
 
   spese.forEach(spesa => {
-    const altro = spesa.altroUtente
-      || utenti.find(u => u.nome !== spesa.pagatore)?.nome;
-    if (!altro) return;
+    let partecipanti = spesa.partecipanti;
+    if (!partecipanti || partecipanti.length < 2) {
+      const altro = spesa.altroUtente || utenti.find(u => u.nome !== spesa.pagatore)?.nome;
+      if (!altro) return;
+      partecipanti = [spesa.pagatore, altro];
+    }
 
     const quote = calcolaQuote(
       spesa.importo,
       spesa.pagatore,
-      altro,
-      spesa.divisione || 'metà',
+      partecipanti,
+      spesa.divisione || 'equa',
       spesa.percentuale || 50
     );
 
-    if (netti[spesa.pagatore] === undefined) netti[spesa.pagatore] = 0;
-    if (netti[altro] === undefined) netti[altro] = 0;
-
-    netti[spesa.pagatore] += quote[altro];
-    netti[altro] -= quote[altro];
+    partecipanti.forEach(p => {
+      if (p === spesa.pagatore) return;
+      const quota = quote[p] || 0;
+      if (netti[spesa.pagatore] !== undefined) netti[spesa.pagatore] += quota;
+      if (netti[p] !== undefined) netti[p] -= quota;
+    });
   });
 
-  const nomi = Object.keys(netti);
-  if (nomi.length < 2) {
-    return { debitore: null, creditore: null, importoDebito: 0, bilancioPerUtente: netti };
+  // Calcola tutte le coppie debitore/creditore con algoritmo greedy
+  const tuttiDebiti = [];
+  const copia = { ...netti };
+  for (let i = 0; i < 20; i++) {
+    const creditori = Object.keys(copia).filter(n => copia[n] > 0.01);
+    const debitori = Object.keys(copia).filter(n => copia[n] < -0.01);
+    if (!creditori.length || !debitori.length) break;
+    const cred = creditori.reduce((a, b) => copia[a] > copia[b] ? a : b);
+    const debt = debitori.reduce((a, b) => copia[a] < copia[b] ? a : b);
+    const importo = Math.min(copia[cred], Math.abs(copia[debt]));
+    tuttiDebiti.push({ debitore: debt, creditore: cred, importo: Math.round(importo * 100) / 100 });
+    copia[cred] -= importo;
+    copia[debt] += importo;
   }
 
-  const creditore = nomi.reduce((a, b) => netti[a] > netti[b] ? a : b);
-  const debitore = nomi.reduce((a, b) => netti[a] < netti[b] ? a : b);
+  const nomi = Object.keys(netti);
+  if (nomi.length < 2 || tuttiDebiti.length === 0) {
+    return { debitore: null, creditore: null, importoDebito: 0, bilancioPerUtente: netti, tuttiDebiti: [] };
+  }
 
   return {
-    debitore,
-    creditore,
-    importoDebito: Math.abs(netti[debitore]),
+    debitore: tuttiDebiti[0].debitore,
+    creditore: tuttiDebiti[0].creditore,
+    importoDebito: tuttiDebiti[0].importo,
     bilancioPerUtente: netti,
+    tuttiDebiti,
   };
 };
 

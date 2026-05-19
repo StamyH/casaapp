@@ -93,6 +93,7 @@ export function SpeseProvider({ children }) {
       ...s,
       pagatore: s.pagatore === vecchioNome ? nuovoNome : s.pagatore,
       altroUtente: s.altroUtente === vecchioNome ? nuovoNome : s.altroUtente,
+      partecipanti: s.partecipanti?.map(p => p === vecchioNome ? nuovoNome : p),
     })));
   };
 
