@@ -1,4 +1,5 @@
 {
+  "id": "/casaapp/",
   "short_name": "CasaApp",
   "name": "CasaApp — gestione casa condivisa",
   "description": "Gestisci spese, attività e calendario con il tuo coinquilino",
@@ -12,16 +13,28 @@
       "src": "logo192.png",
       "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
       "sizes": "512x512",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/casaapp/",
   "scope": "/casaapp/",
   "display": "standalone",
   "orientation": "portrait",
