@@ -1,25 +1,22 @@
 /* eslint-disable no-restricted-globals */
 import { clientsClaim } from 'workbox-core';
-import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
+import { precacheAndRoute } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
-import { StaleWhileRevalidate } from 'workbox-strategies';
+import { StaleWhileRevalidate, NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 
 clientsClaim();
 
-// Precache tutti gli asset generati dal build
-precacheAndRoute(self.__WB_MANIFEST);
+// Precache tutti gli asset generati dal build (JS, CSS, ecc.) ma NON index.html
+precacheAndRoute(self.__WB_MANIFEST.filter(entry => !entry.url.endsWith('index.html')));
 
-// App Shell: tutte le navigazioni servono index.html
-const fileExtensionRegexp = new RegExp('/[^/?]+\\.[^/]+$');
+// index.html: sempre dal network (network-first) così i meta tag Apple sono sempre aggiornati
 registerRoute(
-  ({ request, url }) => {
-    if (request.mode !== 'navigate') return false;
-    if (url.pathname.startsWith('/_')) return false;
-    if (url.pathname.match(fileExtensionRegexp)) return false;
-    return true;
-  },
-  createHandlerBoundToURL(process.env.PUBLIC_URL + '/index.html')
+  ({ request }) => request.mode === 'navigate',
+  new NetworkFirst({
+    cacheName: 'html-cache',
+    plugins: [new ExpirationPlugin({ maxEntries: 1, maxAgeSeconds: 60 * 60 * 24 })],
+  })
 );
 
 // Cache immagini con strategia stale-while-revalidate
