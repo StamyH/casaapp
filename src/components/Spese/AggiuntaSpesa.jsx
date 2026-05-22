@@ -72,7 +72,6 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
   const togglePartecipante = (nome) => {
     setForm(prev => {
       const presente = prev.partecipanti.includes(nome);
-      if (presente && prev.partecipanti.length <= 1) return prev;
       return {
         ...prev,
         partecipanti: presente
@@ -83,11 +82,12 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
   };
 
   const altriUtenti = utenti.filter(u => u.nome !== form.pagatore);
+  const solaMia = form.partecipanti.length === 0;
   const multiSplit = form.partecipanti.length > 1;
-  const divisioneEffettiva = multiSplit ? 'equa' : form.divisione;
-  const tuttiPartecipanti = [form.pagatore, ...form.partecipanti];
+  const divisioneEffettiva = solaMia ? 'tutto_mio' : multiSplit ? 'equa' : form.divisione;
+  const tuttiPartecipanti = solaMia ? [form.pagatore] : [form.pagatore, ...form.partecipanti];
 
-  const quote = form.importo && form.partecipanti.length > 0
+  const quote = form.importo && !solaMia
     ? calcolaQuote(parseFloat(form.importo), form.pagatore, tuttiPartecipanti, divisioneEffettiva, form.percentuale)
     : null;
 
@@ -116,7 +116,9 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
     if (spesaInModifica) {
       modificaSpesa(spesaInModifica.id, dati);
     } else {
-      aggiungiSpesa({ ...dati, data: new Date().toISOString().split('T')[0] });
+      const oggi = new Date();
+      const dataOggi = `${oggi.getFullYear()}-${String(oggi.getMonth() + 1).padStart(2, '0')}-${String(oggi.getDate()).padStart(2, '0')}`;
+      aggiungiSpesa({ ...dati, data: dataOggi });
     }
     onChiudi();
   };
@@ -206,6 +208,11 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
                 />
               ))}
             </Box>
+            {solaMia && (
+              <Typography variant="caption" color="text.secondary" mt={0.75} display="block">
+                Spesa solo tua — non influisce sul bilancio condiviso
+              </Typography>
+            )}
           </Box>
         )}
 
@@ -213,7 +220,13 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
 
         <Typography variant="subtitle2" fontWeight={600} mb={1}>Come dividere?</Typography>
 
-        {multiSplit ? (
+        {solaMia ? (
+          <Box sx={{ p: 1.5, mb: 2, borderRadius: 2, bgcolor: 'action.hover' }}>
+            <Typography variant="body2" color="text.secondary">
+              Spesa solo tua — nessuna divisione
+            </Typography>
+          </Box>
+        ) : multiSplit ? (
           <Box sx={{ p: 1.5, mb: 2, borderRadius: 2, bgcolor: 'action.hover' }}>
             <Typography variant="body2" color="text.secondary">
               Divisione equa tra {tuttiPartecipanti.length} persone
@@ -235,7 +248,7 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
           </ToggleButtonGroup>
         )}
 
-        {!multiSplit && form.divisione === 'percentuale' && (
+        {!solaMia && !multiSplit && form.divisione === 'percentuale' && (
           <Box sx={{ px: 1, mb: 2 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
               <Typography variant="caption">{form.pagatore}: {form.percentuale}%</Typography>

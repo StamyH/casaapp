@@ -28,7 +28,6 @@ function Home() {
   const { utenteAttivo, utenti } = useApp();
   const { spese } = useSpese();
   const { attivita, toggleAttivita } = useAttivita();
-  const bilancio = calcolaBilancio(spese, utenti);
   const oggi = new Date();
   const oggiStr = oggiLocale();
   const giornoOggi = oggi.getDay();
@@ -40,6 +39,7 @@ function Home() {
 
   const settimana = getSettimana(oggiStr);
   const speseDelMese = spese.filter(s => s.data?.startsWith(meseKey));
+  const bilancio = calcolaBilancio(speseDelMese, utenti);
   const totaleDelMese = speseDelMese.reduce((acc, s) => acc + s.importo, 0);
 
   const attivitaOggi = attivita.filter(t => {

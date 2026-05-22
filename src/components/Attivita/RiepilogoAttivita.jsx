@@ -3,6 +3,7 @@ import { Card, CardContent, Box, Typography, Divider } from '@mui/material';
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
 import { useAttivita } from '../../context/AttivitaContext';
 import { useApp } from '../../context/AppContext';
+import { oggiLocale } from '../../utils/helpers';
 
 function RiepilogoAttivita() {
   const { attivita, storicoCompletamenti } = useAttivita();
@@ -12,7 +13,7 @@ function RiepilogoAttivita() {
   const coloreSecondario = utenteAttivo?.coloreSecondario || '#26A69A';
 
   const oggi = new Date();
-  const oggiStr = oggi.toISOString().split('T')[0];
+  const oggiStr = oggiLocale();
   const giornoOggi = oggi.getDay();
   const giornoMeseOggi = oggi.getDate();
 
