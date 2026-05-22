@@ -13,7 +13,7 @@ export const formattaImporto = (n) =>
 // Formatta una data in formato italiano
 // es. "2024-01-15" → "15 gen 2024"
 export const formattaData = (d) =>
-  new Date(d).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' });
+  new Date(d + 'T00:00:00').toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' });
 
 // Calcola la quota di ogni utente per una singola spesa.
 // partecipantiOrAltro: array di tutti i partecipanti (incluso pagatore) OPPURE stringa del solo altroUtente (compat legacy)
@@ -118,7 +118,7 @@ export const calcolaBilancio = (spese, utenti = []) => {
 // es. { "gennaio 2024": [...], "febbraio 2024": [...] }
 export const raggruppaPerMese = (spese) => {
   return spese.reduce((acc, spesa) => {
-    const mese = new Date(spesa.data).toLocaleDateString('it-IT', {
+    const mese = new Date(spesa.data + 'T00:00:00').toLocaleDateString('it-IT', {
       month: 'long',
       year: 'numeric'
     });

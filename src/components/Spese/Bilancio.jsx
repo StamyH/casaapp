@@ -100,6 +100,12 @@ function Bilancio() {
             ))}
           </Box>
 
+          {filtroCategoria !== 'tutte' && !inPari && (
+            <Typography variant="caption" sx={{ opacity: 0.75, display: 'block', mb: 1 }}>
+              Rimuovi il filtro categoria per poter saldare il debito totale
+            </Typography>
+          )}
+
           {inPari ? (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <CheckCircleOutlineRoundedIcon />
@@ -113,10 +119,12 @@ function Bilancio() {
               <Button
                 variant="contained"
                 size="small"
+                disabled={filtroCategoria !== 'tutte'}
                 onClick={() => setDialogSaldo({ debitore: bilancio.debitore, creditore: bilancio.creditore, importo: bilancio.importoDebito })}
                 sx={{
                   bgcolor: 'rgba(255,255,255,0.25)', color: 'white', fontWeight: 700, borderRadius: 3,
                   '&:hover': { bgcolor: 'rgba(255,255,255,0.35)' },
+                  '&.Mui-disabled': { bgcolor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' },
                 }}
               >
                 Salda
@@ -132,10 +140,12 @@ function Bilancio() {
                   <Button
                     variant="contained"
                     size="small"
+                    disabled={filtroCategoria !== 'tutte'}
                     onClick={() => setDialogSaldo(d)}
                     sx={{
                       bgcolor: 'rgba(255,255,255,0.25)', color: 'white', fontWeight: 700, borderRadius: 3,
                       '&:hover': { bgcolor: 'rgba(255,255,255,0.35)' },
+                      '&.Mui-disabled': { bgcolor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' },
                     }}
                   >
                     Salda

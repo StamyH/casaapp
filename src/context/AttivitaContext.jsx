@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { oggiLocale } from '../utils/helpers';
 
 const AttivitaContext = createContext();
 
 function inizioSettimana(date) {
   const d = new Date(date);
   d.setDate(d.getDate() - (d.getDay() || 7) + 1);
-  return d.toISOString().split('T')[0];
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function attivitaIniziali() {
@@ -55,7 +56,7 @@ export function AttivitaProvider({ children }) {
   }, [storicoCompletamenti]);
 
   useEffect(() => {
-    const oggiStr = new Date().toISOString().split('T')[0];
+    const oggiStr = oggiLocale();
     const ultimoReset = localStorage.getItem('casaapp_ultimo_reset');
 
     if (ultimoReset === oggiStr) return;
