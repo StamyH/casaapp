@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import {
   Card, CardContent, Box, Typography, Divider, Button, Chip,
-  Dialog, DialogTitle, DialogContent, DialogActions,
+  Dialog, DialogTitle, DialogContent, DialogActions, Collapse, IconButton,
 } from '@mui/material';
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
-import { formattaImporto, calcolaBilancio } from '../../utils/helpers';
+import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
+import ExpandLessRoundedIcon from '@mui/icons-material/ExpandLessRounded';
+import { formattaImporto, calcolaBilancio, formattaData, oggiLocale } from '../../utils/helpers';
 import { useSpese } from '../../context/SpeseContext';
 import { useApp } from '../../context/AppContext';
 import { useImpostazioni } from '../../context/ImpostazioniContext';
@@ -13,8 +15,9 @@ function Bilancio() {
   const { spese, aggiungiSpesa } = useSpese();
   const { utenteAttivo, utenti } = useApp();
   const { impostazioni } = useImpostazioni();
-  const [dialogSaldo, setDialogSaldo] = useState(null); // { debitore, creditore, importo }
+  const [dialogSaldo, setDialogSaldo] = useState(null);
   const [filtroCategoria, setFiltroCategoria] = useState('tutte');
+  const [storicoAperto, setStoricoAperto] = useState(false);
 
   const coloreApp = utenteAttivo?.coloreApp || '#5C6BC0';
   const coloreSecondario = utenteAttivo?.coloreSecondario || '#26A69A';
@@ -33,6 +36,10 @@ function Bilancio() {
     if (pagatoDa[s.pagatore] !== undefined) pagatoDa[s.pagatore] += s.importo;
   });
 
+  const storicoSaldi = spese
+    .filter(s => s.tipo === 'saldo' || s.categoria === 'saldo')
+    .sort((a, b) => b.data.localeCompare(a.data));
+
   const confermaSaldo = () => {
     if (!dialogSaldo) return;
     aggiungiSpesa({
@@ -44,7 +51,7 @@ function Bilancio() {
       partecipanti: [dialogSaldo.debitore, dialogSaldo.creditore],
       divisione: 'tutto_altro',
       percentuale: 100,
-      data: new Date().toISOString().split('T')[0],
+      data: oggiLocale(),
       ricorrente: false,
       tipo: 'saldo',
     });
@@ -157,7 +164,7 @@ function Bilancio() {
 
           <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', my: 2 }} />
 
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1, mb: storicoSaldi.length > 0 ? 1.5 : 0 }}>
             {utenti.map(u => (
               <Box key={u.id}>
                 <Typography variant="caption" sx={{ opacity: 0.8 }}>Pagato da {u.nome}</Typography>
@@ -165,6 +172,39 @@ function Bilancio() {
               </Box>
             ))}
           </Box>
+
+          {storicoSaldi.length > 0 && (
+            <>
+              <Box
+                onClick={() => setStoricoAperto(p => !p)}
+                sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', opacity: 0.85 }}
+              >
+                <Typography variant="caption" fontWeight={600}>
+                  💳 Storico saldi ({storicoSaldi.length})
+                </Typography>
+                <IconButton size="small" sx={{ color: 'white', p: 0 }}>
+                  {storicoAperto ? <ExpandLessRoundedIcon fontSize="small" /> : <ExpandMoreRoundedIcon fontSize="small" />}
+                </IconButton>
+              </Box>
+              <Collapse in={storicoAperto}>
+                <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                  {storicoSaldi.map(s => (
+                    <Box key={s.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                        {s.pagatore} → {s.altroUtente || s.partecipanti?.find(p => p !== s.pagatore)}
+                      </Typography>
+                      <Box sx={{ textAlign: 'right' }}>
+                        <Typography variant="caption" fontWeight={700}>{formattaImporto(s.importo)}</Typography>
+                        <Typography variant="caption" sx={{ opacity: 0.7, display: 'block', fontSize: '0.6rem' }}>
+                          {formattaData(s.data)}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              </Collapse>
+            </>
+          )}
         </CardContent>
       </Card>
 
