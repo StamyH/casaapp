@@ -1,3 +1,13 @@
+// Palette colori disponibili per il tema utente
+export const COLORI_TEMA = [
+  { valore: '#5C6BC0', secondario: '#26A69A', nome: 'Indaco' },
+  { valore: '#26A69A', secondario: '#42A5F5', nome: 'Verde acqua' },
+  { valore: '#FF7043', secondario: '#EC407A', nome: 'Arancione' },
+  { valore: '#EC407A', secondario: '#AB47BC', nome: 'Rosa' },
+  { valore: '#AB47BC', secondario: '#5C6BC0', nome: 'Viola' },
+  { valore: '#42A5F5', secondario: '#26A69A', nome: 'Azzurro' },
+];
+
 // Restituisce la data odierna come stringa YYYY-MM-DD nel fuso locale
 // (evita il bug UTC di toISOString() che a mezzanotte può dare ieri)
 export const oggiLocale = () => {

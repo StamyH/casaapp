@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const SpeseContext = createContext();
 
 function speseIniziali() {
-  const mm = (d) => new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0].slice(0, 7);
+  const mm = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
   const oggi = new Date();
 
   let nomeA = 'Riccardo', nomeB = 'Federico';
