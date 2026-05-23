@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Box, Typography, Card, CardContent, Avatar, Chip, Divider, IconButton, LinearProgress } from '@mui/material';
+import { Box, Typography, Card, CardContent, Avatar, Chip, Divider, IconButton, LinearProgress, Dialog, DialogTitle, DialogContent } from '@mui/material';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
+import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
 import { useApp } from '../context/AppContext';
 import { useSpese } from '../context/SpeseContext';
 import { useAttivita } from '../context/AttivitaContext';
@@ -87,8 +88,12 @@ function calcolaAttesi(task, anno, mese, oggiStr) {
   }
 }
 
+const NOMI_MESI_BREVI = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
+
 function Statistiche() {
   const [meseOffset, setMeseOffset] = useState(0);
+  const [dialogAperto, setDialogAperto] = useState(false);
+  const [annoDialog, setAnnoDialog] = useState(new Date().getFullYear());
 
   const { utenti } = useApp();
   const { spese } = useSpese();
@@ -161,11 +166,13 @@ function Statistiche() {
     .sort((a, b) => a.tasso - b.tasso)
     .slice(0, 5);
 
-  // --- Andamento ultimi 6 mesi ---
+  // --- Andamento 6 mesi centrato sul mese selezionato (cappato a oggi) ---
+  const oggiKey = chiaveMese(oggi.getFullYear(), oggi.getMonth());
   const ultimi6Mesi = [];
   for (let i = 5; i >= 0; i--) {
-    const d = new Date(oggi.getFullYear(), oggi.getMonth() - i, 1);
+    const d = new Date(dataRif.getFullYear(), dataRif.getMonth() - i, 1);
     const key = chiaveMese(d.getFullYear(), d.getMonth());
+    if (key > oggiKey) continue;
     const label = d.toLocaleDateString('it-IT', { month: 'short' });
     const completamenti = storicoCompletamenti.filter(s => s.data?.startsWith(key)).length;
     const totaleSpese = spese.filter(s => s.data?.startsWith(key) && s.tipo !== 'saldo').reduce((acc, s) => acc + s.importo, 0);
@@ -189,13 +196,67 @@ function Statistiche() {
         <IconButton onClick={() => setMeseOffset(p => p - 1)} disabled={meseOffset <= -24}>
           <ChevronLeftRoundedIcon />
         </IconButton>
-        <Typography variant="subtitle1" fontWeight={700} textTransform="capitalize">
-          {nomeMese}
-        </Typography>
+        <Box
+          onClick={() => { setAnnoDialog(dataRif.getFullYear()); setDialogAperto(true); }}
+          sx={{ display: 'flex', alignItems: 'center', gap: 0.75, cursor: 'pointer', py: 1 }}
+        >
+          <Typography variant="subtitle1" fontWeight={700} textTransform="capitalize">
+            {nomeMese}
+          </Typography>
+          <CalendarMonthRoundedIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
+        </Box>
         <IconButton onClick={() => setMeseOffset(p => p + 1)} disabled={meseOffset >= 0}>
           <ChevronRightRoundedIcon />
         </IconButton>
       </Box>
+
+      {/* Picker mese/anno */}
+      <Dialog open={dialogAperto} onClose={() => setDialogAperto(false)} fullWidth maxWidth="xs">
+        <DialogTitle sx={{ pb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <IconButton size="small" onClick={() => setAnnoDialog(p => p - 1)} disabled={annoDialog <= oggi.getFullYear() - 2}>
+              <ChevronLeftRoundedIcon />
+            </IconButton>
+            <Typography fontWeight={700}>{annoDialog}</Typography>
+            <IconButton size="small" onClick={() => setAnnoDialog(p => p + 1)} disabled={annoDialog >= oggi.getFullYear()}>
+              <ChevronRightRoundedIcon />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ pb: 3 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1 }}>
+            {NOMI_MESI_BREVI.map((nome, idx) => {
+              const targetKey = chiaveMese(annoDialog, idx);
+              const isFuturo = targetKey > oggiKey;
+              const isTroppoVecchio = targetKey < chiaveMese(oggi.getFullYear() - 2, oggi.getMonth());
+              const isSelezionato = targetKey === meseKey;
+              if (isFuturo || isTroppoVecchio) {
+                return (
+                  <Box key={idx} sx={{ p: 1, textAlign: 'center', borderRadius: 2, opacity: 0.3 }}>
+                    <Typography variant="body2">{nome}</Typography>
+                  </Box>
+                );
+              }
+              const diffMesi = (annoDialog - oggi.getFullYear()) * 12 + (idx - oggi.getMonth());
+              return (
+                <Box
+                  key={idx}
+                  onClick={() => { setMeseOffset(diffMesi); setDialogAperto(false); }}
+                  sx={{
+                    p: 1, textAlign: 'center', borderRadius: 2, cursor: 'pointer',
+                    bgcolor: isSelezionato ? 'primary.main' : 'action.hover',
+                    '&:hover': { bgcolor: isSelezionato ? 'primary.dark' : 'action.selected' },
+                  }}
+                >
+                  <Typography variant="body2" fontWeight={isSelezionato ? 700 : 400} color={isSelezionato ? 'primary.contrastText' : 'text.primary'}>
+                    {nome}
+                  </Typography>
+                </Box>
+              );
+            })}
+          </Box>
+        </DialogContent>
+      </Dialog>
 
       {/* Bilancio del mese */}
       <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
