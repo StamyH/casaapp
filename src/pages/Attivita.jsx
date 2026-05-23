@@ -78,7 +78,6 @@ function Attivita() {
   return (
     <Box sx={{ p: 2 }}>
 
-      <Typography variant="h5" fontWeight={800} mb={2}>Attività</Typography>
 
       <RiepilogoAttivita />
 
@@ -210,7 +209,7 @@ function Attivita() {
       <Fab
         color="primary"
         onClick={() => setApriForm(true)}
-        sx={{ position: 'fixed', bottom: 80, right: 24, boxShadow: 4 }}
+        sx={{ position: 'fixed', bottom: 'calc(80px + env(safe-area-inset-bottom))', right: 24, boxShadow: 4 }}
       >
         <AddRoundedIcon />
       </Fab>

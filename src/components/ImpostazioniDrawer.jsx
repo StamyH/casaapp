@@ -154,16 +154,22 @@ function ImpostazioniDrawer({ aperto, onChiudi }) {
         onClose={onChiudi}
         PaperProps={{ sx: { width: { xs: '100%', sm: 360 }, maxWidth: '100vw' } }}
       >
-        <Box sx={{ height: '100%', overflowY: 'auto' }}>
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
 
-          {/* Tasto chiudi */}
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 1.5, pb: 0 }}>
+          {/* Header fisso */}
+          <Box sx={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            px: 2, py: 1.5, borderBottom: '1px solid', borderColor: 'divider',
+            flexShrink: 0,
+          }}>
+            <Typography variant="subtitle1" fontWeight={700}>Impostazioni</Typography>
             <IconButton onClick={onChiudi} size="small">
               <CloseRoundedIcon />
             </IconButton>
           </Box>
 
-          <Box sx={{ p: 2, pt: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box sx={{ flex: 1, overflowY: 'auto' }}>
+          <Box sx={{ p: 2, pt: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
 
             {/* Header utente */}
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5, py: 1 }}>
@@ -366,6 +372,7 @@ function ImpostazioniDrawer({ aperto, onChiudi }) {
             </Button>
 
             <Box sx={{ height: 8 }} />
+          </Box>
           </Box>
         </Box>
       </Drawer>

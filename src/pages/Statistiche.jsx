@@ -183,7 +183,6 @@ function Statistiche() {
   return (
     <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
 
-      <Typography variant="h5" fontWeight={800}>📊 Statistiche</Typography>
 
       {/* Navigazione mese */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: 'action.hover', borderRadius: 3, px: 1 }}>
