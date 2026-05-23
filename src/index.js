@@ -11,4 +11,8 @@ root.render(
   </React.StrictMode>
 );
 
-serviceWorkerRegistration.register();
+serviceWorkerRegistration.register({
+  onUpdate: (registration) => {
+    window.dispatchEvent(new CustomEvent('swUpdateAvailable', { detail: registration }));
+  },
+});
