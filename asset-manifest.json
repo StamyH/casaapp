@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/casaapp/static/css/main.b001fde4.css",
-    "main.js": "/casaapp/static/js/main.35fbb9a7.js",
+    "main.js": "/casaapp/static/js/main.b4994e52.js",
     "service-worker.js": "/casaapp/service-worker.js",
     "index.html": "/casaapp/index.html",
     "main.b001fde4.css.map": "/casaapp/static/css/main.b001fde4.css.map",
-    "main.35fbb9a7.js.map": "/casaapp/static/js/main.35fbb9a7.js.map"
+    "main.b4994e52.js.map": "/casaapp/static/js/main.b4994e52.js.map"
   },
   "entrypoints": [
     "static/css/main.b001fde4.css",
-    "static/js/main.35fbb9a7.js"
+    "static/js/main.b4994e52.js"
   ]
 }
