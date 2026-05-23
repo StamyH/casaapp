@@ -1,6 +1,10 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Card, CardContent, List, ListItem, ListItemText, ListItemIcon, ListItemButton, Divider, IconButton } from '@mui/material';
+import {
+  Box, Typography, Card, CardContent, List, ListItem, ListItemText, ListItemIcon,
+  ListItemButton, Divider, IconButton, Button, Dialog, DialogTitle,
+  DialogContent, DialogActions, Alert,
+} from '@mui/material';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import PaletteRoundedIcon from '@mui/icons-material/PaletteRounded';
 import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
@@ -8,8 +12,21 @@ import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
+import UploadRoundedIcon from '@mui/icons-material/UploadRounded';
 import { useApp } from '../context/AppContext';
 import { useImpostazioni } from '../context/ImpostazioniContext';
+
+const CHIAVI_BACKUP = [
+  'casaapp_utenti',
+  'casaapp_utente',
+  'casaapp_spese',
+  'casaapp_attivita',
+  'casaapp_storico_attivita',
+  'casaapp_impostazioni',
+  'casaapp_ultimo_reset',
+  'casaapp_ultima_espansione_ricorrenti',
+];
 
 const VOCI = [
   { path: '/impostazioni/profilo', icona: <PersonRoundedIcon />, titolo: 'Profilo', descrizione: 'Visualizza nome e avatar', colore: '#5C6BC0' },
@@ -23,6 +40,55 @@ function Impostazioni() {
   const { utenteAttivo } = useApp();
   const { impostazioni } = useImpostazioni();
   const navigate = useNavigate();
+  const inputRef = useRef(null);
+  const [dialogRipristino, setDialogRipristino] = useState(null);
+  const [erroreImport, setErroreImport] = useState('');
+
+  const esportaBackup = () => {
+    const dati = { versione: 1, esportato: new Date().toISOString(), dati: {} };
+    CHIAVI_BACKUP.forEach(k => {
+      const val = localStorage.getItem(k);
+      if (val !== null) dati.dati[k] = JSON.parse(val);
+    });
+    const blob = new Blob([JSON.stringify(dati, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `casaapp_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const leggiFile = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const parsed = JSON.parse(ev.target.result);
+        if (!parsed?.dati || typeof parsed.dati !== 'object') throw new Error('Formato non valido');
+        setErroreImport('');
+        setDialogRipristino(parsed);
+      } catch {
+        setErroreImport('File non valido o corrotto.');
+        setDialogRipristino(null);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const confermаRipristino = () => {
+    if (!dialogRipristino) return;
+    CHIAVI_BACKUP.forEach(k => {
+      if (dialogRipristino.dati[k] !== undefined) {
+        localStorage.setItem(k, JSON.stringify(dialogRipristino.dati[k]));
+      }
+    });
+    window.location.reload();
+  };
 
   const coloreApp = utenteAttivo?.coloreApp || '#5C6BC0';
   const coloreSecondario = utenteAttivo?.coloreSecondario || '#26A69A';
@@ -77,6 +143,57 @@ function Impostazioni() {
           ))}
         </List>
       </Card>
+
+      {/* Backup & Ripristino */}
+      <Card elevation={0} sx={{ mt: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+        <CardContent sx={{ p: 2.5 }}>
+          <Typography variant="subtitle2" fontWeight={700} mb={0.5}>💾 Backup & Ripristino</Typography>
+          <Typography variant="caption" color="text.secondary" display="block" mb={2}>
+            Esporta tutti i dati dell'app in un file JSON o ripristinali da un backup precedente.
+          </Typography>
+          {erroreImport && (
+            <Alert severity="error" sx={{ mb: 1.5, borderRadius: 2 }}>{erroreImport}</Alert>
+          )}
+          <Box sx={{ display: 'flex', gap: 1.5 }}>
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<DownloadRoundedIcon />}
+              onClick={esportaBackup}
+              sx={{ borderRadius: 2, py: 1 }}
+            >
+              Esporta
+            </Button>
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<UploadRoundedIcon />}
+              onClick={() => inputRef.current?.click()}
+              sx={{ borderRadius: 2, py: 1 }}
+            >
+              Importa
+            </Button>
+          </Box>
+          <input ref={inputRef} type="file" accept=".json" style={{ display: 'none' }} onChange={leggiFile} />
+        </CardContent>
+      </Card>
+
+      <Dialog open={!!dialogRipristino} onClose={() => setDialogRipristino(null)} fullWidth maxWidth="xs">
+        <DialogTitle fontWeight={700}>⚠️ Conferma ripristino</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" mb={1}>
+            Stai per sostituire <strong>tutti i dati</strong> dell'app con quelli del backup del{' '}
+            <strong>{dialogRipristino?.esportato ? new Date(dialogRipristino.esportato).toLocaleDateString('it-IT') : '—'}</strong>.
+          </Typography>
+          <Typography variant="body2" color="error.main">
+            I dati attuali andranno persi. L'app si ricaricherà automaticamente.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setDialogRipristino(null)}>Annulla</Button>
+          <Button variant="contained" color="error" onClick={confermаRipristino}>Ripristina</Button>
+        </DialogActions>
+      </Dialog>
 
     </Box>
   );
