@@ -98,7 +98,6 @@ function Calendario() {
 
   return (
     <Box sx={{ p: 2, pb: 10 }}>
-      <Typography variant="h5" fontWeight={800} mb={2}>📅 Calendario</Typography>
 
       {/* Navigazione mese */}
       <Box sx={{

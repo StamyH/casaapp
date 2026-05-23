@@ -99,8 +99,7 @@ function Spese() {
   return (
     <Box sx={{ p: 2 }}>
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h5" fontWeight={800}>Spese</Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
         <Tooltip title="Esporta CSV">
           <IconButton onClick={esportaCSV} size="small">
             <DownloadRoundedIcon />
@@ -233,7 +232,7 @@ function Spese() {
       <Fab
         color="primary"
         onClick={() => setApriForm(true)}
-        sx={{ position: 'fixed', bottom: 80, right: 24, boxShadow: 4 }}
+        sx={{ position: 'fixed', bottom: 'calc(80px + env(safe-area-inset-bottom))', right: 24, boxShadow: 4 }}
       >
         <AddRoundedIcon />
       </Fab>
