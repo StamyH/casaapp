@@ -3,6 +3,7 @@ import { Card, CardContent, Box, Typography, Chip, IconButton, Checkbox } from '
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { useApp } from '../../context/AppContext';
 import { useAttivita } from '../../context/AttivitaContext';
+import { oggiLocale } from '../../utils/helpers';
 
 const FREQUENZE = {
   giornaliera: { icona: '☀️', colore: '#FF7043' },
@@ -37,6 +38,7 @@ function TaskCard({ task, onModifica }) {
   const { toggleAttivita } = useAttivita();
   const frequenza = FREQUENZE[task.frequenza] || FREQUENZE.giornaliera;
   const priorita = task.priorita ? PRIORITA[task.priorita] : null;
+  const inRitardo = task.frequenza === 'specifica' && task.dataSpecifica && task.dataSpecifica < oggiLocale() && !task.completato;
 
   return (
     <Card
@@ -44,8 +46,8 @@ function TaskCard({ task, onModifica }) {
       sx={{
         mb: 1.5, borderRadius: 3,
         border: '1px solid',
-        borderColor: task.completato ? 'success.light' : 'divider',
-        borderLeft: priorita && !task.completato ? `4px solid ${priorita.colore}` : undefined,
+        borderColor: inRitardo ? 'error.light' : task.completato ? 'success.light' : 'divider',
+        borderLeft: inRitardo ? '4px solid #EF5350' : priorita && !task.completato ? `4px solid ${priorita.colore}` : undefined,
         opacity: task.completato ? 0.75 : 1,
         transition: 'all 0.2s ease',
         '&:hover': { boxShadow: 2 },
@@ -98,7 +100,14 @@ function TaskCard({ task, onModifica }) {
                 <Chip label={`ogni ${task.giornoMese}° del mese`} size="small" sx={{ fontSize: '0.7rem' }} />
               )}
               {task.frequenza === 'specifica' && task.dataSpecifica && (
-                <Chip label={new Date(task.dataSpecifica).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })} size="small" sx={{ fontSize: '0.7rem' }} />
+                <Chip
+                  label={new Date(task.dataSpecifica + 'T00:00:00').toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  size="small"
+                  sx={{ fontSize: '0.7rem', ...(inRitardo && { bgcolor: 'error.light', color: 'error.contrastText' }) }}
+                />
+              )}
+              {inRitardo && (
+                <Chip label="⚠️ In ritardo" size="small" color="error" sx={{ fontSize: '0.7rem' }} />
               )}
               {task.dataFine && (
                 <Chip label={`fino al ${new Date(task.dataFine).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' })}`} size="small" sx={{ fontSize: '0.7rem', color: 'text.secondary' }} />

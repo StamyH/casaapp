@@ -4,6 +4,7 @@ const ImpostazioniContext = createContext();
 
 const IMPOSTAZIONI_INIZIALI = {
   nomeCasa: 'Casa',
+  primoGiornoSettimana: 1,
   categorie: [
     { nome: 'spesa', icona: '🛒' },
     { nome: 'bolletta', icona: '⚡' },
@@ -23,6 +24,7 @@ export function ImpostazioniProvider({ children }) {
       }
       return {
         nomeCasa: parsed.nomeCasa || IMPOSTAZIONI_INIZIALI.nomeCasa,
+        primoGiornoSettimana: parsed.primoGiornoSettimana ?? IMPOSTAZIONI_INIZIALI.primoGiornoSettimana,
         categorie: parsed.categorie || IMPOSTAZIONI_INIZIALI.categorie,
       };
     } catch {

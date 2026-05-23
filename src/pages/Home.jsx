@@ -7,18 +7,20 @@ import { useSpese } from '../context/SpeseContext';
 import { useAttivita } from '../context/AttivitaContext';
 import { formattaImporto, calcolaBilancio, oggiLocale } from '../utils/helpers';
 import { getAttivitaPerData } from './Calendario';
+import { useImpostazioni } from '../context/ImpostazioniContext';
 
 const GIORNI_SETTIMANA = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
 const GIORNI_BREVI = ['D', 'L', 'M', 'M', 'G', 'V', 'S'];
 
-function getSettimana(dataStr) {
+function getSettimana(dataStr, primoGiorno = 1) {
   const d = new Date(dataStr + 'T00:00:00');
   const giorno = d.getDay();
-  const lunedi = new Date(d);
-  lunedi.setDate(d.getDate() - (giorno === 0 ? 6 : giorno - 1));
+  const offset = (giorno - primoGiorno + 7) % 7;
+  const inizio = new Date(d);
+  inizio.setDate(d.getDate() - offset);
   return Array.from({ length: 7 }, (_, i) => {
-    const giornata = new Date(lunedi);
-    giornata.setDate(lunedi.getDate() + i);
+    const giornata = new Date(inizio);
+    giornata.setDate(inizio.getDate() + i);
     return `${giornata.getFullYear()}-${String(giornata.getMonth() + 1).padStart(2, '0')}-${String(giornata.getDate()).padStart(2, '0')}`;
   });
 }
@@ -26,6 +28,7 @@ function getSettimana(dataStr) {
 function Home() {
   const navigate = useNavigate();
   const { utenteAttivo, utenti } = useApp();
+  const { impostazioni } = useImpostazioni();
   const { spese } = useSpese();
   const { attivita, toggleAttivita } = useAttivita();
   const oggi = new Date();
@@ -37,7 +40,7 @@ function Home() {
   const coloreApp = utenteAttivo?.coloreApp || '#5C6BC0';
   const coloreSecondario = utenteAttivo?.coloreSecondario || '#26A69A';
 
-  const settimana = getSettimana(oggiStr);
+  const settimana = getSettimana(oggiStr, impostazioni.primoGiornoSettimana);
   const speseDelMese = spese.filter(s => s.data?.startsWith(meseKey));
   const bilancio = calcolaBilancio(speseDelMese, utenti);
   const totaleDelMese = speseDelMese.reduce((acc, s) => acc + s.importo, 0);
