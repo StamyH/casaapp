@@ -7,7 +7,7 @@ import { useApp } from '../context/AppContext';
 import { useSpese } from '../context/SpeseContext';
 import { useAttivita } from '../context/AttivitaContext';
 import { useImpostazioni } from '../context/ImpostazioniContext';
-import { formattaImporto, calcolaBilancio, calcolaQuote } from '../utils/helpers';
+import { formattaImporto, calcolaBilancio, calcolaQuote, oggiLocale } from '../utils/helpers';
 
 function chiaveMese(anno, mese) {
   return `${anno}-${String(mese + 1).padStart(2, '0')}`;
@@ -61,9 +61,8 @@ function calcolaAttesi(task, anno, mese, oggiStr) {
   const primoCelMese = new Date(anno, mese, 1);
   const ultimoDelMese = new Date(anno, mese + 1, 0);
   // Se il mese è quello corrente, contiamo solo fino a oggi
-  const fineEffettiva = oggiStr < ultimoDelMese.toISOString().split('T')[0]
-    ? new Date(oggiStr)
-    : ultimoDelMese;
+  const ultimoDelMeseStr = `${ultimoDelMese.getFullYear()}-${String(ultimoDelMese.getMonth() + 1).padStart(2, '0')}-${String(ultimoDelMese.getDate()).padStart(2, '0')}`;
+  const fineEffettiva = oggiStr < ultimoDelMeseStr ? new Date(oggiStr) : ultimoDelMese;
 
   switch (task.frequenza) {
     case 'giornaliera': {
@@ -101,7 +100,7 @@ function Statistiche() {
   const { impostazioni } = useImpostazioni();
 
   const oggi = new Date();
-  const oggiStr = oggi.toISOString().split('T')[0];
+  const oggiStr = oggiLocale();
   const dataRif = new Date(oggi.getFullYear(), oggi.getMonth() + meseOffset, 1);
   const dataPrecRif = new Date(dataRif.getFullYear(), dataRif.getMonth() - 1, 1);
 
@@ -153,7 +152,8 @@ function Statistiche() {
   const totaleCompletamentiPrec = completamentiDelMesePrec.length;
 
   // --- Task più trascurate ---
-  const oggiStrPerAttesi = meseOffset === 0 ? oggiStr : new Date(dataRif.getFullYear(), dataRif.getMonth() + 1, 0).toISOString().split('T')[0];
+  const _ultimoMese = new Date(dataRif.getFullYear(), dataRif.getMonth() + 1, 0);
+  const oggiStrPerAttesi = meseOffset === 0 ? oggiStr : `${_ultimoMese.getFullYear()}-${String(_ultimoMese.getMonth() + 1).padStart(2, '0')}-${String(_ultimoMese.getDate()).padStart(2, '0')}`;
   const taskConTasso = attivita
     .map(task => {
       const attesi = calcolaAttesi(task, dataRif.getFullYear(), dataRif.getMonth(), oggiStrPerAttesi);

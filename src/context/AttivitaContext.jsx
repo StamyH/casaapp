@@ -10,7 +10,8 @@ function inizioSettimana(date) {
 }
 
 function attivitaIniziali() {
-  const traUnMese = new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0];
+  const _d = new Date(); _d.setMonth(_d.getMonth() + 1);
+  const traUnMese = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`;
 
   let nomeA = 'Riccardo', nomeB = 'Federico';
   try {
@@ -89,7 +90,7 @@ export function AttivitaProvider({ children }) {
     if (!att) return;
 
     const nuovoStato = !att.completato;
-    const oggi = new Date().toISOString().split('T')[0];
+    const oggi = oggiLocale();
 
     setAttivita(prev =>
       prev.map(a => a.id === id

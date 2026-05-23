@@ -19,15 +19,7 @@ import { useApp } from '../context/AppContext';
 import { useImpostazioni } from '../context/ImpostazioniContext';
 import { useSpese } from '../context/SpeseContext';
 import { useAttivita } from '../context/AttivitaContext';
-
-const COLORI = [
-  { valore: '#5C6BC0', secondario: '#26A69A', nome: 'Indaco' },
-  { valore: '#26A69A', secondario: '#42A5F5', nome: 'Verde acqua' },
-  { valore: '#FF7043', secondario: '#EC407A', nome: 'Arancione' },
-  { valore: '#EC407A', secondario: '#AB47BC', nome: 'Rosa' },
-  { valore: '#AB47BC', secondario: '#5C6BC0', nome: 'Viola' },
-  { valore: '#42A5F5', secondario: '#26A69A', nome: 'Azzurro' },
-];
+import { COLORI_TEMA } from '../utils/helpers';
 
 const EMOJI = ['🛒','⚡','🏠','📦','🍕','🚌','💡','💊','👗','🎮','🐾','🍺','🎁','✈️','🏋️','📚','🔧','🌿','💰','🎵'];
 const MAX_NOME = 20;
@@ -215,7 +207,7 @@ function ImpostazioniDrawer({ aperto, onChiudi }) {
 
               <Typography variant="caption" color="text.secondary" display="block" mb={1}>Colore app</Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mb: 2.5 }}>
-                {COLORI.map(c => (
+                {COLORI_TEMA.map(c => (
                   <Pallino key={c.valore} valore={c.valore} nome={c.nome}
                     selezionato={utenteAttivo.coloreApp === c.valore}
                     onClick={() => modificaUtente(utenteAttivo.id, { coloreApp: c.valore, coloreSecondario: c.secondario })}
@@ -231,7 +223,7 @@ function ImpostazioniDrawer({ aperto, onChiudi }) {
                 <Typography variant="caption">{utenteAttivo.nome}</Typography>
               </Box>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-                {COLORI.map(c => (
+                {COLORI_TEMA.map(c => (
                   <Pallino key={c.valore} valore={c.valore} nome={c.nome}
                     selezionato={utenteAttivo.coloreAvatar === c.valore}
                     onClick={() => modificaUtente(utenteAttivo.id, { coloreAvatar: c.valore })}

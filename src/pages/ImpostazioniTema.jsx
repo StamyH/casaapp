@@ -4,15 +4,7 @@ import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
 import SettingsBrightnessRoundedIcon from '@mui/icons-material/SettingsBrightnessRounded';
 import { useApp } from '../context/AppContext';
-
-const COLORI = [
-  { valore: '#5C6BC0', secondario: '#26A69A', nome: 'Indaco' },
-  { valore: '#26A69A', secondario: '#42A5F5', nome: 'Verde acqua' },
-  { valore: '#FF7043', secondario: '#EC407A', nome: 'Arancione' },
-  { valore: '#EC407A', secondario: '#AB47BC', nome: 'Rosa' },
-  { valore: '#AB47BC', secondario: '#5C6BC0', nome: 'Viola' },
-  { valore: '#42A5F5', secondario: '#26A69A', nome: 'Azzurro' },
-];
+import { COLORI_TEMA } from '../utils/helpers';
 
 function SelettoreColore({ valore, nome, selezionato, onClick }) {
   return (
@@ -68,7 +60,7 @@ function ImpostazioniTema() {
           Colore dei pulsanti e degli elementi principali
         </Typography>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-          {COLORI.map(colore => (
+          {COLORI_TEMA.map(colore => (
             <SelettoreColore
               key={colore.valore}
               valore={colore.valore}
@@ -92,7 +84,7 @@ function ImpostazioniTema() {
           <Typography variant="body2" color="text.secondary">{utenteAttivo.nome}</Typography>
         </Box>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-          {COLORI.map(colore => (
+          {COLORI_TEMA.map(colore => (
             <SelettoreColore
               key={colore.valore}
               valore={colore.valore}
