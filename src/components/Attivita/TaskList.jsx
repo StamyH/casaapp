@@ -12,13 +12,10 @@ const SEZIONI = [
 
 const PRIORITA_ORDINE = { alta: 0, media: 1, bassa: 2 };
 
-function TaskList({ attivita, filtroUtente, onModifica, mostraCompletate }) {
+function TaskList({ attivita, onModifica, mostraCompletate }) {
   const oggi = oggiLocale();
 
-  const attivitaFiltrate = (filtroUtente === 'tutti'
-    ? attivita
-    : attivita.filter(t => t.assegnato === filtroUtente || t.assegnato === 'entrambi')
-  ).filter(t => {
+  const attivitaFiltrate = attivita.filter(t => {
     if (!mostraCompletate && t.completato) return false;
     if (t.dataFine && t.frequenza !== 'specifica' && t.dataFine < oggi) return false;
     return true;

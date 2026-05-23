@@ -17,7 +17,7 @@ const DIVISIONI_BASE = [
   { value: 'percentuale', label: 'Custom %' },
 ];
 
-function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
+function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica, onSuccess }) {
   const { utenteAttivo, utenti } = useApp();
   const { aggiungiSpesa, modificaSpesa, eliminaSpesa } = useSpese();
   const { impostazioni } = useImpostazioni();
@@ -124,6 +124,7 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
     } else {
       aggiungiSpesa({ ...dati, data: form.data });
     }
+    onSuccess?.(spesaInModifica ? 'Spesa aggiornata' : 'Spesa aggiunta');
     onChiudi();
   };
 

@@ -20,7 +20,7 @@ describe('AttivitaContext', () => {
         giornoSettimana: null,
         giornoMese: null,
         dataSpecifica: null,
-        assegnato: 'Riccardo',
+        assegnato: 'Alice',
       });
     });
 
@@ -37,19 +37,19 @@ describe('AttivitaContext', () => {
         giornoSettimana: null,
         giornoMese: null,
         dataSpecifica: null,
-        assegnato: 'Federico',
+        assegnato: 'Bruno',
       });
     });
 
     const id = result.current.attivita[result.current.attivita.length - 1].id;
 
     act(() => {
-      result.current.toggleAttivita(id, 'Federico');
+      result.current.toggleAttivita(id, 'Bruno');
     });
 
     const task = result.current.attivita.find(a => a.id === id);
     expect(task.completato).toBe(true);
-    expect(task.completatoDa).toBe('Federico');
+    expect(task.completatoDa).toBe('Bruno');
   });
 
   test('elimina un\'attività', () => {
@@ -86,19 +86,19 @@ describe('AttivitaContext', () => {
         giornoSettimana: null,
         giornoMese: null,
         dataSpecifica: null,
-        assegnato: 'Riccardo',
+        assegnato: 'Alice',
       });
     });
 
     const id = result.current.attivita[result.current.attivita.length - 1].id;
 
     act(() => {
-      result.current.modificaAttivita(id, { titolo: 'Modificata', assegnato: 'Federico' });
+      result.current.modificaAttivita(id, { titolo: 'Modificata', assegnato: 'Bruno' });
     });
 
     const task = result.current.attivita.find(a => a.id === id);
     expect(task.titolo).toBe('Modificata');
-    expect(task.assegnato).toBe('Federico');
+    expect(task.assegnato).toBe('Bruno');
     expect(task.frequenza).toBe('giornaliera');
   });
 
@@ -118,8 +118,8 @@ describe('AttivitaContext', () => {
 
     const id = result.current.attivita[result.current.attivita.length - 1].id;
 
-    act(() => { result.current.toggleAttivita(id, 'Riccardo'); });
-    act(() => { result.current.toggleAttivita(id, 'Riccardo'); });
+    act(() => { result.current.toggleAttivita(id, 'Alice'); });
+    act(() => { result.current.toggleAttivita(id, 'Alice'); });
 
     const task = result.current.attivita.find(a => a.id === id);
     expect(task.completato).toBe(false);

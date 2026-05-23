@@ -13,7 +13,7 @@ function attivitaIniziali() {
   const _d = new Date(); _d.setMonth(_d.getMonth() + 1);
   const traUnMese = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`;
 
-  let nomeA = 'Riccardo', nomeB = 'Federico';
+  let nomeA = 'Utente 1', nomeB = 'Utente 2';
   try {
     const utenti = JSON.parse(localStorage.getItem('casaapp_utenti') || '[]');
     if (utenti[0]?.nome) nomeA = utenti[0].nome;
