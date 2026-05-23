@@ -11,6 +11,12 @@ const TITOLI = {
   '/attivita': 'Attività',
   '/calendario': 'Calendario',
   '/statistiche': 'Statistiche',
+  '/impostazioni': 'Impostazioni',
+  '/impostazioni/profilo': 'Profilo',
+  '/impostazioni/tema': 'Tema',
+  '/impostazioni/utenti': 'Utenti',
+  '/impostazioni/categorie': 'Categorie spese',
+  '/impostazioni/casa': 'La tua casa',
 };
 
 function Navbar() {

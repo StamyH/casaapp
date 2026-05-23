@@ -354,7 +354,18 @@ function ImpostazioniDrawer({ aperto, onChiudi }) {
               </Box>
             </Box>
 
-            <Box sx={{ height: 16 }} />
+            <Divider />
+
+            <Button
+              fullWidth
+              variant="text"
+              onClick={() => { onChiudi(); navigate('/impostazioni'); }}
+              sx={{ borderRadius: 3, py: 1.5, color: 'text.secondary', justifyContent: 'flex-start', px: 2 }}
+            >
+              Tutte le impostazioni →
+            </Button>
+
+            <Box sx={{ height: 8 }} />
           </Box>
         </Box>
       </Drawer>
