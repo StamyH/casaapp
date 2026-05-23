@@ -22,16 +22,21 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
   const { aggiungiSpesa, modificaSpesa, eliminaSpesa } = useSpese();
   const { impostazioni } = useImpostazioni();
 
-  const formIniziale = () => ({
-    descrizione: '',
-    importo: '',
-    categoria: impostazioni.categorie[0]?.nome || 'altro',
-    divisione: 'metà',
-    percentuale: 50,
-    pagatore: utenteAttivo?.nome || '',
-    partecipanti: utenti.filter(u => u.nome !== utenteAttivo?.nome).map(u => u.nome),
-    ricorrente: false,
-  });
+  const formIniziale = () => {
+    const oggi = new Date();
+    const dataOggi = `${oggi.getFullYear()}-${String(oggi.getMonth() + 1).padStart(2, '0')}-${String(oggi.getDate()).padStart(2, '0')}`;
+    return {
+      descrizione: '',
+      importo: '',
+      data: dataOggi,
+      categoria: impostazioni.categorie[0]?.nome || 'altro',
+      divisione: 'metà',
+      percentuale: 50,
+      pagatore: utenteAttivo?.nome || '',
+      partecipanti: utenti.filter(u => u.nome !== utenteAttivo?.nome).map(u => u.nome),
+      ricorrente: false,
+    };
+  };
 
   const [form, setForm] = useState(formIniziale);
   const [errori, setErrori] = useState({});
@@ -47,6 +52,7 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
       setForm({
         descrizione: spesaInModifica.descrizione,
         importo: String(spesaInModifica.importo),
+        data: spesaInModifica.data || '',
         categoria: spesaInModifica.categoria,
         divisione: spesaInModifica.divisione === 'equa' ? 'metà' : spesaInModifica.divisione,
         percentuale: spesaInModifica.percentuale,
@@ -114,11 +120,9 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
     };
 
     if (spesaInModifica) {
-      modificaSpesa(spesaInModifica.id, dati);
+      modificaSpesa(spesaInModifica.id, { ...dati, data: form.data });
     } else {
-      const oggi = new Date();
-      const dataOggi = `${oggi.getFullYear()}-${String(oggi.getMonth() + 1).padStart(2, '0')}-${String(oggi.getDate()).padStart(2, '0')}`;
-      aggiungiSpesa({ ...dati, data: dataOggi });
+      aggiungiSpesa({ ...dati, data: form.data });
     }
     onChiudi();
   };
@@ -150,18 +154,27 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica }) {
           helperText={errori.descrizione}
         />
 
-        <TextField
-          label="Importo (€)"
-          fullWidth
-          type="number"
-          value={form.importo}
-          onChange={e => { aggiorna('importo', e.target.value); setErrori(p => ({ ...p, importo: '' })); }}
-          sx={{ mb: 2 }}
-          placeholder="0.00"
-          inputProps={{ min: 0.01, step: 0.01 }}
-          error={!!errori.importo}
-          helperText={errori.importo}
-        />
+        <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
+          <TextField
+            label="Importo (€)"
+            fullWidth
+            type="number"
+            value={form.importo}
+            onChange={e => { aggiorna('importo', e.target.value); setErrori(p => ({ ...p, importo: '' })); }}
+            placeholder="0.00"
+            inputProps={{ min: 0.01, step: 0.01 }}
+            error={!!errori.importo}
+            helperText={errori.importo}
+          />
+          <TextField
+            label="Data"
+            type="date"
+            value={form.data}
+            onChange={e => aggiorna('data', e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            sx={{ minWidth: 150 }}
+          />
+        </Box>
 
         <Box sx={{ display: 'flex', gap: 1.5, mb: 2 }}>
           <TextField

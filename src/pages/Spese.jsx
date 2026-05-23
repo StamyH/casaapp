@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Box, Typography, Fab, MenuItem, TextField, IconButton,
-  Tooltip, Collapse, Button, Chip,
+  Tooltip, Collapse, Button, Chip, Dialog, DialogTitle, DialogContent, DialogActions,
 } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
@@ -36,6 +36,8 @@ function Spese() {
 
   const [apriForm, setApriForm] = useState(false);
   const [spesaInModifica, setSpesaInModifica] = useState(null);
+  const [dialogCSV, setDialogCSV] = useState(false);
+  const [periodoCSV, setPeriodoCSV] = useState({ da: '', a: '' });
   const [filtriAperti, setFiltriAperti] = useState(false);
   const [filtriStaged, setFiltriStaged] = useState(FILTRI_VUOTI);
   const [filtriAttivi, setFiltriAttivi] = useState(FILTRI_VUOTI);
@@ -74,8 +76,13 @@ function Spese() {
   const spesePerMese = raggruppaPerMese(speseElaborate);
 
   const esportaCSV = () => {
+    const speseDaEsportare = speseElaborate.filter(s => {
+      if (periodoCSV.da && s.data < periodoCSV.da) return false;
+      if (periodoCSV.a && s.data > periodoCSV.a) return false;
+      return true;
+    });
     const intestazione = ['Data', 'Descrizione', 'Importo (€)', 'Categoria', 'Pagatore', 'Divisione', 'Ricorrente'];
-    const righe = speseElaborate.map(s => [
+    const righe = speseDaEsportare.map(s => [
       s.data,
       `"${(s.descrizione || '').replace(/"/g, '""')}"`,
       s.importo.toFixed(2).replace('.', ','),
@@ -89,11 +96,15 @@ function Spese() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `spese_${new Date().toISOString().slice(0, 10)}.csv`;
+    const suffisso = periodoCSV.da || periodoCSV.a
+      ? `${periodoCSV.da || 'inizio'}_${periodoCSV.a || 'oggi'}`
+      : new Date().toISOString().slice(0, 10);
+    a.download = `spese_${suffisso}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    setDialogCSV(false);
   };
 
   return (
@@ -101,7 +112,7 @@ function Spese() {
 
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
         <Tooltip title="Esporta CSV">
-          <IconButton onClick={esportaCSV} size="small">
+          <IconButton onClick={() => setDialogCSV(true)} size="small">
             <DownloadRoundedIcon />
           </IconButton>
         </Tooltip>
@@ -242,6 +253,33 @@ function Spese() {
         onChiudi={() => { setApriForm(false); setSpesaInModifica(null); }}
         spesaInModifica={spesaInModifica}
       />
+
+      <Dialog open={dialogCSV} onClose={() => setDialogCSV(false)} fullWidth maxWidth="xs">
+        <DialogTitle fontWeight={700}>📥 Esporta CSV</DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
+          <TextField
+            label="Dal"
+            type="date"
+            value={periodoCSV.da}
+            onChange={e => setPeriodoCSV(p => ({ ...p, da: e.target.value }))}
+            InputLabelProps={{ shrink: true }}
+            fullWidth size="small"
+            helperText="Lascia vuoto per includere tutte le spese"
+          />
+          <TextField
+            label="Al"
+            type="date"
+            value={periodoCSV.a}
+            onChange={e => setPeriodoCSV(p => ({ ...p, a: e.target.value }))}
+            InputLabelProps={{ shrink: true }}
+            fullWidth size="small"
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setDialogCSV(false)}>Annulla</Button>
+          <Button variant="contained" onClick={esportaCSV}>Esporta</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
