@@ -8,10 +8,11 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import { useLocation } from 'react-router-dom';
 import { useAttivita } from '../context/AttivitaContext';
 import { useApp } from '../context/AppContext';
+import { useImpostazioni } from '../context/ImpostazioniContext';
 import { oggiLocale } from '../utils/helpers';
 import AggiuntaTask from '../components/Attivita/AggiuntaTask';
 
-const GIORNI_HEADER = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
+const NOMI_GIORNI = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
 
 export function getAttivitaPerData(attivita, dataStr) {
   const d = new Date(dataStr + 'T00:00:00');
@@ -32,15 +33,14 @@ export function getAttivitaPerData(attivita, dataStr) {
   });
 }
 
-function generaGiorniMese(anno, mese) {
-  const primoGiorno = new Date(anno, mese, 1);
-  const ultimoGiorno = new Date(anno, mese + 1, 0);
+function generaGiorniMese(anno, mese, primoGiorno = 1) {
+  const primoDelMese = new Date(anno, mese, 1);
+  const ultimoDelMese = new Date(anno, mese + 1, 0);
 
-  let offset = primoGiorno.getDay() - 1;
-  if (offset < 0) offset = 6;
+  let offset = (primoDelMese.getDay() - primoGiorno + 7) % 7;
 
   const giorni = Array(offset).fill(null);
-  for (let d = 1; d <= ultimoGiorno.getDate(); d++) {
+  for (let d = 1; d <= ultimoDelMese.getDate(); d++) {
     giorni.push(
       `${anno}-${String(mese + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
     );
@@ -63,12 +63,18 @@ function Calendario() {
 
   const { attivita, toggleAttivita } = useAttivita();
   const { utenteAttivo, utenti } = useApp();
+  const { impostazioni } = useImpostazioni();
+  const primoGiorno = impostazioni.primoGiornoSettimana ?? 1;
+
+  const intestazioniGiorni = Array.from({ length: 7 }, (_, i) =>
+    NOMI_GIORNI[(primoGiorno + i) % 7]
+  );
 
   const nomeMese = new Date(anno, mese, 1).toLocaleDateString('it-IT', {
     month: 'long', year: 'numeric',
   });
 
-  const giorni = generaGiorniMese(anno, mese);
+  const giorni = generaGiorniMese(anno, mese, primoGiorno);
   const attivitaGiorno = getAttivitaPerData(attivita, dataSelezionata);
 
   const getColoreUtente = (nome) =>
@@ -98,12 +104,11 @@ function Calendario() {
 
   return (
     <Box sx={{ p: 2, pb: 10 }}>
-      <Typography variant="h5" fontWeight={800} mb={2}>📅 Calendario</Typography>
 
       {/* Navigazione mese */}
       <Box sx={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        bgcolor: 'action.hover', borderRadius: 3, px: 1, mb: 2,
+        bgcolor: 'action.hover', borderRadius: 3, px: 1, mb: 1.5,
       }}>
         <IconButton onClick={prevMese} size="small">
           <ChevronLeftRoundedIcon />
@@ -118,37 +123,56 @@ function Calendario() {
 
       {/* Intestazioni giorni */}
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', mb: 0.5 }}>
-        {GIORNI_HEADER.map(g => (
-          <Typography key={g} variant="caption" color="text.secondary" fontWeight={700} textAlign="center">
+        {intestazioniGiorni.map(g => (
+          <Typography key={g} variant="caption" color="text.secondary" fontWeight={700} textAlign="center" sx={{ fontSize: '0.65rem' }}>
             {g}
           </Typography>
         ))}
       </Box>
 
-      {/* Griglia giorni */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 0.25, mb: 2 }}>
+      {/* Griglia giorni — compatta */}
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', mb: 2 }}>
         {giorni.map((data, i) => {
-          if (!data) return <Box key={`e-${i}`} sx={{ aspectRatio: '1' }} />;
+          if (!data) return <Box key={`e-${i}`} sx={{ height: 40 }} />;
 
           const tasksDelGiorno = getAttivitaPerData(attivita, data);
           const isOggi = data === oggi;
           const isSel = data === dataSelezionata;
 
-          // Un dot per ogni utente coinvolto (max 3)
-          const utentiPresenti = [
-            ...new Set(tasksDelGiorno.map(t =>
-              t.assegnato === 'entrambi' ? '__tutti__' : t.assegnato
-            )),
-          ].slice(0, 3);
+          // Per ogni utente/gruppo: calcola completion ratio per opacità del dot
+          const dotInfo = [];
+          const assegnatari = [...new Set(tasksDelGiorno.map(t => t.assegnato))];
+          assegnatari.forEach(ass => {
+            const tasksDell = tasksDelGiorno.filter(t => t.assegnato === ass);
+            const completati = tasksDell.filter(t => t.completato).length;
+            const ratio = tasksDell.length > 0 ? completati / tasksDell.length : 0;
+
+            if (ass === 'entrambi') {
+              utenti.forEach(u => {
+                dotInfo.push({ colore: u.coloreAvatar, ratio });
+              });
+            } else {
+              dotInfo.push({ colore: getColoreUtente(ass), ratio });
+            }
+          });
+
+          // Dedup per colore, prendi il ratio più alto
+          const dotDedup = Object.values(
+            dotInfo.reduce((acc, d) => {
+              if (!acc[d.colore] || d.ratio > acc[d.colore].ratio) acc[d.colore] = d;
+              return acc;
+            }, {})
+          ).slice(0, 3);
 
           return (
             <Box
               key={data}
               onClick={() => setDataSelezionata(data)}
               sx={{
+                height: 40,
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
-                justifyContent: 'center', aspectRatio: '1',
-                borderRadius: 2, cursor: 'pointer',
+                justifyContent: 'center',
+                borderRadius: 1.5, cursor: 'pointer',
                 bgcolor: isSel ? 'primary.main' : isOggi ? 'action.selected' : 'transparent',
                 '&:hover': { bgcolor: isSel ? 'primary.dark' : 'action.hover' },
                 transition: 'background-color 0.15s',
@@ -159,22 +183,25 @@ function Calendario() {
                 fontWeight={isOggi || isSel ? 800 : 400}
                 sx={{
                   color: isSel ? 'primary.contrastText' : isOggi ? 'primary.main' : 'text.primary',
+                  fontSize: '0.75rem',
                   lineHeight: 1.2,
                 }}
               >
                 {new Date(data + 'T00:00:00').getDate()}
               </Typography>
-              {utentiPresenti.length > 0 && (
-                <Box sx={{ display: 'flex', gap: '2px', mt: '2px' }}>
-                  {utentiPresenti.map((nome, idx) => (
+
+              {dotDedup.length > 0 && (
+                <Box sx={{ display: 'flex', gap: '2px', mt: '3px' }}>
+                  {dotDedup.map((dot, idx) => (
                     <Box
                       key={idx}
                       sx={{
-                        width: 4, height: 4, borderRadius: '50%',
-                        bgcolor: nome === '__tutti__'
-                          ? (isSel ? 'rgba(255,255,255,0.7)' : 'text.disabled')
-                          : getColoreUtente(nome),
-                        opacity: isSel ? 0.85 : 1,
+                        width: 5, height: 5, borderRadius: '50%',
+                        bgcolor: isSel ? 'rgba(255,255,255,0.9)' : dot.colore,
+                        opacity: isSel ? 1 : dot.ratio === 1 ? 1 : dot.ratio > 0 ? 0.55 : 0.3,
+                        border: dot.ratio === 0 && !isSel ? `1.5px solid ${dot.colore}` : 'none',
+                        boxSizing: 'border-box',
+                        transition: 'opacity 0.2s',
                       }}
                     />
                   ))}
@@ -256,12 +283,11 @@ function Calendario() {
         </Box>
       )}
 
-      {/* FAB aggiungi */}
       <Fab
         color="primary"
         size="medium"
         onClick={apriNuova}
-        sx={{ position: 'fixed', bottom: 90, right: 20 }}
+        sx={{ position: 'fixed', bottom: 'calc(80px + env(safe-area-inset-bottom))', right: 24, boxShadow: 4 }}
       >
         <AddRoundedIcon />
       </Fab>
