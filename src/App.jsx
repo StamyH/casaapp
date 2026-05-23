@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
+import { ThemeProvider, createTheme, CssBaseline, Snackbar, Button } from '@mui/material';
 import { AppProvider, useApp } from './context/AppContext';
 import { SpeseProvider } from './context/SpeseContext';
 import { AttivitaProvider } from './context/AttivitaContext';
@@ -25,6 +25,20 @@ function AuthGuard() {
   const { utenteAttivo } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [swReg, setSwReg] = useState(null);
+
+  useEffect(() => {
+    const handler = (e) => setSwReg(e.detail);
+    window.addEventListener('swUpdateAvailable', handler);
+    return () => window.removeEventListener('swUpdateAvailable', handler);
+  }, []);
+
+  const aggiornaSW = () => {
+    if (!swReg?.waiting) return;
+    swReg.waiting.postMessage({ type: 'SKIP_WAITING' });
+    navigator.serviceWorker.addEventListener('controllerchange', () => window.location.reload());
+  };
 
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
   const [preferenzaSistema, setPreferenzaSistema] = useState(mediaQuery.matches ? 'dark' : 'light');
@@ -84,6 +98,18 @@ function AuthGuard() {
         </Routes>
       </div>
       {mostraNav && <BottomNav />}
+
+      <Snackbar
+        open={!!swReg}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        message="🆕 Nuova versione disponibile"
+        action={
+          <Button color="inherit" size="small" fontWeight={700} onClick={aggiornaSW}>
+            Aggiorna
+          </Button>
+        }
+        sx={{ top: 'calc(env(safe-area-inset-top) + 8px)' }}
+      />
     </ThemeProvider>
   );
 }
