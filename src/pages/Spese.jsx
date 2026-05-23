@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Box, Typography, Fab, MenuItem, TextField, IconButton,
-  Tooltip, Collapse, Button, Chip, Dialog, DialogTitle, DialogContent, DialogActions,
+  Tooltip, Collapse, Button, Chip, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar,
 } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
@@ -36,6 +36,7 @@ function Spese() {
 
   const [apriForm, setApriForm] = useState(false);
   const [spesaInModifica, setSpesaInModifica] = useState(null);
+  const [snackMsg, setSnackMsg] = useState('');
   const [dialogCSV, setDialogCSV] = useState(false);
   const [periodoCSV, setPeriodoCSV] = useState({ da: '', a: '' });
   const [filtriAperti, setFiltriAperti] = useState(false);
@@ -252,6 +253,16 @@ function Spese() {
         aperto={apriForm || !!spesaInModifica}
         onChiudi={() => { setApriForm(false); setSpesaInModifica(null); }}
         spesaInModifica={spesaInModifica}
+        onSuccess={msg => setSnackMsg(msg)}
+      />
+
+      <Snackbar
+        open={!!snackMsg}
+        onClose={() => setSnackMsg('')}
+        message={snackMsg}
+        autoHideDuration={2500}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        sx={{ bottom: 'calc(90px + env(safe-area-inset-bottom))' }}
       />
 
       <Dialog open={dialogCSV} onClose={() => setDialogCSV(false)} fullWidth maxWidth="xs">

@@ -118,25 +118,27 @@ function Statistiche() {
   const inPari = !bilancio.tuttiDebiti?.length || bilancio.importoDebito < 0.01;
 
   const spesePerCat = {};
-  speseDelMese.forEach(s => {
+  speseDelMese.filter(s => s.tipo !== 'saldo' && s.categoria !== 'saldo').forEach(s => {
     spesePerCat[s.categoria] = (spesePerCat[s.categoria] || 0) + s.importo;
   });
   const categorieSorted = Object.entries(spesePerCat).sort(([, a], [, b]) => b - a);
   const maxCat = categorieSorted[0]?.[1] || 1;
 
-  const pagatoPerUtente = {};
+  const pagatoDa = {};
   const quotaPerUtente = {};
-  utenti.forEach(u => { pagatoPerUtente[u.nome] = 0; quotaPerUtente[u.nome] = 0; });
-  speseDelMese.forEach(s => {
-    if (pagatoPerUtente[s.pagatore] !== undefined) pagatoPerUtente[s.pagatore] += s.importo;
-    const altro = s.altroUtente || utenti.find(u => u.nome !== s.pagatore)?.nome;
-    if (!altro) return;
-    const quote = calcolaQuote(s.importo, s.pagatore, altro, s.divisione || 'metà', s.percentuale || 50);
+  utenti.forEach(u => { pagatoDa[u.nome] = 0; quotaPerUtente[u.nome] = 0; });
+  speseDelMese.filter(s => s.tipo !== 'saldo' && s.categoria !== 'saldo').forEach(s => {
+    if (pagatoDa[s.pagatore] !== undefined) pagatoDa[s.pagatore] += s.importo;
+    const partecipanti = s.partecipanti?.length >= 2
+      ? s.partecipanti
+      : [s.pagatore, s.altroUtente || utenti.find(u => u.nome !== s.pagatore)?.nome].filter(Boolean);
+    if (partecipanti.length < 2) return;
+    const quote = calcolaQuote(s.importo, s.pagatore, partecipanti, s.divisione || 'metà', s.percentuale || 50);
     Object.entries(quote).forEach(([nome, q]) => {
       if (quotaPerUtente[nome] !== undefined) quotaPerUtente[nome] += q;
     });
   });
-  const maxPagato = Math.max(...Object.values(pagatoPerUtente), 1);
+  const maxPagato = Math.max(...Object.values(pagatoDa), 1);
 
   // --- Attività storico ---
   const completamentiDelMese = storicoCompletamenti.filter(s => s.data?.startsWith(meseKey));
@@ -336,10 +338,10 @@ function Statistiche() {
                       </Box>
                     </Box>
                     <Typography variant="body2" fontWeight={700}>
-                      {formattaImporto(pagatoPerUtente[u.nome] || 0)}
+                      {formattaImporto(pagatoDa[u.nome] || 0)}
                     </Typography>
                   </Box>
-                  <Barra valore={pagatoPerUtente[u.nome] || 0} massimo={maxPagato} colore={u.coloreAvatar} />
+                  <Barra valore={pagatoDa[u.nome] || 0} massimo={maxPagato} colore={u.coloreAvatar} />
                 </Box>
               ))}
             </Box>

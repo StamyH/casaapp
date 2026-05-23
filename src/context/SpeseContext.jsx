@@ -6,7 +6,7 @@ function speseIniziali() {
   const mm = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
   const oggi = new Date();
 
-  let nomeA = 'Riccardo', nomeB = 'Federico';
+  let nomeA = 'Utente 1', nomeB = 'Utente 2';
   try {
     const utenti = JSON.parse(localStorage.getItem('casaapp_utenti') || '[]');
     if (utenti[0]?.nome) nomeA = utenti[0].nome;

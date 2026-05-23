@@ -26,7 +26,7 @@ const PRIORITA = [
   { value: 'bassa', label: '⚪ Bassa' },
 ];
 
-function AggiuntaTask({ aperto, onChiudi, attivitaInModifica }) {
+function AggiuntaTask({ aperto, onChiudi, attivitaInModifica, onSuccess }) {
   const { aggiungiAttivita, modificaAttivita, eliminaAttivita } = useAttivita();
   const { utenti } = useApp();
   const [errori, setErrori] = useState({});
@@ -102,6 +102,7 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica }) {
     } else {
       aggiungiAttivita(dati);
     }
+    onSuccess?.(attivitaInModifica ? 'Attività aggiornata' : 'Attività aggiunta');
     onChiudi();
   };
 

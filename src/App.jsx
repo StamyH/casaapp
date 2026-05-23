@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline, Snackbar, Button } from '@mui/material';
 import { AppProvider, useApp } from './context/AppContext';
@@ -40,7 +40,7 @@ function AuthGuard() {
     navigator.serviceWorker.addEventListener('controllerchange', () => window.location.reload());
   };
 
-  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  const mediaQuery = useMemo(() => window.matchMedia('(prefers-color-scheme: dark)'), []);
   const [preferenzaSistema, setPreferenzaSistema] = useState(mediaQuery.matches ? 'dark' : 'light');
 
   useEffect(() => {

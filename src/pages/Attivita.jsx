@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Box, Fab, Typography, MenuItem, TextField,
-  Collapse, Button, Chip, Switch, FormControlLabel,
+  Collapse, Button, Chip, Switch, FormControlLabel, Snackbar,
 } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import FilterListRoundedIcon from '@mui/icons-material/FilterListRounded';
@@ -9,6 +9,7 @@ import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import ExpandLessRoundedIcon from '@mui/icons-material/ExpandLessRounded';
 import { useAttivita } from '../context/AttivitaContext';
 import { useApp } from '../context/AppContext';
+import { formattaData } from '../utils/helpers';
 import TaskList from '../components/Attivita/TaskList';
 import AggiuntaTask from '../components/Attivita/AggiuntaTask';
 import RiepilogoAttivita from '../components/Attivita/RiepilogoAttivita';
@@ -40,10 +41,12 @@ function contaFiltriAttivi(f) {
 }
 
 function Attivita() {
-  const { attivita } = useAttivita();
+  const { attivita, storicoCompletamenti } = useAttivita();
   const { utenti } = useApp();
   const [apriForm, setApriForm] = useState(false);
   const [attivitaInModifica, setAttivitaInModifica] = useState(null);
+  const [snackMsg, setSnackMsg] = useState('');
+  const [storicoAperto, setStoricoAperto] = useState(false);
   const [filtriAperti, setFiltriAperti] = useState(false);
   const [filtriStaged, setFiltriStaged] = useState(FILTRI_VUOTI);
   const [filtriAttivi, setFiltriAttivi] = useState(FILTRI_VUOTI);
@@ -67,6 +70,7 @@ function Attivita() {
       if (filtriAttivi.ricerca && !t.titolo.toLowerCase().includes(filtriAttivi.ricerca.toLowerCase())) return false;
       if (filtriAttivi.frequenza !== 'tutte' && t.frequenza !== filtriAttivi.frequenza) return false;
       if (filtriAttivi.priorita !== 'tutte' && (t.priorita ?? 'media') !== filtriAttivi.priorita) return false;
+      if (filtriAttivi.utente !== 'tutti' && t.assegnato !== filtriAttivi.utente && t.assegnato !== 'entrambi') return false;
       return true;
     })
     .sort((a, b) => {
@@ -201,10 +205,39 @@ function Attivita() {
 
       <TaskList
         attivita={attivitaElaborate}
-        filtroUtente={filtriAttivi.utente}
         onModifica={setAttivitaInModifica}
         mostraCompletate={filtriAttivi.mostraCompletate}
       />
+
+      {storicoCompletamenti.length > 0 && (
+        <Box sx={{ mt: 3 }}>
+          <Box
+            onClick={() => setStoricoAperto(p => !p)}
+            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', mb: 1 }}
+          >
+            <Typography variant="subtitle2" fontWeight={700} color="text.secondary">
+              📋 Storico completamenti
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Typography variant="caption" color="text.secondary">{storicoCompletamenti.length}</Typography>
+              {storicoAperto ? <ExpandLessRoundedIcon sx={{ color: 'text.secondary', fontSize: '1.1rem' }} /> : <ExpandMoreRoundedIcon sx={{ color: 'text.secondary', fontSize: '1.1rem' }} />}
+            </Box>
+          </Box>
+          <Collapse in={storicoAperto}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              {[...storicoCompletamenti].reverse().slice(0, 20).map(s => (
+                <Box key={s.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 1.25, borderRadius: 2, bgcolor: 'action.hover' }}>
+                  <Box>
+                    <Typography variant="body2" fontWeight={600}>{s.taskTitolo}</Typography>
+                    <Typography variant="caption" color="text.secondary">👤 {s.completatoDa}</Typography>
+                  </Box>
+                  <Typography variant="caption" color="text.secondary">{formattaData(s.data)}</Typography>
+                </Box>
+              ))}
+            </Box>
+          </Collapse>
+        </Box>
+      )}
 
       <Fab
         color="primary"
@@ -218,6 +251,16 @@ function Attivita() {
         aperto={apriForm || !!attivitaInModifica}
         onChiudi={() => { setApriForm(false); setAttivitaInModifica(null); }}
         attivitaInModifica={attivitaInModifica}
+        onSuccess={msg => setSnackMsg(msg)}
+      />
+
+      <Snackbar
+        open={!!snackMsg}
+        onClose={() => setSnackMsg('')}
+        message={snackMsg}
+        autoHideDuration={2500}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        sx={{ bottom: 'calc(90px + env(safe-area-inset-bottom))' }}
       />
     </Box>
   );
