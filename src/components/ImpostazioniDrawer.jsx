@@ -333,7 +333,7 @@ function ImpostazioniDrawer({ aperto, onChiudi }) {
               </Box>
 
               <Typography variant="caption" color="text.secondary" display="block" mb={1}>Icona</Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 1.5 }}>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 1 }}>
                 {EMOJI.map(e => (
                   <Box
                     key={e}
@@ -351,6 +351,33 @@ function ImpostazioniDrawer({ aperto, onChiudi }) {
                     {e}
                   </Box>
                 ))}
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                <TextField
+                  size="small"
+                  label="O digita un'emoji"
+                  placeholder="😀"
+                  value={EMOJI.includes(icona) ? '' : icona}
+                  onChange={e => {
+                    const val = e.target.value;
+                    if (!val) { setIcona('📦'); return; }
+                    const segs = typeof Intl.Segmenter !== 'undefined'
+                      ? [...new Intl.Segmenter().segment(val)].map(s => s.segment)
+                      : [...val];
+                    setIcona(segs[segs.length - 1] || '📦');
+                  }}
+                  inputProps={{ style: { fontSize: '1.3rem', textAlign: 'center' } }}
+                  sx={{ width: 140 }}
+                />
+                <Box sx={{
+                  width: 40, height: 40, borderRadius: 1.5,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '1.4rem',
+                  border: '2px solid', borderColor: 'primary.main',
+                  bgcolor: 'primary.light',
+                }}>
+                  {icona}
+                </Box>
               </Box>
 
               <Box sx={{ display: 'flex', gap: 1 }}>
