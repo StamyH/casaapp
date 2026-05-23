@@ -11,6 +11,12 @@ import Attivita from './pages/Attivita';
 import Statistiche from './pages/Statistiche';
 import Calendario from './pages/Calendario';
 import Benvenuto from './pages/Benvenuto';
+import Impostazioni from './pages/Impostazioni';
+import ImpostazioniProfilo from './pages/ImpostazioniProfilo';
+import ImpostazioniTema from './pages/ImpostazioniTema';
+import ImpostazioniUtenti from './pages/ImpostazioniUtenti';
+import ImpostazioniCategorie from './pages/ImpostazioniCategorie';
+import ImpostazioniCasa from './pages/ImpostazioniCasa';
 import Navbar from './components/Layout/Navbar';
 import BottomNav from './components/Layout/BottomNav';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -68,6 +74,12 @@ function AuthGuard() {
           <Route path="/attivita" element={<Attivita />} />
           <Route path="/statistiche" element={<Statistiche />} />
           <Route path="/calendario" element={<Calendario />} />
+          <Route path="/impostazioni" element={<Impostazioni />} />
+          <Route path="/impostazioni/profilo" element={<ImpostazioniProfilo />} />
+          <Route path="/impostazioni/tema" element={<ImpostazioniTema />} />
+          <Route path="/impostazioni/utenti" element={<ImpostazioniUtenti />} />
+          <Route path="/impostazioni/categorie" element={<ImpostazioniCategorie />} />
+          <Route path="/impostazioni/casa" element={<ImpostazioniCasa />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
