@@ -30,6 +30,7 @@ const COLORI = [
 ];
 
 const EMOJI = ['🛒','⚡','🏠','📦','🍕','🚌','💡','💊','👗','🎮','🐾','🍺','🎁','✈️','🏋️','📚','🔧','🌿','💰','🎵'];
+const MAX_NOME = 20;
 
 function Pallino({ valore, nome, selezionato, onClick }) {
   return (
@@ -281,9 +282,11 @@ function ImpostazioniDrawer({ aperto, onChiudi }) {
                         <Typography variant="caption" color="primary">Sei tu</Typography>
                       )}
                     </Box>
-                    <IconButton size="small" sx={{ color: 'text.secondary' }} onClick={() => { setDialogModifica(u); setNomeModifica(u.nome); }}>
-                      <EditRoundedIcon fontSize="small" />
-                    </IconButton>
+                    {u.id === utenteAttivo?.id && (
+                      <IconButton size="small" sx={{ color: 'text.secondary' }} onClick={() => { setDialogModifica(u); setNomeModifica(u.nome); }}>
+                        <EditRoundedIcon fontSize="small" />
+                      </IconButton>
+                    )}
                     <IconButton size="small" sx={{ color: 'error.main' }} onClick={() => setConfermaElimina(u)} disabled={utenti.length <= 1}>
                       <DeleteRoundedIcon fontSize="small" />
                     </IconButton>
@@ -384,8 +387,10 @@ function ImpostazioniDrawer({ aperto, onChiudi }) {
           <TextField
             autoFocus fullWidth label="Nome"
             value={nuovoNome}
-            onChange={e => setNuovoNome(e.target.value)}
+            onChange={e => { if (e.target.value.length <= MAX_NOME) setNuovoNome(e.target.value); }}
             onKeyDown={e => e.key === 'Enter' && handleAggiungiUtente()}
+            inputProps={{ maxLength: MAX_NOME }}
+            helperText={`${nuovoNome.length}/${MAX_NOME}`}
             sx={{ mt: 1 }}
           />
         </DialogContent>
@@ -401,8 +406,10 @@ function ImpostazioniDrawer({ aperto, onChiudi }) {
           <TextField
             autoFocus fullWidth label="Nome"
             value={nomeModifica}
-            onChange={e => setNomeModifica(e.target.value)}
+            onChange={e => { if (e.target.value.length <= MAX_NOME) setNomeModifica(e.target.value); }}
             onKeyDown={e => e.key === 'Enter' && handleModificaUtente()}
+            inputProps={{ maxLength: MAX_NOME }}
+            helperText={`${nomeModifica.length}/${MAX_NOME}`}
             sx={{ mt: 1 }}
           />
         </DialogContent>
