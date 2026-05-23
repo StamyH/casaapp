@@ -244,7 +244,7 @@ function ImpostazioniDrawer({ aperto, onChiudi }) {
             {/* Casa */}
             <Box>
               <SezioneLabel testo="Casa" />
-              <Box sx={{ display: 'flex', gap: 1 }}>
+              <Box sx={{ display: 'flex', gap: 1, mb: 2.5 }}>
                 <TextField
                   label="Nome della casa"
                   fullWidth
@@ -262,6 +262,18 @@ function ImpostazioniDrawer({ aperto, onChiudi }) {
                   Salva
                 </Button>
               </Box>
+
+              <Typography variant="caption" color="text.secondary" display="block" mb={1}>Primo giorno della settimana</Typography>
+              <ToggleButtonGroup
+                value={impostazioni.primoGiornoSettimana}
+                exclusive
+                onChange={(e, val) => val !== null && aggiornaImpostazioni({ primoGiornoSettimana: val })}
+                fullWidth
+                size="small"
+              >
+                <ToggleButton value={1}>Lunedì</ToggleButton>
+                <ToggleButton value={0}>Domenica</ToggleButton>
+              </ToggleButtonGroup>
             </Box>
 
             <Divider />

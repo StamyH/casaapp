@@ -20,16 +20,33 @@ function TaskList({ attivita, filtroUtente, onModifica, mostraCompletate }) {
     : attivita.filter(t => t.assegnato === filtroUtente || t.assegnato === 'entrambi')
   ).filter(t => {
     if (!mostraCompletate && t.completato) return false;
-    if (t.frequenza === 'specifica' && t.dataSpecifica && t.dataSpecifica < oggi && !t.completato) return false;
     if (t.dataFine && t.frequenza !== 'specifica' && t.dataFine < oggi) return false;
     return true;
   });
 
+  const inRitardo = attivitaFiltrate.filter(
+    t => t.frequenza === 'specifica' && t.dataSpecifica && t.dataSpecifica < oggi && !t.completato
+  );
+
   return (
     <Box>
+      {inRitardo.length > 0 && (
+        <Box mb={3}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+            <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#EF5350' }}>
+              ⚠️ In ritardo
+            </Typography>
+            <Typography variant="caption" color="text.secondary">{inRitardo.length} {inRitardo.length === 1 ? 'attività' : 'attività'}</Typography>
+          </Box>
+          {inRitardo.map(task => (
+            <TaskCard key={task.id} task={task} onModifica={onModifica} />
+          ))}
+        </Box>
+      )}
+
       {SEZIONI.map(({ frequenza, titolo, colore }) => {
         const tasks = attivitaFiltrate
-          .filter(t => t.frequenza === frequenza)
+          .filter(t => t.frequenza === frequenza && !(t.frequenza === 'specifica' && t.dataSpecifica && t.dataSpecifica < oggi && !t.completato))
           .sort((a, b) => (PRIORITA_ORDINE[a.priorita ?? 'media'] ?? 1) - (PRIORITA_ORDINE[b.priorita ?? 'media'] ?? 1));
 
         if (tasks.length === 0) return null;
