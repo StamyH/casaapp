@@ -9,8 +9,37 @@ import { formattaImporto, calcolaBilancio, oggiLocale } from '../utils/helpers';
 import { getAttivitaPerData } from './Calendario';
 import { useImpostazioni } from '../context/ImpostazioniContext';
 
-const GIORNI_SETTIMANA = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
 const GIORNI_BREVI = ['D', 'L', 'M', 'M', 'G', 'V', 'S'];
+
+function prossimadata(task, oggiStr) {
+  const oggi = new Date(oggiStr + 'T00:00:00');
+  if (task.frequenza === 'settimanale') {
+    const diff = (task.giornoSettimana - oggi.getDay() + 7) % 7 || 7;
+    const next = new Date(oggi);
+    next.setDate(oggi.getDate() + diff);
+    return `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}-${String(next.getDate()).padStart(2, '0')}`;
+  }
+  if (task.frequenza === 'mensile') {
+    let year = oggi.getFullYear();
+    let month = oggi.getMonth();
+    if (oggi.getDate() >= task.giornoMese) {
+      month += 1;
+      if (month > 11) { month = 0; year += 1; }
+    }
+    return `${year}-${String(month + 1).padStart(2, '0')}-${String(task.giornoMese).padStart(2, '0')}`;
+  }
+  if (task.frequenza === 'specifica') return task.dataSpecifica;
+  return null;
+}
+
+function etichettaData(dataStr, oggiStr) {
+  const diff = Math.round(
+    (new Date(dataStr + 'T00:00:00') - new Date(oggiStr + 'T00:00:00')) / 86400000
+  );
+  if (diff === 1) return 'domani';
+  if (diff < 7) return new Date(dataStr + 'T00:00:00').toLocaleDateString('it-IT', { weekday: 'short' });
+  return new Date(dataStr + 'T00:00:00').toLocaleDateString('it-IT', { day: '2-digit', month: 'short' });
+}
 
 function getSettimana(dataStr, primoGiorno = 1) {
   const d = new Date(dataStr + 'T00:00:00');
@@ -58,7 +87,9 @@ function Home() {
     if (t.frequenza === 'mensile' && t.giornoMese !== giornoMeseOggi) return true;
     if (t.frequenza === 'specifica' && t.dataSpecifica > oggiStr) return true;
     return false;
-  }).slice(0, 3);
+  })
+  .sort((a, b) => (prossimadata(a, oggiStr) || '').localeCompare(prossimadata(b, oggiStr) || ''))
+  .slice(0, 3);
 
   const inPari = bilancio.importoDebito < 0.01;
   const completateOggi = attivitaOggi.filter(t => t.completato).length;
@@ -304,25 +335,27 @@ function Home() {
               <Typography variant="subtitle1" fontWeight={700}>📅 In arrivo</Typography>
               <ChevronRightRoundedIcon fontSize="small" sx={{ color: 'text.disabled' }} />
             </Box>
-            {prossimeAttivita.map((task, i) => (
-              <Box key={task.id}>
-                {i > 0 && <Divider sx={{ my: 1 }} />}
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="body2">{task.titolo}</Typography>
-                  <Chip
-                    label={
-                      task.frequenza === 'settimanale'
-                        ? `ogni ${GIORNI_SETTIMANA[task.giornoSettimana]}`
-                        : task.frequenza === 'mensile'
-                        ? `il ${task.giornoMese} del mese`
-                        : new Date(task.dataSpecifica).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' })
-                    }
-                    size="small"
-                    sx={{ fontSize: '0.65rem' }}
-                  />
+            {prossimeAttivita.map((task, i) => {
+              const nextData = prossimadata(task, oggiStr);
+              return (
+                <Box key={task.id}>
+                  {i > 0 && <Divider sx={{ my: 1 }} />}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography variant="body2" noWrap>{task.titolo}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {task.assegnato === 'entrambi' ? '👥 Entrambi' : `👤 ${task.assegnato}`}
+                      </Typography>
+                    </Box>
+                    <Chip
+                      label={nextData ? etichettaData(nextData, oggiStr) : '—'}
+                      size="small"
+                      sx={{ fontSize: '0.65rem', flexShrink: 0 }}
+                    />
+                  </Box>
                 </Box>
-              </Box>
-            ))}
+              );
+            })}
           </CardContent>
         </Card>
       )}
