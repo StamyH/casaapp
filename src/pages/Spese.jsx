@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useFilters } from '../hooks/useFilters';
 import {
   Box, Typography, Fab, MenuItem, TextField, IconButton,
   Tooltip, Collapse, Button, Chip, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar,
@@ -40,24 +41,15 @@ function Spese() {
   const [dialogCSV, setDialogCSV] = useState(false);
   const [periodoCSV, setPeriodoCSV] = useState({ da: '', a: '' });
   const [filtriAperti, setFiltriAperti] = useState(false);
-  const [filtriStaged, setFiltriStaged] = useState(FILTRI_VUOTI);
-  const [filtriAttivi, setFiltriAttivi] = useState(FILTRI_VUOTI);
-
-  const filtriModificati = JSON.stringify(filtriStaged) !== JSON.stringify(filtriAttivi);
-  const filtriAttiviCount = contaFiltriAttivi(filtriAttivi);
-
-  const aggiornaStagedFiltro = (campo, valore) => {
-    setFiltriStaged(prev => ({ ...prev, [campo]: valore }));
-  };
-
-  const applicaFiltri = () => {
-    setFiltriAttivi({ ...filtriStaged });
-  };
-
-  const azzeraFiltri = () => {
-    setFiltriStaged(FILTRI_VUOTI);
-    setFiltriAttivi(FILTRI_VUOTI);
-  };
+  const {
+    filtriStaged,
+    filtriAttivi,
+    filtriModificati,
+    filtriAttiviCount,
+    aggiornaStagedFiltro,
+    applicaFiltri,
+    azzeraFiltri,
+  } = useFilters(FILTRI_VUOTI, contaFiltriAttivi);
 
   const speseElaborate = spese
     .filter(s => {

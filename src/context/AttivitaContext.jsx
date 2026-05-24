@@ -1,17 +1,18 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 import { oggiLocale } from '../utils/helpers';
 
 const AttivitaContext = createContext();
 
 function inizioSettimana(date) {
-  const d = new Date(date);
-  d.setDate(d.getDate() - (d.getDay() || 7) + 1);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const inizio = new Date(date);
+  inizio.setDate(inizio.getDate() - (inizio.getDay() || 7) + 1);
+  return `${inizio.getFullYear()}-${String(inizio.getMonth() + 1).padStart(2, '0')}-${String(inizio.getDate()).padStart(2, '0')}`;
 }
 
 function attivitaIniziali() {
-  const _d = new Date(); _d.setMonth(_d.getMonth() + 1);
-  const traUnMese = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`;
+  const dataFutura = new Date(); dataFutura.setMonth(dataFutura.getMonth() + 1);
+  const traUnMese = `${dataFutura.getFullYear()}-${String(dataFutura.getMonth() + 1).padStart(2, '0')}-${String(dataFutura.getDate()).padStart(2, '0')}`;
 
   let nomeA = 'Utente 1', nomeB = 'Utente 2';
   try {
@@ -30,31 +31,8 @@ function attivitaIniziali() {
 }
 
 export function AttivitaProvider({ children }) {
-  const [attivita, setAttivita] = useState(() => {
-    try {
-      const saved = localStorage.getItem('casaapp_attivita');
-      return saved ? JSON.parse(saved) : attivitaIniziali();
-    } catch {
-      return attivitaIniziali();
-    }
-  });
-
-  const [storicoCompletamenti, setStoricoCompletamenti] = useState(() => {
-    try {
-      const saved = localStorage.getItem('casaapp_storico_attivita');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  useEffect(() => {
-    localStorage.setItem('casaapp_attivita', JSON.stringify(attivita));
-  }, [attivita]);
-
-  useEffect(() => {
-    localStorage.setItem('casaapp_storico_attivita', JSON.stringify(storicoCompletamenti));
-  }, [storicoCompletamenti]);
+  const [attivita, setAttivita] = useLocalStorage('casaapp_attivita', attivitaIniziali);
+  const [storicoCompletamenti, setStoricoCompletamenti] = useLocalStorage('casaapp_storico_attivita', () => []);
 
   useEffect(() => {
     const resetSeNecessario = () => {
@@ -88,7 +66,7 @@ export function AttivitaProvider({ children }) {
     const handleVisibility = () => { if (!document.hidden) resetSeNecessario(); };
     document.addEventListener('visibilitychange', handleVisibility);
     return () => document.removeEventListener('visibilitychange', handleVisibility);
-  }, []);
+  }, [setAttivita]);
 
   const aggiungiAttivita = (nuovaAttivita) => {
     setAttivita(prev => [...prev, { ...nuovaAttivita, id: Date.now(), completato: false }]);

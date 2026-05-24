@@ -52,7 +52,7 @@ function AuthGuard() {
   const modalitaUtente = utenteAttivo?.modalita || 'auto';
   const modalitaEffettiva = modalitaUtente === 'auto' ? preferenzaSistema : modalitaUtente;
 
-  const theme = createTheme({
+  const theme = useMemo(() => createTheme({
     palette: {
       mode: modalitaEffettiva,
       primary: { main: utenteAttivo?.coloreApp || '#5C6BC0' },
@@ -66,7 +66,7 @@ function AuthGuard() {
       h6: { fontWeight: 700 },
     },
     shape: { borderRadius: 16 },
-  });
+  }), [modalitaEffettiva, utenteAttivo?.coloreApp]);
 
   useEffect(() => {
     if (!utenteAttivo && location.pathname !== '/benvenuto') {
