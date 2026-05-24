@@ -57,28 +57,37 @@ export function AttivitaProvider({ children }) {
   }, [storicoCompletamenti]);
 
   useEffect(() => {
-    const oggiStr = oggiLocale();
-    const ultimoReset = localStorage.getItem('casaapp_ultimo_reset');
+    const resetSeNecessario = () => {
+      const oggiStr = oggiLocale();
+      const ultimoReset = localStorage.getItem('casaapp_ultimo_reset');
+      if (ultimoReset === oggiStr) return;
 
-    if (ultimoReset === oggiStr) return;
+      const oggi = new Date();
+      // Fix UTC bug: parse ultimoReset as local midnight
+      const ultima = ultimoReset ? new Date(ultimoReset + 'T00:00:00') : null;
 
-    const oggi = new Date();
-    const ultima = ultimoReset ? new Date(ultimoReset) : null;
+      const nuovaSettimana = !ultima || inizioSettimana(oggi) !== inizioSettimana(ultima);
+      const nuovoMese = !ultima ||
+        oggi.getMonth() !== ultima.getMonth() ||
+        oggi.getFullYear() !== ultima.getFullYear();
 
-    const nuovaSettimana = !ultima || inizioSettimana(oggi) !== inizioSettimana(ultima);
-    const nuovoMese = !ultima ||
-      oggi.getMonth() !== ultima.getMonth() ||
-      oggi.getFullYear() !== ultima.getFullYear();
+      setAttivita(prev => prev.map(att => {
+        if (!att.completato) return att;
+        if (att.frequenza === 'giornaliera') return { ...att, completato: false, completatoDa: null };
+        if (att.frequenza === 'settimanale' && nuovaSettimana) return { ...att, completato: false, completatoDa: null };
+        if (att.frequenza === 'mensile' && nuovoMese) return { ...att, completato: false, completatoDa: null };
+        return att;
+      }));
 
-    setAttivita(prev => prev.map(att => {
-      if (!att.completato) return att;
-      if (att.frequenza === 'giornaliera') return { ...att, completato: false, completatoDa: null };
-      if (att.frequenza === 'settimanale' && nuovaSettimana) return { ...att, completato: false, completatoDa: null };
-      if (att.frequenza === 'mensile' && nuovoMese) return { ...att, completato: false, completatoDa: null };
-      return att;
-    }));
+      localStorage.setItem('casaapp_ultimo_reset', oggiStr);
+    };
 
-    localStorage.setItem('casaapp_ultimo_reset', oggiStr);
+    resetSeNecessario();
+
+    // Riesegui il reset anche quando l'app torna in primo piano dopo una notte
+    const handleVisibility = () => { if (!document.hidden) resetSeNecessario(); };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, []);
 
   const aggiungiAttivita = (nuovaAttivita) => {

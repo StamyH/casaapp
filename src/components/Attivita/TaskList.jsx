@@ -1,5 +1,7 @@
-import React from 'react';
-import { Box, Typography } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Typography, Collapse, IconButton } from '@mui/material';
+import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
+import ExpandLessRoundedIcon from '@mui/icons-material/ExpandLessRounded';
 import TaskCard from './TaskCard';
 import { oggiLocale } from '../../utils/helpers';
 
@@ -14,9 +16,9 @@ const PRIORITA_ORDINE = { alta: 0, media: 1, bassa: 2 };
 
 function TaskList({ attivita, onModifica, mostraCompletate }) {
   const oggi = oggiLocale();
+  const [completateAperte, setCompletateAperte] = useState(false);
 
   const attivitaFiltrate = attivita.filter(t => {
-    if (!mostraCompletate && t.completato) return false;
     if (t.dataFine && t.frequenza !== 'specifica' && t.dataFine < oggi) return false;
     return true;
   });
@@ -24,6 +26,14 @@ function TaskList({ attivita, onModifica, mostraCompletate }) {
   const inRitardo = attivitaFiltrate.filter(
     t => t.frequenza === 'specifica' && t.dataSpecifica && t.dataSpecifica < oggi && !t.completato
   );
+
+  // Attività completate: sezione collassabile
+  const attivitaComplete = mostraCompletate
+    ? attivitaFiltrate.filter(t => t.completato && !(t.frequenza === 'specifica' && t.dataSpecifica < oggi))
+    : [];
+
+  // Attività non completate: suddivise per frequenza
+  const attivitaNonComplete = attivitaFiltrate.filter(t => !t.completato);
 
   return (
     <Box>
@@ -33,7 +43,7 @@ function TaskList({ attivita, onModifica, mostraCompletate }) {
             <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#EF5350' }}>
               ⚠️ In ritardo
             </Typography>
-            <Typography variant="caption" color="text.secondary">{inRitardo.length} {inRitardo.length === 1 ? 'attività' : 'attività'}</Typography>
+            <Typography variant="caption" color="text.secondary">{inRitardo.length} attività</Typography>
           </Box>
           {inRitardo.map(task => (
             <TaskCard key={task.id} task={task} onModifica={onModifica} />
@@ -42,13 +52,11 @@ function TaskList({ attivita, onModifica, mostraCompletate }) {
       )}
 
       {SEZIONI.map(({ frequenza, titolo, colore }) => {
-        const tasks = attivitaFiltrate
-          .filter(t => t.frequenza === frequenza && !(t.frequenza === 'specifica' && t.dataSpecifica && t.dataSpecifica < oggi && !t.completato))
+        const tasks = attivitaNonComplete
+          .filter(t => t.frequenza === frequenza && !(t.frequenza === 'specifica' && t.dataSpecifica && t.dataSpecifica < oggi))
           .sort((a, b) => (PRIORITA_ORDINE[a.priorita ?? 'media'] ?? 1) - (PRIORITA_ORDINE[b.priorita ?? 'media'] ?? 1));
 
         if (tasks.length === 0) return null;
-
-        const completati = tasks.filter(t => t.completato).length;
 
         return (
           <Box key={frequenza} mb={3}>
@@ -67,7 +75,7 @@ function TaskList({ attivita, onModifica, mostraCompletate }) {
                 )}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {completati}/{tasks.length} completati
+                {tasks.length} {tasks.length === 1 ? 'attività' : 'attività'}
               </Typography>
             </Box>
 
@@ -78,7 +86,32 @@ function TaskList({ attivita, onModifica, mostraCompletate }) {
         );
       })}
 
-      {attivitaFiltrate.length === 0 && (
+      {/* Sezione completate — retraibile */}
+      {attivitaComplete.length > 0 && (
+        <Box mb={3}>
+          <Box
+            onClick={() => setCompletateAperte(p => !p)}
+            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, cursor: 'pointer' }}
+          >
+            <Typography variant="subtitle2" fontWeight={700} color="success.main">
+              ✅ Completate
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Typography variant="caption" color="text.secondary">{attivitaComplete.length}</Typography>
+              <IconButton size="small" sx={{ p: 0, color: 'text.secondary' }}>
+                {completateAperte ? <ExpandLessRoundedIcon fontSize="small" /> : <ExpandMoreRoundedIcon fontSize="small" />}
+              </IconButton>
+            </Box>
+          </Box>
+          <Collapse in={completateAperte}>
+            {attivitaComplete.map(task => (
+              <TaskCard key={task.id} task={task} onModifica={onModifica} />
+            ))}
+          </Collapse>
+        </Box>
+      )}
+
+      {attivitaFiltrate.filter(t => !t.completato).length === 0 && attivitaComplete.length === 0 && (
         <Box sx={{ textAlign: 'center', mt: 6 }}>
           <Typography fontSize="2.5rem">✅</Typography>
           <Typography color="text.secondary" mt={1}>Nessuna attività trovata</Typography>
