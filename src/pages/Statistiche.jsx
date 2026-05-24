@@ -62,7 +62,7 @@ function calcolaAttesi(task, anno, mese, oggiStr) {
   const ultimoDelMese = new Date(anno, mese + 1, 0);
   // Se il mese è quello corrente, contiamo solo fino a oggi
   const ultimoDelMeseStr = `${ultimoDelMese.getFullYear()}-${String(ultimoDelMese.getMonth() + 1).padStart(2, '0')}-${String(ultimoDelMese.getDate()).padStart(2, '0')}`;
-  const fineEffettiva = oggiStr < ultimoDelMeseStr ? new Date(oggiStr) : ultimoDelMese;
+  const fineEffettiva = oggiStr < ultimoDelMeseStr ? new Date(oggiStr + 'T00:00:00') : ultimoDelMese;
 
   switch (task.frequenza) {
     case 'giornaliera': {
