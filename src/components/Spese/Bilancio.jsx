@@ -12,6 +12,20 @@ import { useSpese } from '../../context/SpeseContext';
 import { useApp } from '../../context/AppContext';
 import { useImpostazioni } from '../../context/ImpostazioniContext';
 
+const STILE_SALDA = {
+  bgcolor: 'rgba(255,255,255,0.25)', color: 'white', fontWeight: 700, borderRadius: 3,
+  '&:hover': { bgcolor: 'rgba(255,255,255,0.35)' },
+  '&.Mui-disabled': { bgcolor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' },
+};
+
+function BottoneSalda({ onClick, disabled }) {
+  return (
+    <Button variant="contained" size="small" disabled={disabled} onClick={onClick} sx={STILE_SALDA}>
+      Salda
+    </Button>
+  );
+}
+
 function Bilancio() {
   const { spese, aggiungiSpesa } = useSpese();
   const { utenteAttivo, utenti } = useApp();
@@ -140,40 +154,19 @@ function Bilancio() {
               <Typography variant="h6" fontWeight={700}>
                 {bilancio.debitore} deve {formattaImporto(bilancio.importoDebito)} a {bilancio.creditore}
               </Typography>
-              <Button
-                variant="contained"
-                size="small"
+              <BottoneSalda
                 disabled={filtroAttivo}
                 onClick={() => setDialogSaldo({ debitore: bilancio.debitore, creditore: bilancio.creditore, importo: bilancio.importoDebito })}
-                sx={{
-                  bgcolor: 'rgba(255,255,255,0.25)', color: 'white', fontWeight: 700, borderRadius: 3,
-                  '&:hover': { bgcolor: 'rgba(255,255,255,0.35)' },
-                  '&.Mui-disabled': { bgcolor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' },
-                }}
-              >
-                Salda
-              </Button>
+              />
             </Box>
           ) : (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {bilancio.tuttiDebiti.map((d, i) => (
+              {bilancio.tuttiDebiti.map((debito, i) => (
                 <Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
                   <Typography fontWeight={600} sx={{ fontSize: '0.95rem' }}>
-                    {d.debitore} deve {formattaImporto(d.importo)} a {d.creditore}
+                    {debito.debitore} deve {formattaImporto(debito.importo)} a {debito.creditore}
                   </Typography>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    disabled={filtroAttivo}
-                    onClick={() => setDialogSaldo(d)}
-                    sx={{
-                      bgcolor: 'rgba(255,255,255,0.25)', color: 'white', fontWeight: 700, borderRadius: 3,
-                      '&:hover': { bgcolor: 'rgba(255,255,255,0.35)' },
-                      '&.Mui-disabled': { bgcolor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' },
-                    }}
-                  >
-                    Salda
-                  </Button>
+                  <BottoneSalda disabled={filtroAttivo} onClick={() => setDialogSaldo(debito)} />
                 </Box>
               ))}
             </Box>

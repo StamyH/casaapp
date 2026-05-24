@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useSpese } from '../context/SpeseContext';
 import { useAttivita } from '../context/AttivitaContext';
-import { formattaImporto, calcolaBilancio, oggiLocale } from '../utils/helpers';
+import { formattaImporto, calcolaBilancio, oggiLocale, formatoData } from '../utils/helpers';
 import { getAttivitaPerData } from './Calendario';
 import { useImpostazioni } from '../context/ImpostazioniContext';
 
@@ -14,10 +14,9 @@ const GIORNI_BREVI = ['D', 'L', 'M', 'M', 'G', 'V', 'S'];
 function prossimadata(task, oggiStr) {
   const oggi = new Date(oggiStr + 'T00:00:00');
   if (task.frequenza === 'settimanale') {
-    const diff = (task.giornoSettimana - oggi.getDay() + 7) % 7 || 7;
     const next = new Date(oggi);
-    next.setDate(oggi.getDate() + diff);
-    return `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}-${String(next.getDate()).padStart(2, '0')}`;
+    next.setDate(oggi.getDate() + ((task.giornoSettimana - oggi.getDay() + 7) % 7 || 7));
+    return formatoData(next);
   }
   if (task.frequenza === 'mensile') {
     let year = oggi.getFullYear();
@@ -33,24 +32,23 @@ function prossimadata(task, oggiStr) {
 }
 
 function etichettaData(dataStr, oggiStr) {
-  const diff = Math.round(
-    (new Date(dataStr + 'T00:00:00') - new Date(oggiStr + 'T00:00:00')) / 86400000
-  );
+  const data = new Date(dataStr + 'T00:00:00');
+  const diff = Math.round((data - new Date(oggiStr + 'T00:00:00')) / 86400000);
   if (diff === 1) return 'domani';
-  if (diff < 7) return new Date(dataStr + 'T00:00:00').toLocaleDateString('it-IT', { weekday: 'short' });
-  return new Date(dataStr + 'T00:00:00').toLocaleDateString('it-IT', { day: '2-digit', month: 'short' });
+  return data.toLocaleDateString('it-IT', diff < 7
+    ? { weekday: 'short' }
+    : { day: '2-digit', month: 'short' }
+  );
 }
 
 function getSettimana(dataStr, primoGiorno = 1) {
   const d = new Date(dataStr + 'T00:00:00');
-  const giorno = d.getDay();
-  const offset = (giorno - primoGiorno + 7) % 7;
   const inizio = new Date(d);
-  inizio.setDate(d.getDate() - offset);
+  inizio.setDate(d.getDate() - (d.getDay() - primoGiorno + 7) % 7);
   return Array.from({ length: 7 }, (_, i) => {
     const giornata = new Date(inizio);
     giornata.setDate(inizio.getDate() + i);
-    return `${giornata.getFullYear()}-${String(giornata.getMonth() + 1).padStart(2, '0')}-${String(giornata.getDate()).padStart(2, '0')}`;
+    return formatoData(giornata);
   });
 }
 

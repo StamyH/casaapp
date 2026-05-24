@@ -8,12 +8,13 @@ export const COLORI_TEMA = [
   { valore: '#42A5F5', secondario: '#26A69A', nome: 'Azzurro' },
 ];
 
+// Formatta un oggetto Date come stringa YYYY-MM-DD nel fuso locale
+export const formatoData = (date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
 // Restituisce la data odierna come stringa YYYY-MM-DD nel fuso locale
 // (evita il bug UTC di toISOString() che a mezzanotte può dare ieri)
-export const oggiLocale = () => {
-  const oggi = new Date();
-  return `${oggi.getFullYear()}-${String(oggi.getMonth() + 1).padStart(2, '0')}-${String(oggi.getDate()).padStart(2, '0')}`;
-};
+export const oggiLocale = () => formatoData(new Date());
 
 // Formatta un numero come importo in euro
 // es. 85.5 → "€ 85,50"

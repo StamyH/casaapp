@@ -1,18 +1,18 @@
 import React, { createContext, useContext, useEffect } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { oggiLocale } from '../utils/helpers';
+import { oggiLocale, formatoData } from '../utils/helpers';
 
 const AttivitaContext = createContext();
 
 function inizioSettimana(date) {
   const inizio = new Date(date);
   inizio.setDate(inizio.getDate() - (inizio.getDay() || 7) + 1);
-  return `${inizio.getFullYear()}-${String(inizio.getMonth() + 1).padStart(2, '0')}-${String(inizio.getDate()).padStart(2, '0')}`;
+  return formatoData(inizio);
 }
 
 function attivitaIniziali() {
   const dataFutura = new Date(); dataFutura.setMonth(dataFutura.getMonth() + 1);
-  const traUnMese = `${dataFutura.getFullYear()}-${String(dataFutura.getMonth() + 1).padStart(2, '0')}-${String(dataFutura.getDate()).padStart(2, '0')}`;
+  const traUnMese = formatoData(dataFutura);
 
   let nomeA = 'Utente 1', nomeB = 'Utente 2';
   try {
