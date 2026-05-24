@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Box, Typography, IconButton, Chip, Divider, Checkbox, Fab,
+  Box, Typography, IconButton, Divider, Checkbox, Fab,
 } from '@mui/material';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
@@ -215,17 +215,45 @@ function Calendario() {
       <Divider sx={{ mb: 2 }} />
 
       {/* Attività del giorno selezionato */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-        <Typography variant="subtitle1" fontWeight={700} textTransform="capitalize">
+      <Box sx={{ mb: 1.5 }}>
+        <Typography variant="subtitle1" fontWeight={700} textTransform="capitalize" mb={0.75}>
           {new Date(dataSelezionata + 'T00:00:00').toLocaleDateString('it-IT', {
             weekday: 'long', day: 'numeric', month: 'long',
           })}
         </Typography>
-        <Chip
-          label={`${attivitaGiorno.filter(t => t.completato).length}/${attivitaGiorno.length}`}
-          size="small"
-          color={attivitaGiorno.length > 0 && attivitaGiorno.every(t => t.completato) ? 'success' : 'default'}
-        />
+        {attivitaGiorno.length > 0 && (
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            {utenti.map(u => {
+              const taskUtente = attivitaGiorno.filter(
+                t => t.assegnato === u.nome || t.assegnato === 'entrambi'
+              );
+              if (taskUtente.length === 0) return null;
+              const completati = taskUtente.filter(t => t.completato).length;
+              const tuttiCompletati = completati === taskUtente.length;
+              return (
+                <Box
+                  key={u.id}
+                  sx={{
+                    display: 'flex', alignItems: 'center', gap: 0.5,
+                    px: 1, py: 0.25, borderRadius: 2,
+                    bgcolor: tuttiCompletati ? 'success.light' : 'action.hover',
+                  }}
+                >
+                  <Box sx={{
+                    width: 10, height: 10, borderRadius: '50%', flexShrink: 0,
+                    bgcolor: u.coloreAvatar,
+                  }} />
+                  <Typography variant="caption" fontWeight={700} color={tuttiCompletati ? 'success.dark' : 'text.primary'}>
+                    {u.nome}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {completati}/{taskUtente.length}
+                  </Typography>
+                </Box>
+              );
+            })}
+          </Box>
+        )}
       </Box>
 
       {attivitaGiorno.length === 0 ? (

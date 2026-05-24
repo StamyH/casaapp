@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   Card, CardContent, Box, Typography, Divider, Button, Chip,
   Dialog, DialogTitle, DialogContent, DialogActions, Collapse, IconButton,
+  ToggleButton, ToggleButtonGroup,
 } from '@mui/material';
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
@@ -16,17 +17,21 @@ function Bilancio() {
   const { utenteAttivo, utenti } = useApp();
   const { impostazioni } = useImpostazioni();
   const [dialogSaldo, setDialogSaldo] = useState(null);
-  const [filtroCategoria, setFiltroCategoria] = useState('tutte');
+  const [modalitaFiltro, setModalitaFiltro] = useState('tutte'); // 'tutte' | 'selezione'
+  const [categorieSelezionate, setCategorieSelezionate] = useState([]);
+  const [dialogCategorie, setDialogCategorie] = useState(false);
   const [storicoAperto, setStoricoAperto] = useState(false);
   const [quotaAperta, setQuotaAperta] = useState(false);
 
   const coloreApp = utenteAttivo?.coloreApp || '#5C6BC0';
   const coloreSecondario = utenteAttivo?.coloreSecondario || '#26A69A';
 
-  const categoriePresenti = [...new Set(spese.map(s => s.categoria))];
-  const speseFiltrate = filtroCategoria === 'tutte'
+  const categoriePresenti = [...new Set(spese.filter(s => s.categoria !== 'saldo').map(s => s.categoria))];
+  const speseFiltrate = modalitaFiltro === 'tutte' || categorieSelezionate.length === 0
     ? spese
-    : spese.filter(s => s.categoria === filtroCategoria);
+    : spese.filter(s => categorieSelezionate.includes(s.categoria) || s.categoria === 'saldo');
+
+  const filtroAttivo = modalitaFiltro === 'selezione' && categorieSelezionate.length > 0;
 
   const bilancio = calcolaBilancio(speseFiltrate, utenti);
   const inPari = bilancio.tuttiDebiti.length === 0;
@@ -78,38 +83,48 @@ function Bilancio() {
             📊 Bilancio
           </Typography>
 
-          {/* Filtro categoria */}
-          <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', mb: 2 }}>
-            <Chip
-              label="Tutte"
+          {/* Filtro categoria — 2 tasti */}
+          <Box sx={{ display: 'flex', gap: 1, mb: filtroAttivo ? 1 : 2, alignItems: 'center' }}>
+            <ToggleButtonGroup
+              value={modalitaFiltro}
+              exclusive
+              onChange={(e, val) => { if (val) setModalitaFiltro(val); }}
               size="small"
-              onClick={() => setFiltroCategoria('tutte')}
               sx={{
-                bgcolor: filtroCategoria === 'tutte' ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.15)',
-                color: 'white',
-                fontWeight: filtroCategoria === 'tutte' ? 700 : 400,
-                border: 'none',
-                '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' },
+                '& .MuiToggleButton-root': {
+                  color: 'rgba(255,255,255,0.7)',
+                  borderColor: 'rgba(255,255,255,0.3)',
+                  fontSize: '0.75rem',
+                  py: 0.5,
+                  '&.Mui-selected': { bgcolor: 'rgba(255,255,255,0.25)', color: 'white', fontWeight: 700 },
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.15)' },
+                },
               }}
-            />
-            {categoriePresenti.filter(c => c !== 'saldo').map(cat => (
-              <Chip
-                key={cat}
-                label={`${iconaCategoria(cat)} ${cat}`}
-                size="small"
-                onClick={() => setFiltroCategoria(cat)}
-                sx={{
-                  bgcolor: filtroCategoria === cat ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.15)',
-                  color: 'white',
-                  fontWeight: filtroCategoria === cat ? 700 : 400,
-                  border: 'none',
-                  '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' },
-                }}
-              />
-            ))}
+            >
+              <ToggleButton value="tutte">Tutte</ToggleButton>
+              <ToggleButton value="selezione" onClick={() => { setModalitaFiltro('selezione'); setDialogCategorie(true); }}>
+                Seleziona {categorieSelezionate.length > 0 ? `(${categorieSelezionate.length})` : ''}
+              </ToggleButton>
+            </ToggleButtonGroup>
           </Box>
 
-          {filtroCategoria !== 'tutte' && !inPari && (
+          {/* Chip categorie selezionate */}
+          {filtroAttivo && (
+            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 2 }}>
+              {categorieSelezionate.map(cat => (
+                <Chip
+                  key={cat}
+                  label={`${iconaCategoria(cat)} ${cat}`}
+                  size="small"
+                  onDelete={() => setCategorieSelezionate(prev => prev.filter(c => c !== cat))}
+                  sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white', fontWeight: 600, fontSize: '0.7rem',
+                    '& .MuiChip-deleteIcon': { color: 'rgba(255,255,255,0.7)' } }}
+                />
+              ))}
+            </Box>
+          )}
+
+          {filtroAttivo && !inPari && (
             <Typography variant="caption" sx={{ opacity: 0.75, display: 'block', mb: 1 }}>
               Rimuovi il filtro categoria per poter saldare il debito totale
             </Typography>
@@ -128,7 +143,7 @@ function Bilancio() {
               <Button
                 variant="contained"
                 size="small"
-                disabled={filtroCategoria !== 'tutte'}
+                disabled={filtroAttivo}
                 onClick={() => setDialogSaldo({ debitore: bilancio.debitore, creditore: bilancio.creditore, importo: bilancio.importoDebito })}
                 sx={{
                   bgcolor: 'rgba(255,255,255,0.25)', color: 'white', fontWeight: 700, borderRadius: 3,
@@ -149,7 +164,7 @@ function Bilancio() {
                   <Button
                     variant="contained"
                     size="small"
-                    disabled={filtroCategoria !== 'tutte'}
+                    disabled={filtroAttivo}
                     onClick={() => setDialogSaldo(d)}
                     sx={{
                       bgcolor: 'rgba(255,255,255,0.25)', color: 'white', fontWeight: 700, borderRadius: 3,
@@ -223,6 +238,36 @@ function Bilancio() {
           )}
         </CardContent>
       </Card>
+
+      {/* Dialog selezione categorie */}
+      <Dialog open={dialogCategorie} onClose={() => setDialogCategorie(false)} fullWidth maxWidth="xs">
+        <DialogTitle fontWeight={700}>Seleziona categorie</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, pt: 1 }}>
+            {categoriePresenti.map(cat => {
+              const selezionata = categorieSelezionate.includes(cat);
+              return (
+                <Chip
+                  key={cat}
+                  label={`${iconaCategoria(cat)} ${cat.charAt(0).toUpperCase() + cat.slice(1)}`}
+                  onClick={() => setCategorieSelezionate(prev =>
+                    selezionata ? prev.filter(c => c !== cat) : [...prev, cat]
+                  )}
+                  color={selezionata ? 'primary' : 'default'}
+                  variant={selezionata ? 'filled' : 'outlined'}
+                  sx={{ fontWeight: 600 }}
+                />
+              );
+            })}
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => { setCategorieSelezionate([]); setModalitaFiltro('tutte'); setDialogCategorie(false); }}>
+            Azzera
+          </Button>
+          <Button variant="contained" onClick={() => setDialogCategorie(false)}>Applica</Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog open={!!dialogSaldo} onClose={() => setDialogSaldo(null)} fullWidth maxWidth="xs">
         <DialogTitle fontWeight={700}>💳 Conferma saldo</DialogTitle>

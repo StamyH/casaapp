@@ -46,9 +46,22 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica, onSuccess }) {
     setConfermaElimina(false);
     setErrori({});
     if (spesaInModifica) {
-      const parts = spesaInModifica.partecipanti
-        ? spesaInModifica.partecipanti.filter(p => p !== spesaInModifica.pagatore)
-        : [spesaInModifica.altroUtente || utenti.find(u => u.nome !== spesaInModifica.pagatore)?.nome || ''].filter(Boolean);
+      // Valida il pagatore contro gli utenti correnti; fallback all'utente attivo
+      const nomiUtenti = utenti.map(u => u.nome);
+      const pagatoreValido = nomiUtenti.includes(spesaInModifica.pagatore)
+        ? spesaInModifica.pagatore
+        : (utenteAttivo?.nome || utenti[0]?.nome || '');
+
+      // Valida i partecipanti: filtra quelli che non esistono più tra gli utenti
+      const partsSalvati = spesaInModifica.partecipanti
+        ? spesaInModifica.partecipanti.filter(p => p !== pagatoreValido && nomiUtenti.includes(p))
+        : [spesaInModifica.altroUtente].filter(p => p && nomiUtenti.includes(p) && p !== pagatoreValido);
+
+      // Se non ci sono partecipanti validi, includi tutti gli altri utenti di default
+      const parts = partsSalvati.length > 0
+        ? partsSalvati
+        : utenti.filter(u => u.nome !== pagatoreValido).map(u => u.nome);
+
       setForm({
         descrizione: spesaInModifica.descrizione,
         importo: String(spesaInModifica.importo),
@@ -56,7 +69,7 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica, onSuccess }) {
         categoria: spesaInModifica.categoria,
         divisione: spesaInModifica.divisione === 'equa' ? 'metà' : spesaInModifica.divisione,
         percentuale: spesaInModifica.percentuale,
-        pagatore: spesaInModifica.pagatore,
+        pagatore: pagatoreValido,
         partecipanti: parts,
         ricorrente: spesaInModifica.ricorrente || false,
       });
