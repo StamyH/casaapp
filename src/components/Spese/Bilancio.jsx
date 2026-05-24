@@ -18,6 +18,7 @@ function Bilancio() {
   const [dialogSaldo, setDialogSaldo] = useState(null);
   const [filtroCategoria, setFiltroCategoria] = useState('tutte');
   const [storicoAperto, setStoricoAperto] = useState(false);
+  const [quotaAperta, setQuotaAperta] = useState(false);
 
   const coloreApp = utenteAttivo?.coloreApp || '#5C6BC0';
   const coloreSecondario = utenteAttivo?.coloreSecondario || '#26A69A';
@@ -32,7 +33,8 @@ function Bilancio() {
 
   const pagatoDa = {};
   utenti.forEach(u => { pagatoDa[u.nome] = 0; });
-  speseFiltrate.forEach(s => {
+  // Escludi i saldi dal "pagato da" (sono solo pareggi di debito, non spese reali)
+  speseFiltrate.filter(s => s.tipo !== 'saldo' && s.categoria !== 'saldo').forEach(s => {
     if (pagatoDa[s.pagatore] !== undefined) pagatoDa[s.pagatore] += s.importo;
   });
 
@@ -164,14 +166,28 @@ function Bilancio() {
 
           <Divider sx={{ borderColor: 'rgba(255,255,255,0.2)', my: 2 }} />
 
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1, mb: storicoSaldi.length > 0 ? 1.5 : 0 }}>
-            {utenti.map(u => (
-              <Box key={u.id}>
-                <Typography variant="caption" sx={{ opacity: 0.8 }}>Pagato da {u.nome}</Typography>
-                <Typography fontWeight={700}>{formattaImporto(pagatoDa[u.nome] || 0)}</Typography>
-              </Box>
-            ))}
+          {/* Quote pagate — retraibile */}
+          <Box
+            onClick={() => setQuotaAperta(p => !p)}
+            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', mb: quotaAperta ? 1 : 0, opacity: 0.85 }}
+          >
+            <Typography variant="caption" fontWeight={600}>
+              💰 Quote pagate ({utenti.length})
+            </Typography>
+            <IconButton size="small" sx={{ color: 'white', p: 0 }}>
+              {quotaAperta ? <ExpandLessRoundedIcon fontSize="small" /> : <ExpandMoreRoundedIcon fontSize="small" />}
+            </IconButton>
           </Box>
+          <Collapse in={quotaAperta}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1, mb: storicoSaldi.length > 0 ? 1.5 : 0 }}>
+              {utenti.map(u => (
+                <Box key={u.id}>
+                  <Typography variant="caption" sx={{ opacity: 0.8 }}>Pagato da {u.nome}</Typography>
+                  <Typography fontWeight={700}>{formattaImporto(pagatoDa[u.nome] || 0)}</Typography>
+                </Box>
+              ))}
+            </Box>
+          </Collapse>
 
           {storicoSaldi.length > 0 && (
             <>

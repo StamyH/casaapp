@@ -112,8 +112,10 @@ function Statistiche() {
   // --- Spese ---
   const speseDelMese = spese.filter(s => s.data?.startsWith(meseKey));
   const speseDelMesePrec = spese.filter(s => s.data?.startsWith(meseKeyPrec));
-  const totaleDelMese = speseDelMese.reduce((acc, s) => acc + s.importo, 0);
-  const totalePrecedente = speseDelMesePrec.reduce((acc, s) => acc + s.importo, 0);
+  // Escludi i saldi dai totali (sono pareggi contabili, non spese reali)
+  const isNotSaldo = s => s.tipo !== 'saldo' && s.categoria !== 'saldo';
+  const totaleDelMese = speseDelMese.filter(isNotSaldo).reduce((acc, s) => acc + s.importo, 0);
+  const totalePrecedente = speseDelMesePrec.filter(isNotSaldo).reduce((acc, s) => acc + s.importo, 0);
   const bilancio = calcolaBilancio(speseDelMese, utenti);
   const inPari = !bilancio.tuttiDebiti?.length || bilancio.importoDebito < 0.01;
 
