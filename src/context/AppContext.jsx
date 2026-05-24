@@ -4,6 +4,9 @@ export const AppContext = createContext();
 
 const COLORI_DEFAULT = ['#5C6BC0', '#26A69A', '#FF7043', '#EC407A', '#AB47BC', '#42A5F5'];
 
+// Numero massimo di utenti = numero di colori disponibili
+export const MAX_UTENTI = COLORI_DEFAULT.length;
+
 const UTENTI_INIZIALI = [
   { id: 'u_riccardo', nome: 'Riccardo', coloreAvatar: '#5C6BC0', coloreApp: '#5C6BC0', coloreSecondario: '#26A69A', modalita: 'auto' },
   { id: 'u_federico', nome: 'Federico', coloreAvatar: '#26A69A', coloreApp: '#26A69A', coloreSecondario: '#5C6BC0', modalita: 'auto' },
@@ -15,9 +18,11 @@ export function AppProvider({ children }) {
       const saved = localStorage.getItem('casaapp_utenti');
       if (saved) return JSON.parse(saved);
 
-      // Migrazione: leggi i colori dal vecchio formato impostazioni
+      // Prima installazione: scrivi subito in localStorage in modo che
+      // SpeseContext e AttivitaContext (inizializzati in parallelo) leggano
+      // i nomi reali e non 'Utente 1'/'Utente 2' come fallback
       const oldSettings = JSON.parse(localStorage.getItem('casaapp_impostazioni') || '{}');
-      return [
+      const utentiIniziali = [
         {
           ...UTENTI_INIZIALI[0],
           coloreAvatar: oldSettings.coloreRiccardo || UTENTI_INIZIALI[0].coloreAvatar,
@@ -33,6 +38,9 @@ export function AppProvider({ children }) {
           modalita: oldSettings.modalitaFederico || UTENTI_INIZIALI[1].modalita,
         },
       ];
+      // Scrivi subito (sincrono) così gli altri context trovano casaapp_utenti già popolato
+      localStorage.setItem('casaapp_utenti', JSON.stringify(utentiIniziali));
+      return utentiIniziali;
     } catch {
       return UTENTI_INIZIALI;
     }
@@ -63,10 +71,11 @@ export function AppProvider({ children }) {
   const utenteAttivo = utenti.find(u => u.id === utenteAttivoId) || null;
 
   const aggiungiUtente = (nome) => {
+    if (utenti.length >= MAX_UTENTI) return null; // limite massimo raggiunto
     const id = `u_${Date.now()}`;
-    const coloreUsati = utenti.map(u => u.coloreAvatar);
-    const colore = COLORI_DEFAULT.find(c => !coloreUsati.includes(c)) || COLORI_DEFAULT[utenti.length % COLORI_DEFAULT.length];
-    const coloreSecondario = COLORI_DEFAULT.find(c => c !== colore) || COLORI_DEFAULT[0];
+    const coloriUsati = utenti.map(u => u.coloreAvatar);
+    const colore = COLORI_DEFAULT.find(c => !coloriUsati.includes(c)) || COLORI_DEFAULT[0];
+    const coloreSecondario = COLORI_DEFAULT.find(c => c !== colore) || COLORI_DEFAULT[1];
     setUtenti(prev => [...prev, { id, nome, coloreAvatar: colore, coloreApp: colore, coloreSecondario, modalita: 'auto' }]);
     return id;
   };

@@ -25,11 +25,16 @@ function SelettoreColore({ valore, nome, selezionato, onClick }) {
 }
 
 function ImpostazioniTema() {
-  const { utenteAttivo, modificaUtente } = useApp();
+  const { utenteAttivo, utenti, modificaUtente } = useApp();
 
   if (!utenteAttivo) return null;
 
   const aggiorna = (dati) => modificaUtente(utenteAttivo.id, dati);
+
+  // Colori avatar già usati dagli ALTRI utenti (non modificabile dal corrente)
+  const coloriAvatarAltri = utenti
+    .filter(u => u.id !== utenteAttivo.id)
+    .map(u => u.coloreAvatar);
 
   return (
     <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -75,7 +80,7 @@ function ImpostazioniTema() {
       <Box>
         <Typography variant="subtitle2" fontWeight={700} mb={0.5}>Colore del tuo avatar</Typography>
         <Typography variant="caption" color="text.secondary" display="block" mb={2}>
-          Come appari nei task e nelle spese condivise
+          Come appari nei task e nelle spese condivise. I colori già usati da altri non sono disponibili.
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
           <Avatar sx={{ bgcolor: utenteAttivo.coloreAvatar, width: 40, height: 40, fontWeight: 700 }}>
@@ -84,15 +89,30 @@ function ImpostazioniTema() {
           <Typography variant="body2" color="text.secondary">{utenteAttivo.nome}</Typography>
         </Box>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-          {COLORI_TEMA.map(colore => (
-            <SelettoreColore
-              key={colore.valore}
-              valore={colore.valore}
-              nome={colore.nome}
-              selezionato={utenteAttivo.coloreAvatar === colore.valore}
-              onClick={() => aggiorna({ coloreAvatar: colore.valore })}
-            />
-          ))}
+          {COLORI_TEMA.map(colore => {
+            const usatoDaAltro = coloriAvatarAltri.includes(colore.valore);
+            const selezionato = utenteAttivo.coloreAvatar === colore.valore;
+            return (
+              <Box key={colore.valore} sx={{ position: 'relative' }}>
+                <SelettoreColore
+                  valore={colore.valore}
+                  nome={usatoDaAltro && !selezionato ? '🔒' : colore.nome}
+                  selezionato={selezionato}
+                  onClick={() => !usatoDaAltro && aggiorna({ coloreAvatar: colore.valore })}
+                />
+                {usatoDaAltro && !selezionato && (
+                  <Box sx={{
+                    position: 'absolute', top: 0, left: 0, right: 0, bottom: 14,
+                    borderRadius: '50%', bgcolor: 'rgba(0,0,0,0.35)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    pointerEvents: 'none',
+                  }}>
+                    <Typography sx={{ fontSize: '0.9rem' }}>🔒</Typography>
+                  </Box>
+                )}
+              </Box>
+            );
+          })}
         </Box>
       </Box>
 

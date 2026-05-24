@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Typography, Button, Avatar, IconButton, TextField, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import { useApp } from '../context/AppContext';
+import { useApp, MAX_UTENTI } from '../context/AppContext';
 import { useImpostazioni } from '../context/ImpostazioniContext';
 
 function Benvenuto() {
@@ -76,25 +76,27 @@ function Benvenuto() {
           </Button>
         ))}
 
-        {/* Aggiungi utente */}
-        <IconButton
-          onClick={() => setDialogAperto(true)}
-          sx={{
-            width: 130,
-            height: 150,
-            borderRadius: 4,
-            background: 'rgba(255,255,255,0.1)',
-            border: '2px dashed rgba(255,255,255,0.4)',
-            color: 'white',
-            flexDirection: 'column',
-            gap: 1,
-            display: 'flex',
-            '&:hover': { background: 'rgba(255,255,255,0.2)' },
-          }}
-        >
-          <AddRoundedIcon sx={{ fontSize: 32 }} />
-          <Typography variant="caption" fontWeight={600}>Nuovo utente</Typography>
-        </IconButton>
+        {/* Aggiungi utente — solo se non si è raggiunto il limite */}
+        {utenti.length < MAX_UTENTI && (
+          <IconButton
+            onClick={() => setDialogAperto(true)}
+            sx={{
+              width: 130,
+              height: 150,
+              borderRadius: 4,
+              background: 'rgba(255,255,255,0.1)',
+              border: '2px dashed rgba(255,255,255,0.4)',
+              color: 'white',
+              flexDirection: 'column',
+              gap: 1,
+              display: 'flex',
+              '&:hover': { background: 'rgba(255,255,255,0.2)' },
+            }}
+          >
+            <AddRoundedIcon sx={{ fontSize: 32 }} />
+            <Typography variant="caption" fontWeight={600}>Nuovo utente</Typography>
+          </IconButton>
+        )}
       </Box>
 
       <Dialog open={dialogAperto} onClose={() => setDialogAperto(false)} fullWidth maxWidth="xs">

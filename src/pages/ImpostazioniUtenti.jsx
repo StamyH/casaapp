@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import {
   Box, Typography, Card, CardContent, Avatar, IconButton,
-  TextField, Button, Dialog, DialogTitle, DialogContent, DialogActions, Divider
+  TextField, Button, Dialog, DialogTitle, DialogContent, DialogActions, Divider, Alert,
 } from '@mui/material';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import { useApp } from '../context/AppContext';
+import { useApp, MAX_UTENTI } from '../context/AppContext';
 import { useSpese } from '../context/SpeseContext';
 import { useAttivita } from '../context/AttivitaContext';
 
@@ -86,15 +86,23 @@ function ImpostazioniUtenti() {
         ))}
       </Card>
 
-      <Button
-        fullWidth
-        variant="outlined"
-        startIcon={<AddRoundedIcon />}
-        onClick={() => setDialogAggiungi(true)}
-        sx={{ borderRadius: 3, py: 1.5 }}
-      >
-        Aggiungi utente
-      </Button>
+      {utenti.length >= MAX_UTENTI ? (
+        <Box sx={{ p: 2, borderRadius: 3, bgcolor: 'action.hover', textAlign: 'center' }}>
+          <Typography variant="body2" color="text.secondary">
+            Massimo {MAX_UTENTI} utenti raggiunto (uno per colore disponibile)
+          </Typography>
+        </Box>
+      ) : (
+        <Button
+          fullWidth
+          variant="outlined"
+          startIcon={<AddRoundedIcon />}
+          onClick={() => setDialogAggiungi(true)}
+          sx={{ borderRadius: 3, py: 1.5 }}
+        >
+          Aggiungi utente
+        </Button>
+      )}
 
       {/* Dialog aggiungi */}
       <Dialog open={dialogAggiungi} onClose={() => setDialogAggiungi(false)} fullWidth maxWidth="xs">
