@@ -111,14 +111,6 @@ function Spese() {
   return (
     <Box sx={{ p: 2 }}>
 
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
-        <Tooltip title="Esporta CSV">
-          <IconButton onClick={() => setDialogCSV(true)} size="small">
-            <DownloadRoundedIcon />
-          </IconButton>
-        </Tooltip>
-      </Box>
-
       <Bilancio />
 
       {/* Banner filtri */}
@@ -211,6 +203,11 @@ function Spese() {
             >
               Applica
             </Button>
+            <Tooltip title="Esporta CSV">
+              <IconButton onClick={() => setDialogCSV(true)} size="small" sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                <DownloadRoundedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
           </Box>
         </Box>
       </Collapse>
