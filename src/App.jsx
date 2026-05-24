@@ -104,7 +104,7 @@ function AuthGuard() {
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         message="🆕 Nuova versione disponibile"
         action={
-          <Button color="inherit" size="small" fontWeight={700} onClick={aggiornaSW}>
+          <Button color="inherit" size="small" sx={{ fontWeight: 700 }} onClick={aggiornaSW}>
             Aggiorna
           </Button>
         }

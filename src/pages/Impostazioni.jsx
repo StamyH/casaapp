@@ -80,7 +80,7 @@ function Impostazioni() {
     reader.readAsText(file);
   };
 
-  const confermаRipristino = () => {
+  const confermaRipristino = () => {
     if (!dialogRipristino) return;
     CHIAVI_BACKUP.forEach(k => {
       if (dialogRipristino.dati[k] !== undefined) {
@@ -191,7 +191,7 @@ function Impostazioni() {
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={() => setDialogRipristino(null)}>Annulla</Button>
-          <Button variant="contained" color="error" onClick={confermаRipristino}>Ripristina</Button>
+          <Button variant="contained" color="error" onClick={confermaRipristino}>Ripristina</Button>
         </DialogActions>
       </Dialog>
 

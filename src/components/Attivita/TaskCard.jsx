@@ -110,7 +110,7 @@ function TaskCard({ task, onModifica }) {
                 <Chip label="⚠️ In ritardo" size="small" color="error" sx={{ fontSize: '0.7rem' }} />
               )}
               {task.dataFine && (
-                <Chip label={`fino al ${new Date(task.dataFine).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' })}`} size="small" sx={{ fontSize: '0.7rem', color: 'text.secondary' }} />
+                <Chip label={`fino al ${new Date(task.dataFine + 'T00:00:00').toLocaleDateString('it-IT', { day: '2-digit', month: 'short' })}`} size="small" sx={{ fontSize: '0.7rem', color: 'text.secondary' }} />
               )}
             </Box>
           </Box>
