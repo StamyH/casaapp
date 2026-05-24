@@ -33,6 +33,7 @@ function Navbar() {
       <AppBar
         position="sticky"
         elevation={0}
+        color="inherit"
         sx={{
           bgcolor: 'background.paper',
           borderBottom: '1px solid',
