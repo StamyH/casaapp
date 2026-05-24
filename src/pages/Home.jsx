@@ -83,6 +83,7 @@ function Home() {
   });
 
   const prossimeAttivita = attivita.filter(t => {
+    if (t.completato) return false; // non mostrare già completate
     if (t.frequenza === 'settimanale' && t.giornoSettimana !== giornoOggi) return true;
     if (t.frequenza === 'mensile' && t.giornoMese !== giornoMeseOggi) return true;
     if (t.frequenza === 'specifica' && t.dataSpecifica > oggiStr) return true;
@@ -341,11 +342,28 @@ function Home() {
                 <Box key={task.id}>
                   {i > 0 && <Divider sx={{ my: 1 }} />}
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ minWidth: 0 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, minWidth: 0, flex: 1 }}>
+                      {/* Avatar accanto al titolo */}
+                      {task.assegnato === 'entrambi' ? (
+                        <Box sx={{ display: 'flex', gap: '2px', flexShrink: 0 }}>
+                          {utenti.map(u => (
+                            <Box key={u.id} sx={{
+                              width: 20, height: 20, borderRadius: '50%',
+                              bgcolor: u.coloreAvatar || '#9E9E9E',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: '0.6rem', fontWeight: 700, color: 'white',
+                            }}>{u.nome[0]}</Box>
+                          ))}
+                        </Box>
+                      ) : (
+                        <Box sx={{
+                          width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                          bgcolor: getColoreUtente(task.assegnato),
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '0.6rem', fontWeight: 700, color: 'white',
+                        }}>{task.assegnato[0]}</Box>
+                      )}
                       <Typography variant="body2" noWrap>{task.titolo}</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {task.assegnato === 'entrambi' ? '👥 Entrambi' : `👤 ${task.assegnato}`}
-                      </Typography>
                     </Box>
                     <Chip
                       label={nextData ? etichettaData(nextData, oggiStr) : '—'}

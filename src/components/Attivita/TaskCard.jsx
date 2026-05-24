@@ -48,27 +48,38 @@ function TaskCard({ task, onModifica }) {
         border: '1px solid',
         borderColor: inRitardo ? 'error.light' : task.completato ? 'success.light' : 'divider',
         borderLeft: inRitardo ? '4px solid #EF5350' : priorita && !task.completato ? `4px solid ${priorita.colore}` : undefined,
-        opacity: task.completato ? 0.75 : 1,
+        opacity: task.completato ? 0.65 : 1,
         transition: 'all 0.2s ease',
-        '&:hover': { boxShadow: 2 },
+        '&:hover': { boxShadow: task.completato ? 0 : 2 },
       }}
     >
-      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+      <CardContent sx={{ p: task.completato ? 1.25 : 2, '&:last-child': { pb: task.completato ? 1.25 : 2 }, transition: 'padding 0.2s' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
 
           <Checkbox
             checked={task.completato}
             onChange={() => toggleAttivita(task.id, utenteAttivo?.nome)}
-            sx={{ color: frequenza.colore, '&.Mui-checked': { color: 'success.main' }, p: 0.5 }}
+            sx={{ color: frequenza.colore, '&.Mui-checked': { color: 'success.main' }, p: 0.5, flexShrink: 0 }}
           />
 
           <Box sx={{ flex: 1, minWidth: 0 }}>
+            {/* Riga principale: avatar + titolo (affianco, non sotto) */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+              {task.assegnato === 'entrambi' ? (
+                <Box sx={{ display: 'flex', gap: '2px', flexShrink: 0 }}>
+                  {utenti.map(u => <AvatarUtente key={u.id} nome={u.nome} utenti={utenti} size={18} />)}
+                </Box>
+              ) : (
+                <AvatarUtente nome={task.assegnato} utenti={utenti} size={20} />
+              )}
               <Typography
                 fontWeight={600}
+                noWrap
                 sx={{
                   textDecoration: task.completato ? 'line-through' : 'none',
                   color: task.completato ? 'text.secondary' : 'text.primary',
+                  fontSize: task.completato ? '0.875rem' : '1rem',
+                  transition: 'font-size 0.2s',
                 }}
               >
                 {task.titolo}
@@ -78,41 +89,37 @@ function TaskCard({ task, onModifica }) {
               )}
             </Box>
 
-            {task.completato && task.completatoDa && (
-              <Typography variant="caption" color="success.main" fontWeight={600}>
-                ✓ Fatto da {task.completatoDa}
-              </Typography>
+            {/* Info aggiuntiva: chips solo quando non completata */}
+            {!task.completato && (
+              <Box sx={{ display: 'flex', gap: 1, mt: 0.5, flexWrap: 'wrap', alignItems: 'center' }}>
+                {task.frequenza === 'settimanale' && task.giornoSettimana !== null && (
+                  <Chip label={`ogni ${['Dom','Lun','Mar','Mer','Gio','Ven','Sab'][task.giornoSettimana]}`} size="small" sx={{ fontSize: '0.7rem' }} />
+                )}
+                {task.frequenza === 'mensile' && task.giornoMese && (
+                  <Chip label={`ogni ${task.giornoMese}° del mese`} size="small" sx={{ fontSize: '0.7rem' }} />
+                )}
+                {task.frequenza === 'specifica' && task.dataSpecifica && (
+                  <Chip
+                    label={new Date(task.dataSpecifica + 'T00:00:00').toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    size="small"
+                    sx={{ fontSize: '0.7rem', ...(inRitardo && { bgcolor: 'error.light', color: 'error.contrastText' }) }}
+                  />
+                )}
+                {inRitardo && (
+                  <Chip label="⚠️ In ritardo" size="small" color="error" sx={{ fontSize: '0.7rem' }} />
+                )}
+                {task.dataFine && (
+                  <Chip label={`fino al ${new Date(task.dataFine + 'T00:00:00').toLocaleDateString('it-IT', { day: '2-digit', month: 'short' })}`} size="small" sx={{ fontSize: '0.7rem', color: 'text.secondary' }} />
+                )}
+              </Box>
             )}
 
-            <Box sx={{ display: 'flex', gap: 1, mt: 0.5, flexWrap: 'wrap', alignItems: 'center' }}>
-              {task.assegnato === 'entrambi' ? (
-                <Box sx={{ display: 'flex', gap: 0.5 }}>
-                  {utenti.map(u => <AvatarUtente key={u.id} nome={u.nome} utenti={utenti} />)}
-                </Box>
-              ) : (
-                <AvatarUtente nome={task.assegnato} utenti={utenti} />
-              )}
-
-              {task.frequenza === 'settimanale' && task.giornoSettimana !== null && (
-                <Chip label={`ogni ${['Dom','Lun','Mar','Mer','Gio','Ven','Sab'][task.giornoSettimana]}`} size="small" sx={{ fontSize: '0.7rem' }} />
-              )}
-              {task.frequenza === 'mensile' && task.giornoMese && (
-                <Chip label={`ogni ${task.giornoMese}° del mese`} size="small" sx={{ fontSize: '0.7rem' }} />
-              )}
-              {task.frequenza === 'specifica' && task.dataSpecifica && (
-                <Chip
-                  label={new Date(task.dataSpecifica + 'T00:00:00').toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' })}
-                  size="small"
-                  sx={{ fontSize: '0.7rem', ...(inRitardo && { bgcolor: 'error.light', color: 'error.contrastText' }) }}
-                />
-              )}
-              {inRitardo && (
-                <Chip label="⚠️ In ritardo" size="small" color="error" sx={{ fontSize: '0.7rem' }} />
-              )}
-              {task.dataFine && (
-                <Chip label={`fino al ${new Date(task.dataFine + 'T00:00:00').toLocaleDateString('it-IT', { day: '2-digit', month: 'short' })}`} size="small" sx={{ fontSize: '0.7rem', color: 'text.secondary' }} />
-              )}
-            </Box>
+            {/* "Fatto da" mini-testo quando completata */}
+            {task.completato && task.completatoDa && (
+              <Typography variant="caption" color="success.main" fontWeight={600}>
+                ✓ {task.completatoDa}
+              </Typography>
+            )}
           </Box>
 
           <IconButton size="small" onClick={() => onModifica(task)} sx={{ color: 'primary.main', flexShrink: 0 }}>
