@@ -16,7 +16,7 @@ const DIVISIONE_LABEL = {
   percentuale: 'Personalizzata',
 };
 
-function SpesaCard({ spesa, onModifica }) {
+function SpesaCard({ spesa, onModifica, animIndex = 0 }) {
   const { utenti } = useApp();
   const { impostazioni } = useImpostazioni();
   const idx = impostazioni.categorie.findIndex(c => c.nome === spesa.categoria);
@@ -30,7 +30,16 @@ function SpesaCard({ spesa, onModifica }) {
 
   if (spesa.tipo === 'saldo') {
     return (
-      <Card elevation={0} sx={{ mb: 2, borderRadius: 3, border: '1px dashed', borderColor: 'success.main', opacity: 0.8 }}>
+      <Card
+        elevation={0}
+        sx={{
+          mb: 2, borderRadius: 3,
+          border: '1px dashed', borderColor: 'success.main', opacity: 0.8,
+          animation: 'itemEnter var(--dur-md) var(--spring-gentle) both',
+          animationDelay: `${Math.min(animIndex, 6) * 45}ms`,
+          willChange: 'transform, opacity',
+        }}
+      >
         <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ width: 44, height: 44, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'success.light', flexShrink: 0 }}>
@@ -58,7 +67,11 @@ function SpesaCard({ spesa, onModifica }) {
       sx={{
         mb: 2, borderRadius: 3,
         border: '1px solid', borderColor: 'divider',
-        '&:hover': { boxShadow: 3, transition: 'box-shadow 0.2s ease' },
+        transition: 'box-shadow 220ms var(--ease-out)',
+        '&:hover': { boxShadow: 3 },
+        animation: 'itemEnter var(--dur-md) var(--spring-gentle) both',
+        animationDelay: `${Math.min(animIndex, 6) * 45}ms`,
+        willChange: 'transform, opacity',
       }}
     >
       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>

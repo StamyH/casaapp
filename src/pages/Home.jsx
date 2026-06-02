@@ -102,7 +102,7 @@ function Home() {
   return (
     <Box sx={{ p: 2 }}>
 
-      <Box sx={{ mb: 3 }}>
+      <Box sx={{ mb: 3, animation: 'itemEnter var(--dur-md) var(--spring-gentle) both' }}>
         <Typography variant="h5" fontWeight={800}>
           👋 Ciao, {utenteAttivo?.nome}!
         </Typography>
@@ -119,7 +119,11 @@ function Home() {
           mb: 2, borderRadius: 3, cursor: 'pointer',
           background: `linear-gradient(135deg, ${coloreApp} 0%, ${coloreSecondario} 100%)`,
           color: 'white',
-          '&:active': { opacity: 0.9 },
+          transition: 'transform 380ms var(--spring), opacity 250ms var(--ease-out)',
+          animation: 'welcomeCard var(--dur-lg) var(--spring-gentle) both',
+          animationDelay: '60ms',
+          willChange: 'transform, opacity',
+          '&:active': { transform: 'scale(0.97)', opacity: 0.9 },
         }}
       >
         <CardContent sx={{ p: 2.5 }}>
@@ -141,7 +145,12 @@ function Home() {
       </Card>
 
       {/* Statistiche rapide del mese */}
-      <Card elevation={0} sx={{ mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+      <Card elevation={0} sx={{
+        mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider',
+        animation: 'itemEnter var(--dur-md) var(--spring-gentle) both',
+        animationDelay: '120ms',
+        willChange: 'transform, opacity',
+      }}>
         <CardContent sx={{ p: 2 }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
             <Box
@@ -149,7 +158,9 @@ function Home() {
               sx={{
                 p: 1.5, borderRadius: 2, cursor: 'pointer',
                 bgcolor: 'action.hover',
+                transition: 'transform 300ms var(--spring), background-color 220ms var(--ease-out)',
                 '&:hover': { bgcolor: 'action.selected' },
+                '&:active': { transform: 'scale(0.96)' },
               }}
             >
               <Typography variant="caption" color="text.secondary" display="block">
@@ -167,7 +178,9 @@ function Home() {
               sx={{
                 p: 1.5, borderRadius: 2, cursor: 'pointer',
                 bgcolor: 'action.hover',
+                transition: 'transform 300ms var(--spring), background-color 220ms var(--ease-out)',
                 '&:hover': { bgcolor: 'action.selected' },
+                '&:active': { transform: 'scale(0.96)' },
               }}
             >
               <Typography variant="caption" color="text.secondary" display="block">
@@ -190,7 +203,12 @@ function Home() {
       </Card>
 
       {/* Strip settimanale */}
-      <Card elevation={0} sx={{ mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+      <Card elevation={0} sx={{
+        mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider',
+        animation: 'itemEnter var(--dur-md) var(--spring-gentle) both',
+        animationDelay: '180ms',
+        willChange: 'transform, opacity',
+      }}>
         <CardContent sx={{ p: 2 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
             <Typography variant="subtitle2" fontWeight={700}>📅 Questa settimana</Typography>
@@ -224,7 +242,8 @@ function Home() {
                     py: 1, borderRadius: 2, cursor: 'pointer',
                     bgcolor: isOggi ? 'primary.main' : 'transparent',
                     '&:hover': { bgcolor: isOggi ? 'primary.dark' : 'action.hover' },
-                    transition: 'background-color 0.15s',
+                    '&:active': { transform: 'scale(0.9)' },
+                    transition: 'background-color 220ms var(--ease-out), transform 300ms var(--spring)',
                   }}
                 >
                   <Typography
@@ -264,7 +283,12 @@ function Home() {
       </Card>
 
       {/* Attività di oggi — cliccabile → /attivita */}
-      <Card elevation={0} sx={{ mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+      <Card elevation={0} sx={{
+        mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider',
+        animation: 'itemEnter var(--dur-md) var(--spring-gentle) both',
+        animationDelay: '240ms',
+        willChange: 'transform, opacity',
+      }}>
         <CardContent sx={{ p: 2.5 }}>
           <Box
             onClick={() => navigate('/attivita')}
@@ -322,7 +346,12 @@ function Home() {
 
       {/* In arrivo — cliccabile → /attivita */}
       {prossimeAttivita.length > 0 && (
-        <Card elevation={0} sx={{ mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+        <Card elevation={0} sx={{
+          mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider',
+          animation: 'itemEnter var(--dur-md) var(--spring-gentle) both',
+          animationDelay: '300ms',
+          willChange: 'transform, opacity',
+        }}>
           <CardContent sx={{ p: 2.5 }}>
             <Box
               onClick={() => navigate('/attivita')}

@@ -114,7 +114,7 @@ function Spese() {
           border: '1px solid', borderColor: filtriAttiviCount > 0 ? 'primary.main' : 'divider',
           cursor: 'pointer',
           bgcolor: filtriAttiviCount > 0 ? 'primary.light' : 'background.paper',
-          transition: 'all 0.2s ease',
+          transition: 'background-color 220ms var(--ease-out), border-color 220ms var(--ease-out)',
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -223,8 +223,8 @@ function Spese() {
                 {speseDelMese.length} {speseDelMese.length === 1 ? 'spesa' : 'spese'}
               </Typography>
             </Box>
-            {speseDelMese.map(spesa => (
-              <SpesaCard key={spesa.id} spesa={spesa} onModifica={setSpesaInModifica} />
+            {speseDelMese.map((spesa, i) => (
+              <SpesaCard key={spesa.id} spesa={spesa} onModifica={setSpesaInModifica} animIndex={i} />
             ))}
           </Box>
         ))
@@ -233,7 +233,12 @@ function Spese() {
       <Fab
         color="primary"
         onClick={() => setApriForm(true)}
-        sx={{ position: 'fixed', bottom: 'calc(80px + env(safe-area-inset-bottom))', right: 24, boxShadow: 4 }}
+        sx={{
+          position: 'fixed', bottom: 'calc(80px + env(safe-area-inset-bottom))', right: 24, boxShadow: 4,
+          animation: 'fabPop var(--dur-lg) var(--spring) both',
+          animationDelay: '120ms',
+          willChange: 'transform, opacity',
+        }}
       >
         <AddRoundedIcon />
       </Fab>
