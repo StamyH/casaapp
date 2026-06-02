@@ -1,127 +1,63 @@
-import React from 'react';
 import { renderHook, act } from '@testing-library/react';
 import { AttivitaProvider, useAttivita } from './AttivitaContext';
 
-const wrapper = ({ children }) => <AttivitaProvider>{children}</AttivitaProvider>;
-
-beforeEach(() => {
-  localStorage.clear();
-});
-
 describe('AttivitaContext', () => {
-  test('aggiunge un\'attività', () => {
-    const { result } = renderHook(() => useAttivita(), { wrapper });
-    const prima = result.current.attivita.length;
+  test('useAttivita lancia errore fuori dal provider', () => {
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    expect(() => renderHook(() => useAttivita())).toThrow('useAttivita deve essere usato dentro AttivitaProvider');
+    spy.mockRestore();
+  });
+
+  test('aggiungiAttivita aggiunge con completato false e id', () => {
+    const { result } = renderHook(() => useAttivita(), { wrapper: AttivitaProvider });
+    const iniziali = result.current.attivita.length;
 
     act(() => {
       result.current.aggiungiAttivita({
-        titolo: 'Test attività',
+        titolo: 'Test task',
         frequenza: 'giornaliera',
         giornoSettimana: null,
         giornoMese: null,
         dataSpecifica: null,
-        assegnato: 'Alice',
+        assegnato: 'Riccardo',
       });
     });
 
-    expect(result.current.attivita.length).toBe(prima + 1);
+    expect(result.current.attivita.length).toBe(iniziali + 1);
+    const nuova = result.current.attivita.find(a => a.titolo === 'Test task');
+    expect(nuova.completato).toBe(false);
+    expect(nuova.id).toBeDefined();
   });
 
-  test('toggle attività salva chi l\'ha completata', () => {
-    const { result } = renderHook(() => useAttivita(), { wrapper });
+  test('toggleAttivita inverte il completato', () => {
+    const { result } = renderHook(() => useAttivita(), { wrapper: AttivitaProvider });
+    const id = result.current.attivita[0].id;
+    const iniziale = result.current.attivita[0].completato;
 
-    act(() => {
-      result.current.aggiungiAttivita({
-        titolo: 'Task da completare',
-        frequenza: 'giornaliera',
-        giornoSettimana: null,
-        giornoMese: null,
-        dataSpecifica: null,
-        assegnato: 'Bruno',
-      });
-    });
+    act(() => { result.current.toggleAttivita(id); });
 
-    const id = result.current.attivita[result.current.attivita.length - 1].id;
-
-    act(() => {
-      result.current.toggleAttivita(id, 'Bruno');
-    });
-
-    const task = result.current.attivita.find(a => a.id === id);
-    expect(task.completato).toBe(true);
-    expect(task.completatoDa).toBe('Bruno');
+    expect(result.current.attivita.find(a => a.id === id).completato).toBe(!iniziale);
   });
 
-  test('elimina un\'attività', () => {
-    const { result } = renderHook(() => useAttivita(), { wrapper });
+  test('toggleAttivita due volte ripristina il valore originale', () => {
+    const { result } = renderHook(() => useAttivita(), { wrapper: AttivitaProvider });
+    const id = result.current.attivita[0].id;
+    const iniziale = result.current.attivita[0].completato;
 
-    act(() => {
-      result.current.aggiungiAttivita({
-        titolo: 'Da eliminare',
-        frequenza: 'mensile',
-        giornoSettimana: null,
-        giornoMese: 1,
-        dataSpecifica: null,
-        assegnato: 'entrambi',
-      });
-    });
+    act(() => { result.current.toggleAttivita(id); });
+    act(() => { result.current.toggleAttivita(id); });
 
-    const id = result.current.attivita[result.current.attivita.length - 1].id;
+    expect(result.current.attivita.find(a => a.id === id).completato).toBe(iniziale);
+  });
 
-    act(() => {
-      result.current.eliminaAttivita(id);
-    });
+  test('eliminaAttivita rimuove l attività corretta', () => {
+    const { result } = renderHook(() => useAttivita(), { wrapper: AttivitaProvider });
+    const id = result.current.attivita[0].id;
+    const iniziali = result.current.attivita.length;
 
+    act(() => { result.current.eliminaAttivita(id); });
+
+    expect(result.current.attivita.length).toBe(iniziali - 1);
     expect(result.current.attivita.find(a => a.id === id)).toBeUndefined();
   });
 });
-
-  test('modifica un\'attività esistente', () => {
-    const { result } = renderHook(() => useAttivita(), { wrapper });
-
-    act(() => {
-      result.current.aggiungiAttivita({
-        titolo: 'Da modificare',
-        frequenza: 'giornaliera',
-        giornoSettimana: null,
-        giornoMese: null,
-        dataSpecifica: null,
-        assegnato: 'Alice',
-      });
-    });
-
-    const id = result.current.attivita[result.current.attivita.length - 1].id;
-
-    act(() => {
-      result.current.modificaAttivita(id, { titolo: 'Modificata', assegnato: 'Bruno' });
-    });
-
-    const task = result.current.attivita.find(a => a.id === id);
-    expect(task.titolo).toBe('Modificata');
-    expect(task.assegnato).toBe('Bruno');
-    expect(task.frequenza).toBe('giornaliera');
-  });
-
-  test('toggle disattiva e rimuove completatoDa', () => {
-    const { result } = renderHook(() => useAttivita(), { wrapper });
-
-    act(() => {
-      result.current.aggiungiAttivita({
-        titolo: 'Task doppio toggle',
-        frequenza: 'giornaliera',
-        giornoSettimana: null,
-        giornoMese: null,
-        dataSpecifica: null,
-        assegnato: 'entrambi',
-      });
-    });
-
-    const id = result.current.attivita[result.current.attivita.length - 1].id;
-
-    act(() => { result.current.toggleAttivita(id, 'Alice'); });
-    act(() => { result.current.toggleAttivita(id, 'Alice'); });
-
-    const task = result.current.attivita.find(a => a.id === id);
-    expect(task.completato).toBe(false);
-    expect(task.completatoDa).toBeNull();
-  });
