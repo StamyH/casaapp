@@ -16,32 +16,27 @@ const taskTest = {
 
 describe('TaskCard', () => {
   test('renderizza il titolo del task', () => {
-    renderConContesti(<TaskCard task={taskTest} />);
+    renderConContesti(<TaskCard task={taskTest} onModifica={() => {}} />);
     expect(screen.getByText('Lavare i piatti')).toBeInTheDocument();
   });
 
   test('checkbox non spuntato se completato è false', () => {
-    renderConContesti(<TaskCard task={taskTest} />);
+    renderConContesti(<TaskCard task={taskTest} onModifica={() => {}} />);
     expect(screen.getByRole('checkbox')).not.toBeChecked();
   });
 
   test('checkbox spuntato se completato è true', () => {
-    renderConContesti(<TaskCard task={{ ...taskTest, completato: true }} />);
+    renderConContesti(<TaskCard task={{ ...taskTest, completato: true }} onModifica={() => {}} />);
     expect(screen.getByRole('checkbox')).toBeChecked();
   });
 
-  test('mostra il bottone elimina se l utente è assegnato', () => {
-    renderConContesti(<TaskCard task={taskTest} />, { utente: 'Riccardo' });
+  test('mostra il bottone modifica', () => {
+    renderConContesti(<TaskCard task={taskTest} onModifica={() => {}} />);
     expect(screen.getByRole('button')).toBeInTheDocument();
   });
 
-  test('nasconde il bottone elimina se l utente non è assegnato', () => {
-    renderConContesti(<TaskCard task={taskTest} />, { utente: 'Federico' });
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
-  });
-
-  test('mostra il bottone elimina se il task è assegnato a entrambi', () => {
-    renderConContesti(<TaskCard task={{ ...taskTest, assegnato: 'entrambi' }} />, { utente: 'Federico' });
+  test('mostra il bottone modifica anche se task assegnato a entrambi', () => {
+    renderConContesti(<TaskCard task={{ ...taskTest, assegnato: 'entrambi' }} onModifica={() => {}} />);
     expect(screen.getByRole('button')).toBeInTheDocument();
   });
 });

@@ -19,9 +19,8 @@ describe('Bilancio', () => {
     expect(screen.getByText(/Pagato da Federico/i)).toBeInTheDocument();
   });
 
-  test('mostra la sezione a carico di ciascuno', () => {
+  test('con nessuna spesa mostra "Siete in pari"', () => {
     renderConContesti(<Bilancio />);
-    expect(screen.getByText(/A carico di Riccardo/i)).toBeInTheDocument();
-    expect(screen.getByText(/A carico di Federico/i)).toBeInTheDocument();
+    expect(screen.getByText(/Siete in pari/i)).toBeInTheDocument();
   });
 });

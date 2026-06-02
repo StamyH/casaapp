@@ -9,6 +9,7 @@ const spesaTest = {
   importo: 100,
   categoria: 'spesa',
   pagatore: 'Riccardo',
+  altroUtente: 'Federico',
   divisione: 'metà',
   percentuale: 50,
   data: '2024-01-15',
@@ -16,22 +17,22 @@ const spesaTest = {
 
 describe('SpesaCard', () => {
   test('renderizza la descrizione della spesa', () => {
-    renderConContesti(<SpesaCard spesa={spesaTest} />);
+    renderConContesti(<SpesaCard spesa={spesaTest} onModifica={() => {}} />);
     expect(screen.getByText('Spesa test supermercato')).toBeInTheDocument();
   });
 
   test('renderizza il testo pagato da', () => {
-    renderConContesti(<SpesaCard spesa={spesaTest} />);
+    renderConContesti(<SpesaCard spesa={spesaTest} onModifica={() => {}} />);
     expect(screen.getByText(/Pagato da/i)).toBeInTheDocument();
   });
 
-  test('mostra il bottone elimina se l utente è il pagatore', () => {
-    renderConContesti(<SpesaCard spesa={spesaTest} />, { utente: 'Riccardo' });
+  test('mostra il bottone modifica', () => {
+    renderConContesti(<SpesaCard spesa={spesaTest} onModifica={() => {}} />);
     expect(screen.getByRole('button')).toBeInTheDocument();
   });
 
-  test('nasconde il bottone elimina se l utente non è il pagatore', () => {
-    renderConContesti(<SpesaCard spesa={spesaTest} />, { utente: 'Federico' });
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  test('mostra l importo correttamente', () => {
+    renderConContesti(<SpesaCard spesa={spesaTest} onModifica={() => {}} />);
+    expect(screen.getByText(/100/)).toBeInTheDocument();
   });
 });
