@@ -47,6 +47,29 @@ function SezioneLabel({ testo }) {
   );
 }
 
+function DialogNomeUtente({ titolo, aperto, onChiudi, valore, onChange, onSubmit, labelBottone }) {
+  return (
+    <Dialog open={aperto} onClose={onChiudi} fullWidth maxWidth="xs">
+      <DialogTitle fontWeight={700}>{titolo}</DialogTitle>
+      <DialogContent>
+        <TextField
+          autoFocus fullWidth label="Nome"
+          value={valore}
+          onChange={e => { if (e.target.value.length <= MAX_NOME) onChange(e.target.value); }}
+          onKeyDown={e => e.key === 'Enter' && onSubmit()}
+          inputProps={{ maxLength: MAX_NOME }}
+          helperText={`${valore.length}/${MAX_NOME}`}
+          sx={{ mt: 1 }}
+        />
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        <Button onClick={onChiudi}>Annulla</Button>
+        <Button variant="contained" onClick={onSubmit} disabled={!valore.trim()}>{labelBottone}</Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
 function ImpostazioniDrawer({ aperto, onChiudi }) {
   const navigate = useNavigate();
   const { utenteAttivo, setUtenteAttivoId, utenti, aggiungiUtente, modificaUtente, eliminaUtente } = useApp();
@@ -412,43 +435,19 @@ function ImpostazioniDrawer({ aperto, onChiudi }) {
       </Drawer>
 
       {/* Dialogs utenti — fuori dal Drawer per evitare problemi di z-index */}
-      <Dialog open={dialogAggiungi} onClose={() => setDialogAggiungi(false)} fullWidth maxWidth="xs">
-        <DialogTitle fontWeight={700}>Nuovo utente</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus fullWidth label="Nome"
-            value={nuovoNome}
-            onChange={e => { if (e.target.value.length <= MAX_NOME) setNuovoNome(e.target.value); }}
-            onKeyDown={e => e.key === 'Enter' && handleAggiungiUtente()}
-            inputProps={{ maxLength: MAX_NOME }}
-            helperText={`${nuovoNome.length}/${MAX_NOME}`}
-            sx={{ mt: 1 }}
-          />
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setDialogAggiungi(false)}>Annulla</Button>
-          <Button variant="contained" onClick={handleAggiungiUtente} disabled={!nuovoNome.trim()}>Crea</Button>
-        </DialogActions>
-      </Dialog>
+      <DialogNomeUtente
+        titolo="Nuovo utente" aperto={dialogAggiungi}
+        onChiudi={() => setDialogAggiungi(false)}
+        valore={nuovoNome} onChange={setNuovoNome}
+        onSubmit={handleAggiungiUtente} labelBottone="Crea"
+      />
 
-      <Dialog open={!!dialogModifica} onClose={() => setDialogModifica(null)} fullWidth maxWidth="xs">
-        <DialogTitle fontWeight={700}>Modifica nome</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus fullWidth label="Nome"
-            value={nomeModifica}
-            onChange={e => { if (e.target.value.length <= MAX_NOME) setNomeModifica(e.target.value); }}
-            onKeyDown={e => e.key === 'Enter' && handleModificaUtente()}
-            inputProps={{ maxLength: MAX_NOME }}
-            helperText={`${nomeModifica.length}/${MAX_NOME}`}
-            sx={{ mt: 1 }}
-          />
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setDialogModifica(null)}>Annulla</Button>
-          <Button variant="contained" onClick={handleModificaUtente} disabled={!nomeModifica.trim()}>Salva</Button>
-        </DialogActions>
-      </Dialog>
+      <DialogNomeUtente
+        titolo="Modifica nome" aperto={!!dialogModifica}
+        onChiudi={() => setDialogModifica(null)}
+        valore={nomeModifica} onChange={setNomeModifica}
+        onSubmit={handleModificaUtente} labelBottone="Salva"
+      />
 
       <Dialog open={!!confermaElimina} onClose={() => setConfermaElimina(null)} fullWidth maxWidth="xs">
         <DialogTitle fontWeight={700}>Elimina utente</DialogTitle>

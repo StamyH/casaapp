@@ -35,6 +35,9 @@ function TaskList({ attivita, onModifica, mostraCompletate }) {
   // Attività non completate: suddivise per frequenza
   const attivitaNonComplete = attivitaFiltrate.filter(t => !t.completato);
 
+  /* Contatore globale per lo stagger progressivo tra sezioni */
+  let animIdx = 0;
+
   return (
     <Box>
       {inRitardo.length > 0 && (
@@ -46,7 +49,7 @@ function TaskList({ attivita, onModifica, mostraCompletate }) {
             <Typography variant="caption" color="text.secondary">{inRitardo.length} attività</Typography>
           </Box>
           {inRitardo.map(task => (
-            <TaskCard key={task.id} task={task} onModifica={onModifica} />
+            <TaskCard key={task.id} task={task} onModifica={onModifica} animIndex={animIdx++} />
           ))}
         </Box>
       )}
@@ -80,7 +83,7 @@ function TaskList({ attivita, onModifica, mostraCompletate }) {
             </Box>
 
             {tasks.map(task => (
-              <TaskCard key={task.id} task={task} onModifica={onModifica} />
+              <TaskCard key={task.id} task={task} onModifica={onModifica} animIndex={animIdx++} />
             ))}
           </Box>
         );
@@ -104,8 +107,8 @@ function TaskList({ attivita, onModifica, mostraCompletate }) {
             </Box>
           </Box>
           <Collapse in={completateAperte}>
-            {attivitaComplete.map(task => (
-              <TaskCard key={task.id} task={task} onModifica={onModifica} />
+            {attivitaComplete.map((task, i) => (
+              <TaskCard key={task.id} task={task} onModifica={onModifica} animIndex={i} />
             ))}
           </Collapse>
         </Box>

@@ -1,9 +1,10 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 const SpeseContext = createContext();
 
 function speseIniziali() {
-  const mm = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  const mm = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
   const oggi = new Date();
 
   let nomeA = 'Utente 1', nomeB = 'Utente 2';
@@ -22,18 +23,7 @@ function speseIniziali() {
 }
 
 export function SpeseProvider({ children }) {
-  const [spese, setSpese] = useState(() => {
-    try {
-      const saved = localStorage.getItem('casaapp_spese');
-      return saved ? JSON.parse(saved) : speseIniziali();
-    } catch {
-      return speseIniziali();
-    }
-  });
-
-  useEffect(() => {
-    localStorage.setItem('casaapp_spese', JSON.stringify(spese));
-  }, [spese]);
+  const [spese, setSpese] = useLocalStorage('casaapp_spese', speseIniziali);
 
   // Genera automaticamente le spese ricorrenti del mese corrente
   useEffect(() => {
@@ -43,8 +33,8 @@ export function SpeseProvider({ children }) {
 
     if (ultimaEspansione === meseCorrente) return;
 
-    const d = new Date(oggi.getFullYear(), oggi.getMonth() - 1, 1);
-    const mesePrecedente = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const dataPrecedente = new Date(oggi.getFullYear(), oggi.getMonth() - 1, 1);
+    const mesePrecedente = `${dataPrecedente.getFullYear()}-${String(dataPrecedente.getMonth() + 1).padStart(2, '0')}`;
 
     setSpese(prev => {
       const ricorrentiPrec = prev.filter(s =>
@@ -68,7 +58,7 @@ export function SpeseProvider({ children }) {
       localStorage.setItem('casaapp_ultima_espansione_ricorrenti', meseCorrente);
       return nuove.length > 0 ? [...prev, ...nuove] : prev;
     });
-  }, []);
+  }, [setSpese]);
 
   const aggiungiSpesa = (nuovaSpesa) => {
     setSpese(prev => [...prev, { ...nuovaSpesa, id: Date.now() }]);

@@ -49,7 +49,13 @@ function Navbar() {
                 <ArrowBackRoundedIcon />
               </IconButton>
             )}
-            <Typography variant="h6" fontWeight={700} color="text.primary">
+            <Typography
+              key={titolo}
+              variant="h6"
+              fontWeight={700}
+              color="text.primary"
+              sx={{ animation: 'titleSlide var(--dur-sm) var(--spring-gentle) both' }}
+            >
               {titolo}
             </Typography>
           </Box>

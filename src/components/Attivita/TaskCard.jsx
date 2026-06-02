@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Card, CardContent, Box, Typography, Chip, IconButton, Checkbox } from '@mui/material';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { useApp } from '../../context/AppContext';
@@ -33,12 +33,24 @@ function AvatarUtente({ nome, utenti, size = 22 }) {
   );
 }
 
-function TaskCard({ task, onModifica }) {
+function TaskCard({ task, onModifica, animIndex = 0 }) {
   const { utenteAttivo, utenti } = useApp();
   const { toggleAttivita } = useAttivita();
   const frequenza = FREQUENZE[task.frequenza] || FREQUENZE.giornaliera;
   const priorita = task.priorita ? PRIORITA[task.priorita] : null;
   const inRitardo = task.frequenza === 'specifica' && task.dataSpecifica && task.dataSpecifica < oggiLocale() && !task.completato;
+  const checkboxRef = useRef(null);
+
+  const handleToggle = () => {
+    /* Lancia il bounce sull'icona del checkbox */
+    const el = checkboxRef.current?.querySelector('svg');
+    if (el) {
+      el.classList.remove('check-bounce');
+      void el.offsetWidth; /* reflow per resettare l'animazione */
+      el.classList.add('check-bounce');
+    }
+    toggleAttivita(task.id, utenteAttivo?.nome);
+  };
 
   return (
     <Card
@@ -48,18 +60,29 @@ function TaskCard({ task, onModifica }) {
         border: '1px solid',
         borderColor: inRitardo ? 'error.light' : task.completato ? 'success.light' : 'divider',
         borderLeft: inRitardo ? '4px solid #EF5350' : priorita && !task.completato ? `4px solid ${priorita.colore}` : undefined,
-        opacity: task.completato ? 0.65 : 1,
-        transition: 'all 0.2s ease',
+        opacity: task.completato ? 0.6 : 1,
+        transform: task.completato ? 'scale(0.98)' : 'scale(1)',
+        /* Solo transform e opacity: GPU-accelerated, 60fps garantiti */
+        transition: 'opacity 350ms var(--spring-gentle), transform 380ms var(--spring)',
         '&:hover': { boxShadow: task.completato ? 0 : 2 },
+        animation: 'itemEnter var(--dur-md) var(--spring-gentle) both',
+        animationDelay: `${Math.min(animIndex, 7) * 40}ms`,
+        willChange: 'transform, opacity',
       }}
     >
-      <CardContent sx={{ p: task.completato ? 1.25 : 2, '&:last-child': { pb: task.completato ? 1.25 : 2 }, transition: 'padding 0.2s' }}>
+      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
 
           <Checkbox
+            ref={checkboxRef}
             checked={task.completato}
-            onChange={() => toggleAttivita(task.id, utenteAttivo?.nome)}
-            sx={{ color: frequenza.colore, '&.Mui-checked': { color: 'success.main' }, p: 0.5, flexShrink: 0 }}
+            onChange={handleToggle}
+            sx={{
+              color: frequenza.colore,
+              '&.Mui-checked': { color: 'success.main' },
+              p: 0.5, flexShrink: 0,
+              '& .MuiSvgIcon-root': { transition: 'color 280ms var(--ease-out)' },
+            }}
           />
 
           <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -78,8 +101,8 @@ function TaskCard({ task, onModifica }) {
                 sx={{
                   textDecoration: task.completato ? 'line-through' : 'none',
                   color: task.completato ? 'text.secondary' : 'text.primary',
-                  fontSize: task.completato ? '0.875rem' : '1rem',
-                  transition: 'font-size 0.2s',
+                  /* font-size non è GPU-accelerated: la omettiamo dalla transition */
+                  transition: 'color 300ms var(--ease-out)',
                 }}
               >
                 {task.titolo}

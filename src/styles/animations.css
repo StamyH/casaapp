@@ -1,0 +1,141 @@
+/*
+ * CasaApp — Animazioni 60fps stile Apple
+ *
+ * Regola aurea: anima SOLO transform e opacity.
+ * Questi due property sono compositate dalla GPU senza
+ * provocare reflow o repaint del layout.
+ *
+ * Tutte le curve usano modelli spring iOS:
+ *   --spring        → overshoot morbido (FAB, icone, check)
+ *   --spring-gentle → deceleration curve (pagine, liste)
+ *   --spring-stiff  → back ease out (dialogs, drawer)
+ */
+
+/* ── Variabili globali ────────────────────────────────────── */
+:root {
+  --spring:         cubic-bezier(0.34, 1.56, 0.64, 1);
+  --spring-gentle:  cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --spring-stiff:   cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-out:       cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-in-out:    cubic-bezier(0.42, 0, 0.58, 1);
+
+  --dur-xs:  100ms;
+  --dur-sm:  200ms;
+  --dur-md:  320ms;
+  --dur-lg:  480ms;
+  --dur-xl:  600ms;
+}
+
+/* ── Transizioni globali GPU-safe ─────────────────────────── */
+/* Tutti gli elementi interattivi ricevono una transizione
+   solo su transform e opacity, mai su layout properties */
+button,
+[role="button"],
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Page enter ───────────────────────────────────────────── */
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── List item stagger ────────────────────────────────────── */
+/* Usa la CSS custom property --i impostata inline per il delay */
+@keyframes itemEnter {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Navbar title morph ───────────────────────────────────── */
+@keyframes titleSlide {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ── FAB spring pop ───────────────────────────────────────── */
+@keyframes fabPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) rotate(-35deg);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.12) rotate(5deg);
+  }
+  75% {
+    transform: scale(0.95) rotate(-2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* ── Welcome screen card entrance ────────────────────────── */
+@keyframes welcomeCard {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Checkbox bounce (applicato via classe JS) ────────────── */
+@keyframes checkBounce {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.4); }
+  60%  { transform: scale(0.85); }
+  80%  { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.check-bounce {
+  animation: checkBounce 420ms var(--spring) both;
+}
+
+/* ── Chip pop (badge contatori) ───────────────────────────── */
+@keyframes chipPop {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ── Reduced motion: disabilita tutto ────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration:        0.01ms !important;
+    animation-iteration-count: 1      !important;
+    transition-duration:       0.01ms !important;
+    scroll-behavior:           auto   !important;
+  }
+}

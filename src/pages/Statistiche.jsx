@@ -7,7 +7,7 @@ import { useApp } from '../context/AppContext';
 import { useSpese } from '../context/SpeseContext';
 import { useAttivita } from '../context/AttivitaContext';
 import { useImpostazioni } from '../context/ImpostazioniContext';
-import { formattaImporto, calcolaBilancio, calcolaQuote, oggiLocale } from '../utils/helpers';
+import { formattaImporto, calcolaBilancio, calcolaQuote, oggiLocale, formatoData } from '../utils/helpers';
 
 function chiaveMese(anno, mese) {
   return `${anno}-${String(mese + 1).padStart(2, '0')}`;
@@ -22,34 +22,41 @@ function Barra({ valore, massimo, colore }) {
   );
 }
 
-function TrendChip({ attuale, precedente, nomeMesePrec, inverti }) {
-  if (!precedente || precedente === 0) return null;
-  const delta = Math.round(((attuale - precedente) / precedente) * 100);
+function TrendChip({ attuale, precedente, nomeMesePrec, inverti, assoluto, coloreNegativo = 'error' }) {
+  if (precedente === undefined || precedente === null) return null;
+  if (!assoluto && precedente === 0) return null;
+  const delta = assoluto
+    ? attuale - precedente
+    : Math.round(((attuale - precedente) / precedente) * 100);
   if (delta === 0) return null;
   const positivo = delta > 0;
   const buono = inverti ? !positivo : positivo;
   return (
     <Chip
-      label={`${positivo ? '▲' : '▼'} ${positivo ? '+' : ''}${delta}% vs ${nomeMesePrec}`}
+      label={`${positivo ? '▲' : '▼'} ${positivo ? '+' : ''}${delta}${assoluto ? '' : '%'} vs ${nomeMesePrec}`}
       size="small"
-      color={buono ? 'success' : 'error'}
+      color={buono ? 'success' : coloreNegativo}
       sx={{ fontSize: '0.65rem', height: 22 }}
     />
   );
 }
 
-function TrendChipAssoluto({ attuale, precedente, nomeMesePrec }) {
-  if (precedente === undefined || precedente === null) return null;
-  const delta = attuale - precedente;
-  if (delta === 0) return null;
-  const positivo = delta > 0;
+function ColonnaGrafico({ chiave, label, valore, max, meseKey, coloreAttivo, coloreInattivo, formatLabel }) {
   return (
-    <Chip
-      label={`${positivo ? '▲' : '▼'} ${positivo ? '+' : ''}${delta} vs ${nomeMesePrec}`}
-      size="small"
-      color={positivo ? 'success' : 'default'}
-      sx={{ fontSize: '0.65rem', height: 22 }}
-    />
+    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+      <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ fontSize: '0.6rem' }}>
+        {valore > 0 ? formatLabel(valore) : ''}
+      </Typography>
+      <Box sx={{
+        width: '100%',
+        height: Math.max(4, Math.round((valore / max) * 72)),
+        bgcolor: chiave === meseKey ? coloreAttivo : coloreInattivo,
+        borderRadius: '4px 4px 0 0',
+        transition: 'height 0.4s ease',
+        opacity: valore === 0 ? 0.3 : 1,
+      }} />
+      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem' }}>{label}</Typography>
+    </Box>
   );
 }
 
@@ -156,8 +163,8 @@ function Statistiche() {
   const totaleCompletamentiPrec = completamentiDelMesePrec.length;
 
   // --- Task più trascurate ---
-  const _ultimoMese = new Date(dataRif.getFullYear(), dataRif.getMonth() + 1, 0);
-  const oggiStrPerAttesi = meseOffset === 0 ? oggiStr : `${_ultimoMese.getFullYear()}-${String(_ultimoMese.getMonth() + 1).padStart(2, '0')}-${String(_ultimoMese.getDate()).padStart(2, '0')}`;
+  const ultimoDelMese = new Date(dataRif.getFullYear(), dataRif.getMonth() + 1, 0);
+  const oggiStrPerAttesi = meseOffset === 0 ? oggiStr : formatoData(ultimoDelMese);
   const taskConTasso = attivita
     .map(task => {
       const attesi = calcolaAttesi(task, dataRif.getFullYear(), dataRif.getMonth(), oggiStrPerAttesi);
@@ -174,10 +181,10 @@ function Statistiche() {
   const oggiKey = chiaveMese(oggi.getFullYear(), oggi.getMonth());
   const ultimi6Mesi = [];
   for (let i = 5; i >= 0; i--) {
-    const d = new Date(dataRif.getFullYear(), dataRif.getMonth() - i, 1);
-    const key = chiaveMese(d.getFullYear(), d.getMonth());
+    const dataMese = new Date(dataRif.getFullYear(), dataRif.getMonth() - i, 1);
+    const key = chiaveMese(dataMese.getFullYear(), dataMese.getMonth());
     if (key > oggiKey) continue;
-    const label = d.toLocaleDateString('it-IT', { month: 'short' });
+    const label = dataMese.toLocaleDateString('it-IT', { month: 'short' });
     const completamenti = storicoCompletamenti.filter(s => s.data?.startsWith(key)).length;
     const totaleSpese = spese.filter(s => s.data?.startsWith(key) && s.tipo !== 'saldo').reduce((acc, s) => acc + s.importo, 0);
     ultimi6Mesi.push({ key, label, completamenti, totaleSpese });
@@ -356,7 +363,7 @@ function Statistiche() {
         <CardContent sx={{ p: 2.5 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Typography variant="subtitle1" fontWeight={700}>✅ Attività completate</Typography>
-            <TrendChipAssoluto
+            <TrendChip assoluto coloreNegativo="default"
               attuale={totaleCompletamentiMese}
               precedente={totaleCompletamentiPrec}
               nomeMesePrec={nomeMesePrec}
@@ -379,7 +386,7 @@ function Statistiche() {
                       <Typography variant="body2" fontWeight={600}>{u.nome}</Typography>
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <TrendChipAssoluto attuale={completamenti} precedente={precedente} nomeMesePrec={nomeMesePrec} />
+                      <TrendChip assoluto coloreNegativo="default" attuale={completamenti} precedente={precedente} nomeMesePrec={nomeMesePrec} />
                       <Chip label={completamenti} size="small" color={completamenti > 0 ? 'success' : 'default'} />
                     </Box>
                   </Box>
@@ -441,24 +448,11 @@ function Statistiche() {
           </Typography>
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end', mb: 2.5 }}>
             {ultimi6Mesi.map(({ key, label, completamenti }) => (
-              <Box key={key} sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
-                <Typography variant="caption" color="text.secondary" fontWeight={600}>
-                  {completamenti > 0 ? completamenti : ''}
-                </Typography>
-                <Box
-                  sx={{
-                    width: '100%',
-                    height: Math.max(4, Math.round((completamenti / maxCompMesi) * 72)),
-                    bgcolor: key === meseKey ? 'primary.main' : 'primary.light',
-                    borderRadius: '4px 4px 0 0',
-                    transition: 'height 0.4s ease',
-                    opacity: completamenti === 0 ? 0.3 : 1,
-                  }}
-                />
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem' }}>
-                  {label}
-                </Typography>
-              </Box>
+              <ColonnaGrafico key={key} chiave={key} label={label} valore={completamenti}
+                max={maxCompMesi} meseKey={meseKey}
+                coloreAttivo="primary.main" coloreInattivo="primary.light"
+                formatLabel={v => v}
+              />
             ))}
           </Box>
 
@@ -469,24 +463,11 @@ function Statistiche() {
           </Typography>
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end' }}>
             {ultimi6Mesi.map(({ key, label, totaleSpese }) => (
-              <Box key={key} sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
-                <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ fontSize: '0.6rem' }}>
-                  {totaleSpese > 0 ? `€${Math.round(totaleSpese)}` : ''}
-                </Typography>
-                <Box
-                  sx={{
-                    width: '100%',
-                    height: Math.max(4, Math.round((totaleSpese / maxSpeseMesi) * 72)),
-                    bgcolor: key === meseKey ? 'secondary.main' : 'secondary.light',
-                    borderRadius: '4px 4px 0 0',
-                    transition: 'height 0.4s ease',
-                    opacity: totaleSpese === 0 ? 0.3 : 1,
-                  }}
-                />
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem' }}>
-                  {label}
-                </Typography>
-              </Box>
+              <ColonnaGrafico key={key} chiave={key} label={label} valore={totaleSpese}
+                max={maxSpeseMesi} meseKey={meseKey}
+                coloreAttivo="secondary.main" coloreInattivo="secondary.light"
+                formatLabel={v => `€${Math.round(v)}`}
+              />
             ))}
           </Box>
         </CardContent>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { ThemeProvider, createTheme, CssBaseline, Snackbar, Button } from '@mui/material';
+import { ThemeProvider, createTheme, CssBaseline, Snackbar, Button, Box } from '@mui/material';
 import { AppProvider, useApp } from './context/AppContext';
 import { SpeseProvider } from './context/SpeseContext';
 import { AttivitaProvider } from './context/AttivitaContext';
@@ -52,7 +52,7 @@ function AuthGuard() {
   const modalitaUtente = utenteAttivo?.modalita || 'auto';
   const modalitaEffettiva = modalitaUtente === 'auto' ? preferenzaSistema : modalitaUtente;
 
-  const theme = createTheme({
+  const theme = useMemo(() => createTheme({
     palette: {
       mode: modalitaEffettiva,
       primary: { main: utenteAttivo?.coloreApp || '#5C6BC0' },
@@ -66,7 +66,7 @@ function AuthGuard() {
       h6: { fontWeight: 700 },
     },
     shape: { borderRadius: 16 },
-  });
+  }), [modalitaEffettiva, utenteAttivo?.coloreApp]);
 
   useEffect(() => {
     if (!utenteAttivo && location.pathname !== '/benvenuto') {
@@ -80,7 +80,13 @@ function AuthGuard() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       {mostraNav && <Navbar />}
-      <div style={{ paddingBottom: mostraNav ? 'calc(70px + env(safe-area-inset-bottom))' : '0' }}>
+      <Box
+        key={location.key}
+        sx={{
+          paddingBottom: mostraNav ? 'calc(70px + env(safe-area-inset-bottom))' : '0',
+          animation: 'pageEnter var(--dur-md) var(--spring-gentle) both',
+        }}
+      >
         <Routes>
           <Route path="/benvenuto" element={<Benvenuto />} />
           <Route path="/" element={<Home />} />
@@ -96,7 +102,7 @@ function AuthGuard() {
           <Route path="/impostazioni/casa" element={<ImpostazioniCasa />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </div>
+      </Box>
       {mostraNav && <BottomNav />}
 
       <Snackbar

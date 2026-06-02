@@ -8,12 +8,13 @@ export const COLORI_TEMA = [
   { valore: '#42A5F5', secondario: '#26A69A', nome: 'Azzurro' },
 ];
 
+// Formatta un oggetto Date come stringa YYYY-MM-DD nel fuso locale
+export const formatoData = (date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
 // Restituisce la data odierna come stringa YYYY-MM-DD nel fuso locale
 // (evita il bug UTC di toISOString() che a mezzanotte può dare ieri)
-export const oggiLocale = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-};
+export const oggiLocale = () => formatoData(new Date());
 
 // Formatta un numero come importo in euro
 // es. 85.5 → "€ 85,50"
@@ -22,8 +23,8 @@ export const formattaImporto = (n) =>
 
 // Formatta una data in formato italiano
 // es. "2024-01-15" → "15 gen 2024"
-export const formattaData = (d) =>
-  new Date(d + 'T00:00:00').toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' });
+export const formattaData = (dateStr) =>
+  new Date(dateStr + 'T00:00:00').toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' });
 
 // Calcola la quota di ogni utente per una singola spesa.
 // partecipantiOrAltro: array di tutti i partecipanti (incluso pagatore) OPPURE stringa del solo altroUtente (compat legacy)
@@ -98,16 +99,17 @@ export const calcolaBilancio = (spese, utenti = []) => {
   // Calcola tutte le coppie debitore/creditore con algoritmo greedy
   const tuttiDebiti = [];
   const copia = { ...netti };
-  for (let i = 0; i < 20; i++) {
-    const creditori = Object.keys(copia).filter(n => copia[n] > 0.01);
-    const debitori = Object.keys(copia).filter(n => copia[n] < -0.01);
-    if (!creditori.length || !debitori.length) break;
-    const cred = creditori.reduce((a, b) => copia[a] > copia[b] ? a : b);
-    const debt = debitori.reduce((a, b) => copia[a] < copia[b] ? a : b);
+  let creditori = Object.keys(copia).filter(n => copia[n] > 0.01);
+  let debitori = Object.keys(copia).filter(n => copia[n] < -0.01);
+  while (creditori.length && debitori.length) {
+    const cred = creditori.reduce((max, nome) => copia[max] > copia[nome] ? max : nome);
+    const debt = debitori.reduce((min, nome) => copia[min] < copia[nome] ? min : nome);
     const importo = Math.min(copia[cred], Math.abs(copia[debt]));
     tuttiDebiti.push({ debitore: debt, creditore: cred, importo: Math.round(importo * 100) / 100 });
     copia[cred] -= importo;
     copia[debt] += importo;
+    creditori = Object.keys(copia).filter(n => copia[n] > 0.01);
+    debitori = Object.keys(copia).filter(n => copia[n] < -0.01);
   }
 
   const nomi = Object.keys(netti);

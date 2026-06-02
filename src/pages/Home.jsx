@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useSpese } from '../context/SpeseContext';
 import { useAttivita } from '../context/AttivitaContext';
-import { formattaImporto, calcolaBilancio, oggiLocale } from '../utils/helpers';
+import { formattaImporto, calcolaBilancio, oggiLocale, formatoData } from '../utils/helpers';
 import { getAttivitaPerData } from './Calendario';
 import { useImpostazioni } from '../context/ImpostazioniContext';
 
@@ -14,10 +14,9 @@ const GIORNI_BREVI = ['D', 'L', 'M', 'M', 'G', 'V', 'S'];
 function prossimadata(task, oggiStr) {
   const oggi = new Date(oggiStr + 'T00:00:00');
   if (task.frequenza === 'settimanale') {
-    const diff = (task.giornoSettimana - oggi.getDay() + 7) % 7 || 7;
     const next = new Date(oggi);
-    next.setDate(oggi.getDate() + diff);
-    return `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}-${String(next.getDate()).padStart(2, '0')}`;
+    next.setDate(oggi.getDate() + ((task.giornoSettimana - oggi.getDay() + 7) % 7 || 7));
+    return formatoData(next);
   }
   if (task.frequenza === 'mensile') {
     let year = oggi.getFullYear();
@@ -33,24 +32,23 @@ function prossimadata(task, oggiStr) {
 }
 
 function etichettaData(dataStr, oggiStr) {
-  const diff = Math.round(
-    (new Date(dataStr + 'T00:00:00') - new Date(oggiStr + 'T00:00:00')) / 86400000
-  );
+  const data = new Date(dataStr + 'T00:00:00');
+  const diff = Math.round((data - new Date(oggiStr + 'T00:00:00')) / 86400000);
   if (diff === 1) return 'domani';
-  if (diff < 7) return new Date(dataStr + 'T00:00:00').toLocaleDateString('it-IT', { weekday: 'short' });
-  return new Date(dataStr + 'T00:00:00').toLocaleDateString('it-IT', { day: '2-digit', month: 'short' });
+  return data.toLocaleDateString('it-IT', diff < 7
+    ? { weekday: 'short' }
+    : { day: '2-digit', month: 'short' }
+  );
 }
 
 function getSettimana(dataStr, primoGiorno = 1) {
   const d = new Date(dataStr + 'T00:00:00');
-  const giorno = d.getDay();
-  const offset = (giorno - primoGiorno + 7) % 7;
   const inizio = new Date(d);
-  inizio.setDate(d.getDate() - offset);
+  inizio.setDate(d.getDate() - (d.getDay() - primoGiorno + 7) % 7);
   return Array.from({ length: 7 }, (_, i) => {
     const giornata = new Date(inizio);
     giornata.setDate(inizio.getDate() + i);
-    return `${giornata.getFullYear()}-${String(giornata.getMonth() + 1).padStart(2, '0')}-${String(giornata.getDate()).padStart(2, '0')}`;
+    return formatoData(giornata);
   });
 }
 
@@ -104,7 +102,7 @@ function Home() {
   return (
     <Box sx={{ p: 2 }}>
 
-      <Box sx={{ mb: 3 }}>
+      <Box sx={{ mb: 3, animation: 'itemEnter var(--dur-md) var(--spring-gentle) both' }}>
         <Typography variant="h5" fontWeight={800}>
           👋 Ciao, {utenteAttivo?.nome}!
         </Typography>
@@ -121,7 +119,11 @@ function Home() {
           mb: 2, borderRadius: 3, cursor: 'pointer',
           background: `linear-gradient(135deg, ${coloreApp} 0%, ${coloreSecondario} 100%)`,
           color: 'white',
-          '&:active': { opacity: 0.9 },
+          transition: 'transform 380ms var(--spring), opacity 250ms var(--ease-out)',
+          animation: 'welcomeCard var(--dur-lg) var(--spring-gentle) both',
+          animationDelay: '60ms',
+          willChange: 'transform, opacity',
+          '&:active': { transform: 'scale(0.97)', opacity: 0.9 },
         }}
       >
         <CardContent sx={{ p: 2.5 }}>
@@ -143,7 +145,12 @@ function Home() {
       </Card>
 
       {/* Statistiche rapide del mese */}
-      <Card elevation={0} sx={{ mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+      <Card elevation={0} sx={{
+        mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider',
+        animation: 'itemEnter var(--dur-md) var(--spring-gentle) both',
+        animationDelay: '120ms',
+        willChange: 'transform, opacity',
+      }}>
         <CardContent sx={{ p: 2 }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
             <Box
@@ -151,7 +158,9 @@ function Home() {
               sx={{
                 p: 1.5, borderRadius: 2, cursor: 'pointer',
                 bgcolor: 'action.hover',
+                transition: 'transform 300ms var(--spring), background-color 220ms var(--ease-out)',
                 '&:hover': { bgcolor: 'action.selected' },
+                '&:active': { transform: 'scale(0.96)' },
               }}
             >
               <Typography variant="caption" color="text.secondary" display="block">
@@ -169,7 +178,9 @@ function Home() {
               sx={{
                 p: 1.5, borderRadius: 2, cursor: 'pointer',
                 bgcolor: 'action.hover',
+                transition: 'transform 300ms var(--spring), background-color 220ms var(--ease-out)',
                 '&:hover': { bgcolor: 'action.selected' },
+                '&:active': { transform: 'scale(0.96)' },
               }}
             >
               <Typography variant="caption" color="text.secondary" display="block">
@@ -192,7 +203,12 @@ function Home() {
       </Card>
 
       {/* Strip settimanale */}
-      <Card elevation={0} sx={{ mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+      <Card elevation={0} sx={{
+        mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider',
+        animation: 'itemEnter var(--dur-md) var(--spring-gentle) both',
+        animationDelay: '180ms',
+        willChange: 'transform, opacity',
+      }}>
         <CardContent sx={{ p: 2 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
             <Typography variant="subtitle2" fontWeight={700}>📅 Questa settimana</Typography>
@@ -226,7 +242,8 @@ function Home() {
                     py: 1, borderRadius: 2, cursor: 'pointer',
                     bgcolor: isOggi ? 'primary.main' : 'transparent',
                     '&:hover': { bgcolor: isOggi ? 'primary.dark' : 'action.hover' },
-                    transition: 'background-color 0.15s',
+                    '&:active': { transform: 'scale(0.9)' },
+                    transition: 'background-color 220ms var(--ease-out), transform 300ms var(--spring)',
                   }}
                 >
                   <Typography
@@ -266,7 +283,12 @@ function Home() {
       </Card>
 
       {/* Attività di oggi — cliccabile → /attivita */}
-      <Card elevation={0} sx={{ mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+      <Card elevation={0} sx={{
+        mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider',
+        animation: 'itemEnter var(--dur-md) var(--spring-gentle) both',
+        animationDelay: '240ms',
+        willChange: 'transform, opacity',
+      }}>
         <CardContent sx={{ p: 2.5 }}>
           <Box
             onClick={() => navigate('/attivita')}
@@ -324,7 +346,12 @@ function Home() {
 
       {/* In arrivo — cliccabile → /attivita */}
       {prossimeAttivita.length > 0 && (
-        <Card elevation={0} sx={{ mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+        <Card elevation={0} sx={{
+          mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider',
+          animation: 'itemEnter var(--dur-md) var(--spring-gentle) both',
+          animationDelay: '300ms',
+          willChange: 'transform, opacity',
+        }}>
           <CardContent sx={{ p: 2.5 }}>
             <Box
               onClick={() => navigate('/attivita')}

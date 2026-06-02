@@ -38,14 +38,17 @@ function Benvenuto() {
       gap: 4,
       p: 3,
     }}>
-      <Box sx={{ textAlign: 'center', color: 'white' }}>
+      <Box sx={{
+        textAlign: 'center', color: 'white',
+        animation: 'pageEnter var(--dur-md) var(--spring-gentle) both',
+      }}>
         <Typography variant="h3" fontWeight={800} mb={1}>🏠</Typography>
         <Typography variant="h5" fontWeight={700}>{impostazioni.nomeCasa}</Typography>
         <Typography variant="body1" sx={{ opacity: 0.8, mt: 1 }}>Chi sei?</Typography>
       </Box>
 
       <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 2 }}>
-        {utenti.map((u) => (
+        {utenti.map((u, idx) => (
           <Button
             key={u.id}
             onClick={() => selezionaUtente(u.id)}
@@ -62,11 +65,12 @@ function Benvenuto() {
               color: 'white',
               width: 130,
               height: 150,
-              '&:hover': {
-                background: 'rgba(255,255,255,0.25)',
-                transform: 'scale(1.05)',
-                transition: 'all 0.2s ease',
-              }
+              animation: 'welcomeCard var(--dur-lg) var(--spring-gentle) both',
+              animationDelay: `${80 + idx * 80}ms`,
+              willChange: 'transform, opacity',
+              transition: 'transform 380ms var(--spring), background-color 220ms var(--ease-out)',
+              '&:hover': { background: 'rgba(255,255,255,0.25)', transform: 'scale(1.05)' },
+              '&:active': { transform: 'scale(0.95)' },
             }}
           >
             <Avatar sx={{ width: 64, height: 64, fontSize: '1.8rem', bgcolor: u.coloreAvatar }}>
@@ -90,7 +94,12 @@ function Benvenuto() {
               flexDirection: 'column',
               gap: 1,
               display: 'flex',
-              '&:hover': { background: 'rgba(255,255,255,0.2)' },
+              animation: 'welcomeCard var(--dur-lg) var(--spring-gentle) both',
+              animationDelay: `${80 + utenti.length * 80}ms`,
+              willChange: 'transform, opacity',
+              transition: 'transform 380ms var(--spring), background-color 220ms var(--ease-out)',
+              '&:hover': { background: 'rgba(255,255,255,0.2)', transform: 'scale(1.05)' },
+              '&:active': { transform: 'scale(0.95)' },
             }}
           >
             <AddRoundedIcon sx={{ fontSize: 32 }} />
