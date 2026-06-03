@@ -35,7 +35,10 @@ function SpesaCard({ spesa, onModifica, animIndex = 0 }) {
         sx={{
           mb: 2, borderRadius: 3,
           border: '1px dashed', borderColor: 'success.main', opacity: 0.8,
-          animation: 'itemEnter var(--dur-md) var(--spring-gentle) both',
+          animationName: 'itemEnter',
+          animationDuration: 'var(--dur-md)',
+          animationTimingFunction: 'var(--spring-gentle)',
+          animationFillMode: 'both',
           animationDelay: `${Math.min(animIndex, 6) * 45}ms`,
           willChange: 'transform, opacity',
         }}
@@ -69,7 +72,10 @@ function SpesaCard({ spesa, onModifica, animIndex = 0 }) {
         border: '1px solid', borderColor: 'divider',
         transition: 'box-shadow 220ms var(--ease-out)',
         '&:hover': { boxShadow: 3 },
-        animation: 'itemEnter var(--dur-md) var(--spring-gentle) both',
+        animationName: 'itemEnter',
+        animationDuration: 'var(--dur-md)',
+        animationTimingFunction: 'var(--spring-gentle)',
+        animationFillMode: 'both',
         animationDelay: `${Math.min(animIndex, 6) * 45}ms`,
         willChange: 'transform, opacity',
       }}

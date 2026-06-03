@@ -84,7 +84,10 @@ function AuthGuard() {
         key={location.key}
         sx={{
           paddingBottom: mostraNav ? 'calc(70px + env(safe-area-inset-bottom))' : '0',
-          animation: 'pageEnter var(--dur-md) var(--spring-gentle) both',
+          animationName: 'pageEnter',
+          animationDuration: 'var(--dur-md)',
+          animationTimingFunction: 'var(--spring-gentle)',
+          animationFillMode: 'both',
         }}
       >
         <Routes>

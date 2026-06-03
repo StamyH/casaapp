@@ -40,7 +40,10 @@ function Benvenuto() {
     }}>
       <Box sx={{
         textAlign: 'center', color: 'white',
-        animation: 'pageEnter var(--dur-md) var(--spring-gentle) both',
+        animationName: 'pageEnter',
+        animationDuration: 'var(--dur-md)',
+        animationTimingFunction: 'var(--spring-gentle)',
+        animationFillMode: 'both',
       }}>
         <Typography variant="h3" fontWeight={800} mb={1}>🏠</Typography>
         <Typography variant="h5" fontWeight={700}>{impostazioni.nomeCasa}</Typography>
@@ -65,7 +68,10 @@ function Benvenuto() {
               color: 'white',
               width: 130,
               height: 150,
-              animation: 'welcomeCard var(--dur-lg) var(--spring-gentle) both',
+              animationName: 'welcomeCard',
+              animationDuration: 'var(--dur-lg)',
+              animationTimingFunction: 'var(--spring-gentle)',
+              animationFillMode: 'both',
               animationDelay: `${80 + idx * 80}ms`,
               willChange: 'transform, opacity',
               transition: 'transform 380ms var(--spring), background-color 220ms var(--ease-out)',
@@ -94,7 +100,10 @@ function Benvenuto() {
               flexDirection: 'column',
               gap: 1,
               display: 'flex',
-              animation: 'welcomeCard var(--dur-lg) var(--spring-gentle) both',
+              animationName: 'welcomeCard',
+              animationDuration: 'var(--dur-lg)',
+              animationTimingFunction: 'var(--spring-gentle)',
+              animationFillMode: 'both',
               animationDelay: `${80 + utenti.length * 80}ms`,
               willChange: 'transform, opacity',
               transition: 'transform 380ms var(--spring), background-color 220ms var(--ease-out)',

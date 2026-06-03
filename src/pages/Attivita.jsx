@@ -238,7 +238,10 @@ function Attivita() {
         onClick={() => setApriForm(true)}
         sx={{
           position: 'fixed', bottom: 'calc(80px + env(safe-area-inset-bottom))', right: 24, boxShadow: 4,
-          animation: 'fabPop var(--dur-lg) var(--spring) both',
+          animationName: 'fabPop',
+          animationDuration: 'var(--dur-lg)',
+          animationTimingFunction: 'var(--spring)',
+          animationFillMode: 'both',
           animationDelay: '120ms',
           willChange: 'transform, opacity',
         }}

@@ -65,7 +65,10 @@ function TaskCard({ task, onModifica, animIndex = 0 }) {
         /* Solo transform e opacity: GPU-accelerated, 60fps garantiti */
         transition: 'opacity 350ms var(--spring-gentle), transform 380ms var(--spring)',
         '&:hover': { boxShadow: task.completato ? 0 : 2 },
-        animation: 'itemEnter var(--dur-md) var(--spring-gentle) both',
+        animationName: 'itemEnter',
+        animationDuration: 'var(--dur-md)',
+        animationTimingFunction: 'var(--spring-gentle)',
+        animationFillMode: 'both',
         animationDelay: `${Math.min(animIndex, 7) * 40}ms`,
         willChange: 'transform, opacity',
       }}

@@ -102,7 +102,7 @@ function Home() {
   return (
     <Box sx={{ p: 2 }}>
 
-      <Box sx={{ mb: 3, animation: 'itemEnter var(--dur-md) var(--spring-gentle) both' }}>
+      <Box sx={{ mb: 3, animationName: 'itemEnter', animationDuration: 'var(--dur-md)', animationTimingFunction: 'var(--spring-gentle)', animationFillMode: 'both' }}>
         <Typography variant="h5" fontWeight={800}>
           👋 Ciao, {utenteAttivo?.nome}!
         </Typography>
@@ -120,7 +120,10 @@ function Home() {
           background: `linear-gradient(135deg, ${coloreApp} 0%, ${coloreSecondario} 100%)`,
           color: 'white',
           transition: 'transform 380ms var(--spring), opacity 250ms var(--ease-out)',
-          animation: 'welcomeCard var(--dur-lg) var(--spring-gentle) both',
+          animationName: 'welcomeCard',
+          animationDuration: 'var(--dur-lg)',
+          animationTimingFunction: 'var(--spring-gentle)',
+          animationFillMode: 'both',
           animationDelay: '60ms',
           willChange: 'transform, opacity',
           '&:active': { transform: 'scale(0.97)', opacity: 0.9 },
@@ -147,7 +150,10 @@ function Home() {
       {/* Statistiche rapide del mese */}
       <Card elevation={0} sx={{
         mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider',
-        animation: 'itemEnter var(--dur-md) var(--spring-gentle) both',
+        animationName: 'itemEnter',
+        animationDuration: 'var(--dur-md)',
+        animationTimingFunction: 'var(--spring-gentle)',
+        animationFillMode: 'both',
         animationDelay: '120ms',
         willChange: 'transform, opacity',
       }}>
@@ -205,7 +211,10 @@ function Home() {
       {/* Strip settimanale */}
       <Card elevation={0} sx={{
         mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider',
-        animation: 'itemEnter var(--dur-md) var(--spring-gentle) both',
+        animationName: 'itemEnter',
+        animationDuration: 'var(--dur-md)',
+        animationTimingFunction: 'var(--spring-gentle)',
+        animationFillMode: 'both',
         animationDelay: '180ms',
         willChange: 'transform, opacity',
       }}>
@@ -285,7 +294,10 @@ function Home() {
       {/* Attività di oggi — cliccabile → /attivita */}
       <Card elevation={0} sx={{
         mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider',
-        animation: 'itemEnter var(--dur-md) var(--spring-gentle) both',
+        animationName: 'itemEnter',
+        animationDuration: 'var(--dur-md)',
+        animationTimingFunction: 'var(--spring-gentle)',
+        animationFillMode: 'both',
         animationDelay: '240ms',
         willChange: 'transform, opacity',
       }}>
@@ -348,7 +360,10 @@ function Home() {
       {prossimeAttivita.length > 0 && (
         <Card elevation={0} sx={{
           mb: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider',
-          animation: 'itemEnter var(--dur-md) var(--spring-gentle) both',
+          animationName: 'itemEnter',
+          animationDuration: 'var(--dur-md)',
+          animationTimingFunction: 'var(--spring-gentle)',
+          animationFillMode: 'both',
           animationDelay: '300ms',
           willChange: 'transform, opacity',
         }}>

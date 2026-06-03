@@ -54,7 +54,7 @@ function Navbar() {
               variant="h6"
               fontWeight={700}
               color="text.primary"
-              sx={{ animation: 'titleSlide var(--dur-sm) var(--spring-gentle) both' }}
+              sx={{ animationName: 'titleSlide', animationDuration: 'var(--dur-sm)', animationTimingFunction: 'var(--spring-gentle)', animationFillMode: 'both' }}
             >
               {titolo}
             </Typography>
