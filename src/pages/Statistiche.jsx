@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Box, Typography, Card, CardContent, Avatar, Chip, Divider, IconButton, LinearProgress, Dialog, DialogTitle, DialogContent } from '@mui/material';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
@@ -117,13 +117,28 @@ function Statistiche() {
   const nomeMesePrec = dataPrecRif.toLocaleDateString('it-IT', { month: 'long' });
 
   // --- Spese ---
-  const speseDelMese = spese.filter(s => s.data?.startsWith(meseKey));
-  const speseDelMesePrec = spese.filter(s => s.data?.startsWith(meseKeyPrec));
+  const speseDelMese = useMemo(
+    () => spese.filter(s => s.data?.startsWith(meseKey)),
+    [spese, meseKey]
+  );
+  const speseDelMesePrec = useMemo(
+    () => spese.filter(s => s.data?.startsWith(meseKeyPrec)),
+    [spese, meseKeyPrec]
+  );
   // Escludi i saldi dai totali (sono pareggi contabili, non spese reali)
   const isNotSaldo = s => s.tipo !== 'saldo' && s.categoria !== 'saldo';
-  const totaleDelMese = speseDelMese.filter(isNotSaldo).reduce((acc, s) => acc + s.importo, 0);
-  const totalePrecedente = speseDelMesePrec.filter(isNotSaldo).reduce((acc, s) => acc + s.importo, 0);
-  const bilancio = calcolaBilancio(speseDelMese, utenti);
+  const totaleDelMese = useMemo(
+    () => speseDelMese.filter(isNotSaldo).reduce((acc, s) => acc + s.importo, 0),
+    [speseDelMese]
+  );
+  const totalePrecedente = useMemo(
+    () => speseDelMesePrec.filter(isNotSaldo).reduce((acc, s) => acc + s.importo, 0),
+    [speseDelMesePrec]
+  );
+  const bilancio = useMemo(
+    () => calcolaBilancio(speseDelMese, utenti),
+    [speseDelMese, utenti]
+  );
   const inPari = !bilancio.tuttiDebiti?.length || bilancio.importoDebito < 0.01;
 
   const spesePerCat = {};

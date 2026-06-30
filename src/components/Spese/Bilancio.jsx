@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Card, CardContent, Box, Typography, Divider, Button, Chip,
   Dialog, DialogTitle, DialogContent, DialogActions, Collapse, IconButton,
@@ -41,13 +41,19 @@ function Bilancio() {
   const coloreSecondario = utenteAttivo?.coloreSecondario || '#26A69A';
 
   const categoriePresenti = [...new Set(spese.filter(s => s.categoria !== 'saldo').map(s => s.categoria))];
-  const speseFiltrate = modalitaFiltro === 'tutte' || categorieSelezionate.length === 0
-    ? spese
-    : spese.filter(s => categorieSelezionate.includes(s.categoria) || s.categoria === 'saldo');
+  const speseFiltrate = useMemo(
+    () => modalitaFiltro === 'tutte' || categorieSelezionate.length === 0
+      ? spese
+      : spese.filter(s => categorieSelezionate.includes(s.categoria) || s.categoria === 'saldo'),
+    [spese, modalitaFiltro, categorieSelezionate]
+  );
 
   const filtroAttivo = modalitaFiltro === 'selezione' && categorieSelezionate.length > 0;
 
-  const bilancio = calcolaBilancio(speseFiltrate, utenti);
+  const bilancio = useMemo(
+    () => calcolaBilancio(speseFiltrate, utenti),
+    [speseFiltrate, utenti]
+  );
   const inPari = bilancio.tuttiDebiti.length === 0;
 
   const pagatoDa = {};

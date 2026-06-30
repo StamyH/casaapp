@@ -1,12 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Box, Typography, Card, CardContent, Chip, Divider, Checkbox } from '@mui/material';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useSpese } from '../context/SpeseContext';
 import { useAttivita } from '../context/AttivitaContext';
-import { formattaImporto, calcolaBilancio, oggiLocale, formatoData } from '../utils/helpers';
-import { getAttivitaPerData } from './Calendario';
+import { formattaImporto, calcolaBilancio, oggiLocale, formatoData, getAttivitaPerData } from '../utils/helpers';
 import { useImpostazioni } from '../context/ImpostazioniContext';
 
 const GIORNI_BREVI = ['D', 'L', 'M', 'M', 'G', 'V', 'S'];
@@ -67,28 +66,50 @@ function Home() {
   const coloreApp = utenteAttivo?.coloreApp || '#5C6BC0';
   const coloreSecondario = utenteAttivo?.coloreSecondario || '#26A69A';
 
-  const settimana = getSettimana(oggiStr, impostazioni.primoGiornoSettimana);
-  const speseDelMese = spese.filter(s => s.data?.startsWith(meseKey));
-  const bilancio = calcolaBilancio(speseDelMese, utenti);
-  const totaleDelMese = speseDelMese.reduce((acc, s) => acc + s.importo, 0);
+  const settimana = useMemo(
+    () => getSettimana(oggiStr, impostazioni.primoGiornoSettimana),
+    [oggiStr, impostazioni.primoGiornoSettimana]
+  );
+  const speseDelMese = useMemo(
+    () => spese.filter(s => s.data?.startsWith(meseKey)),
+    [spese, meseKey]
+  );
+  const bilancio = useMemo(
+    () => calcolaBilancio(speseDelMese, utenti),
+    [speseDelMese, utenti]
+  );
+  const totaleDelMese = useMemo(
+    () => speseDelMese.reduce((acc, s) => acc + s.importo, 0),
+    [speseDelMese]
+  );
 
-  const attivitaOggi = attivita.filter(t => {
+  const attivitaOggi = useMemo(() => attivita.filter(t => {
     if (t.frequenza === 'giornaliera') return true;
     if (t.frequenza === 'settimanale' && t.giornoSettimana === giornoOggi) return true;
     if (t.frequenza === 'mensile' && t.giornoMese === giornoMeseOggi) return true;
     if (t.frequenza === 'specifica' && t.dataSpecifica === oggiStr) return true;
     return false;
-  });
+  }), [attivita, giornoOggi, giornoMeseOggi, oggiStr]);
 
-  const prossimeAttivita = attivita.filter(t => {
-    if (t.completato) return false; // non mostrare già completate
+  const prossimeAttivita = useMemo(() => attivita.filter(t => {
+    if (t.completato) return false;
     if (t.frequenza === 'settimanale' && t.giornoSettimana !== giornoOggi) return true;
     if (t.frequenza === 'mensile' && t.giornoMese !== giornoMeseOggi) return true;
     if (t.frequenza === 'specifica' && t.dataSpecifica > oggiStr) return true;
     return false;
   })
   .sort((a, b) => (prossimadata(a, oggiStr) || '').localeCompare(prossimadata(b, oggiStr) || ''))
-  .slice(0, 3);
+  .slice(0, 3), [attivita, giornoOggi, giornoMeseOggi, oggiStr]);
+
+  const attivitaInRitardo = useMemo(
+    () => attivita.filter(t =>
+      t.frequenza === 'specifica' &&
+      t.dataSpecifica &&
+      t.dataSpecifica < oggiStr &&
+      !t.completato
+    ),
+    [attivita, oggiStr]
+  );
 
   const inPari = bilancio.importoDebito < 0.01;
   const completateOggi = attivitaOggi.filter(t => t.completato).length;
@@ -110,6 +131,39 @@ function Home() {
           {oggi.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
         </Typography>
       </Box>
+
+      {/* Banner attività in ritardo */}
+      {attivitaInRitardo.length > 0 && (
+        <Card
+          elevation={0}
+          onClick={() => navigate('/attivita')}
+          sx={{
+            mb: 2, borderRadius: 3, cursor: 'pointer',
+            border: '1px solid', borderColor: 'error.light',
+            bgcolor: 'error.light',
+            animationName: 'itemEnter',
+            animationDuration: 'var(--dur-md)',
+            animationTimingFunction: 'var(--spring-gentle)',
+            animationFillMode: 'both',
+          }}
+        >
+          <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Box>
+                <Typography variant="body2" fontWeight={700} color="error.dark">
+                  ⚠️ {attivitaInRitardo.length === 1
+                    ? '1 attività in ritardo'
+                    : `${attivitaInRitardo.length} attività in ritardo`}
+                </Typography>
+                <Typography variant="caption" color="error.dark" sx={{ opacity: 0.8 }}>
+                  Vai ad Attività per completarle o eliminarle
+                </Typography>
+              </Box>
+              <ChevronRightRoundedIcon sx={{ color: 'error.dark', opacity: 0.7 }} />
+            </Box>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Bilancio — cliccabile → /spese */}
       <Card

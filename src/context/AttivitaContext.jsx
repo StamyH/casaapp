@@ -69,7 +69,7 @@ export function AttivitaProvider({ children }) {
   }, [setAttivita]);
 
   const aggiungiAttivita = (nuovaAttivita) => {
-    setAttivita(prev => [...prev, { ...nuovaAttivita, id: Date.now(), completato: false }]);
+    setAttivita(prev => [...prev, { ...nuovaAttivita, id: crypto.randomUUID(), completato: false }]);
   };
 
   const toggleAttivita = (id, utente) => {
@@ -88,7 +88,7 @@ export function AttivitaProvider({ children }) {
 
     if (nuovoStato) {
       setStoricoCompletamenti(prev => [...prev, {
-        id: Date.now(),
+        id: crypto.randomUUID(),
         taskId: id,
         taskTitolo: att.titolo,
         completatoDa: utente || 'sconosciuto',

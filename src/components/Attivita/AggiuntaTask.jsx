@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Drawer, Box, Typography, TextField, Button,
   ToggleButton, ToggleButtonGroup, IconButton, Divider,
+  Dialog, DialogTitle, DialogContent, DialogActions,
 } from '@mui/material';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { useAttivita } from '../../context/AttivitaContext';
@@ -31,6 +32,8 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica, onSuccess }) {
   const { utenti } = useApp();
   const [errori, setErrori] = useState({});
   const [confermaElimina, setConfermaElimina] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [confermaChiudi, setConfermaChiudi] = useState(false);
 
   const assegnazioni = [
     ...utenti.map(u => ({ value: u.nome, label: `👤 ${u.nome}` })),
@@ -53,6 +56,8 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica, onSuccess }) {
   useEffect(() => {
     setConfermaElimina(false);
     setErrori({});
+    setIsDirty(false);
+    setConfermaChiudi(false);
     if (attivitaInModifica) {
       setForm({
         titolo: attivitaInModifica.titolo,
@@ -69,7 +74,18 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica, onSuccess }) {
     }
   }, [attivitaInModifica, aperto]);
 
-  const aggiorna = (campo, valore) => setForm(prev => ({ ...prev, [campo]: valore }));
+  const aggiorna = (campo, valore) => {
+    setIsDirty(true);
+    setForm(prev => ({ ...prev, [campo]: valore }));
+  };
+
+  const handleChiudi = () => {
+    if (isDirty) {
+      setConfermaChiudi(true);
+    } else {
+      onChiudi();
+    }
+  };
 
   const handleSubmit = () => {
     const nuoviErrori = {};
@@ -109,10 +125,11 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica, onSuccess }) {
   const ricorrente = form.frequenza !== 'specifica';
 
   return (
+    <>
     <Drawer
       anchor="bottom"
       open={aperto}
-      onClose={onChiudi}
+      onClose={handleChiudi}
       PaperProps={{ sx: { borderRadius: '24px 24px 0 0', maxHeight: '92vh' } }}
     >
       <Box sx={{ p: 3, overflowY: 'auto' }}>
@@ -121,7 +138,7 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica, onSuccess }) {
           <Typography variant="h6" fontWeight={700}>
             {attivitaInModifica ? '✏️ Modifica attività' : '✅ Nuova attività'}
           </Typography>
-          <IconButton onClick={onChiudi} size="small"><CloseRoundedIcon /></IconButton>
+          <IconButton onClick={handleChiudi} size="small"><CloseRoundedIcon /></IconButton>
         </Box>
 
         <TextField
@@ -131,6 +148,7 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica, onSuccess }) {
           onChange={e => { aggiorna('titolo', e.target.value); setErrori(p => ({ ...p, titolo: '' })); }}
           sx={{ mb: 2 }}
           placeholder="es. Portare la spazzatura"
+          inputProps={{ maxLength: 80 }}
           error={!!errori.titolo}
           helperText={errori.titolo}
         />
@@ -273,6 +291,20 @@ function AggiuntaTask({ aperto, onChiudi, attivitaInModifica, onSuccess }) {
         )}
       </Box>
     </Drawer>
+
+    <Dialog open={confermaChiudi} onClose={() => setConfermaChiudi(false)} maxWidth="xs" fullWidth>
+      <DialogTitle fontWeight={700}>Modifiche non salvate</DialogTitle>
+      <DialogContent>
+        <Typography variant="body2">Hai modificato l'attività ma non hai salvato. Vuoi uscire senza salvare?</Typography>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        <Button onClick={() => setConfermaChiudi(false)}>Continua</Button>
+        <Button variant="contained" color="error" onClick={() => { setConfermaChiudi(false); setIsDirty(false); onChiudi(); }}>
+          Esci senza salvare
+        </Button>
+      </DialogActions>
+    </Dialog>
+    </>
   );
 }
 

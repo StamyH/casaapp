@@ -36,6 +36,9 @@ export function SpeseProvider({ children }) {
     const dataPrecedente = new Date(oggi.getFullYear(), oggi.getMonth() - 1, 1);
     const mesePrecedente = `${dataPrecedente.getFullYear()}-${String(dataPrecedente.getMonth() + 1).padStart(2, '0')}`;
 
+    // Segna subito il mese come elaborato per evitare doppia esecuzione in Strict Mode
+    localStorage.setItem('casaapp_ultima_espansione_ricorrenti', meseCorrente);
+
     setSpese(prev => {
       const ricorrentiPrec = prev.filter(s =>
         s.ricorrente && s.data?.startsWith(mesePrecedente)
@@ -49,19 +52,18 @@ export function SpeseProvider({ children }) {
           e.categoria === s.categoria &&
           e.pagatore === s.pagatore
         ))
-        .map((s, i) => ({
+        .map(s => ({
           ...s,
-          id: Date.now() + i + 1,
+          id: crypto.randomUUID(),
           data: `${meseCorrente}-01`,
         }));
 
-      localStorage.setItem('casaapp_ultima_espansione_ricorrenti', meseCorrente);
       return nuove.length > 0 ? [...prev, ...nuove] : prev;
     });
   }, [setSpese]);
 
   const aggiungiSpesa = (nuovaSpesa) => {
-    setSpese(prev => [...prev, { ...nuovaSpesa, id: Date.now() }]);
+    setSpese(prev => [...prev, { ...nuovaSpesa, id: crypto.randomUUID() }]);
   };
 
   const eliminaSpesa = (id) => {

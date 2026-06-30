@@ -126,6 +126,27 @@ export const calcolaBilancio = (spese, utenti = []) => {
   };
 };
 
+// Restituisce le attività che ricadono in una data specifica (YYYY-MM-DD).
+// Tiene conto di tutte le frequenze e della data di fine.
+export const getAttivitaPerData = (attivita, dataStr) => {
+  const d = new Date(dataStr + 'T00:00:00');
+  const giorno = d.getDay();
+  const giornoMese = d.getDate();
+  const oggi = oggiLocale();
+
+  return attivita.filter(t => {
+    if (t.frequenza === 'giornaliera') return true;
+    if (t.frequenza === 'settimanale') return t.giornoSettimana === giorno;
+    if (t.frequenza === 'mensile') return t.giornoMese === giornoMese;
+    if (t.frequenza === 'specifica') return t.dataSpecifica === dataStr;
+    return false;
+  }).filter(t => {
+    if (t.dataFine && t.frequenza !== 'specifica' && t.dataFine < dataStr) return false;
+    if (t.frequenza === 'specifica' && t.dataSpecifica < oggi && !t.completato) return false;
+    return true;
+  });
+};
+
 // Raggruppa le spese per mese
 // es. { "gennaio 2024": [...], "febbraio 2024": [...] }
 export const raggruppaPerMese = (spese) => {

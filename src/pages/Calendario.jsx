@@ -9,29 +9,10 @@ import { useLocation } from 'react-router-dom';
 import { useAttivita } from '../context/AttivitaContext';
 import { useApp } from '../context/AppContext';
 import { useImpostazioni } from '../context/ImpostazioniContext';
-import { oggiLocale } from '../utils/helpers';
+import { oggiLocale, getAttivitaPerData } from '../utils/helpers';
 import AggiuntaTask from '../components/Attivita/AggiuntaTask';
 
 const NOMI_GIORNI = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
-
-export function getAttivitaPerData(attivita, dataStr) {
-  const d = new Date(dataStr + 'T00:00:00');
-  const giorno = d.getDay();
-  const giornoMese = d.getDate();
-  const oggi = oggiLocale();
-
-  return attivita.filter(t => {
-    if (t.frequenza === 'giornaliera') return true;
-    if (t.frequenza === 'settimanale') return t.giornoSettimana === giorno;
-    if (t.frequenza === 'mensile') return t.giornoMese === giornoMese;
-    if (t.frequenza === 'specifica') return t.dataSpecifica === dataStr;
-    return false;
-  }).filter(t => {
-    if (t.dataFine && t.frequenza !== 'specifica' && t.dataFine < dataStr) return false;
-    if (t.frequenza === 'specifica' && t.dataSpecifica < oggi && !t.completato) return false;
-    return true;
-  });
-}
 
 function generaGiorniMese(anno, mese, primoGiorno = 1) {
   const primoDelMese = new Date(anno, mese, 1);

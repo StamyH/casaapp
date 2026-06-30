@@ -3,6 +3,7 @@ import {
   Drawer, Box, Typography, TextField, Button,
   MenuItem, ToggleButton, ToggleButtonGroup,
   Slider, Divider, IconButton, Switch, FormControlLabel, Chip,
+  Dialog, DialogTitle, DialogContent, DialogActions,
 } from '@mui/material';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { useApp } from '../../context/AppContext';
@@ -22,7 +23,7 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica, onSuccess }) {
   const { aggiungiSpesa, modificaSpesa, eliminaSpesa } = useSpese();
   const { impostazioni } = useImpostazioni();
 
-  const formIniziale = () => {
+  const [form, setForm] = useState(() => {
     const oggi = new Date();
     const dataOggi = `${oggi.getFullYear()}-${String(oggi.getMonth() + 1).padStart(2, '0')}-${String(oggi.getDate()).padStart(2, '0')}`;
     return {
@@ -36,15 +37,17 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica, onSuccess }) {
       partecipanti: utenti.filter(u => u.nome !== utenteAttivo?.nome).map(u => u.nome),
       ricorrente: false,
     };
-  };
-
-  const [form, setForm] = useState(formIniziale);
+  });
   const [errori, setErrori] = useState({});
   const [confermaElimina, setConfermaElimina] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [confermaChiudi, setConfermaChiudi] = useState(false);
 
   useEffect(() => {
     setConfermaElimina(false);
     setErrori({});
+    setIsDirty(false);
+    setConfermaChiudi(false);
     if (spesaInModifica) {
       // Valida il pagatore contro gli utenti correnti; fallback all'utente attivo
       const nomiUtenti = utenti.map(u => u.nome);
@@ -74,13 +77,30 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica, onSuccess }) {
         ricorrente: spesaInModifica.ricorrente || false,
       });
     } else {
-      setForm(formIniziale());
+      // Ricostruisce il form con i valori correnti di utente e impostazioni
+      const oggi = new Date();
+      const dataOggi = `${oggi.getFullYear()}-${String(oggi.getMonth() + 1).padStart(2, '0')}-${String(oggi.getDate()).padStart(2, '0')}`;
+      setForm({
+        descrizione: '',
+        importo: '',
+        data: dataOggi,
+        categoria: impostazioni.categorie[0]?.nome || 'altro',
+        divisione: 'metà',
+        percentuale: 50,
+        pagatore: utenteAttivo?.nome || '',
+        partecipanti: utenti.filter(u => u.nome !== utenteAttivo?.nome).map(u => u.nome),
+        ricorrente: false,
+      });
     }
-  }, [spesaInModifica, aperto]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [spesaInModifica, aperto, utenteAttivo, utenti, impostazioni]);
 
-  const aggiorna = (campo, valore) => setForm(prev => ({ ...prev, [campo]: valore }));
+  const aggiorna = (campo, valore) => {
+    setIsDirty(true);
+    setForm(prev => ({ ...prev, [campo]: valore }));
+  };
 
   const aggiornaPagatore = (nuovoPagatore) => {
+    setIsDirty(true);
     setForm(prev => ({
       ...prev,
       pagatore: nuovoPagatore,
@@ -89,6 +109,7 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica, onSuccess }) {
   };
 
   const togglePartecipante = (nome) => {
+    setIsDirty(true);
     setForm(prev => {
       const presente = prev.partecipanti.includes(nome);
       return {
@@ -98,6 +119,14 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica, onSuccess }) {
           : [...prev.partecipanti, nome],
       };
     });
+  };
+
+  const handleChiudi = () => {
+    if (isDirty) {
+      setConfermaChiudi(true);
+    } else {
+      onChiudi();
+    }
   };
 
   const altriUtenti = utenti.filter(u => u.nome !== form.pagatore);
@@ -142,10 +171,11 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica, onSuccess }) {
   };
 
   return (
+    <>
     <Drawer
       anchor="bottom"
       open={aperto}
-      onClose={onChiudi}
+      onClose={handleChiudi}
       PaperProps={{ sx: { borderRadius: '24px 24px 0 0', maxHeight: '92vh' } }}
     >
       <Box sx={{ p: 3, overflowY: 'auto' }}>
@@ -154,7 +184,7 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica, onSuccess }) {
           <Typography variant="h6" fontWeight={700}>
             {spesaInModifica ? '✏️ Modifica spesa' : '💸 Nuova spesa'}
           </Typography>
-          <IconButton onClick={onChiudi} size="small"><CloseRoundedIcon /></IconButton>
+          <IconButton onClick={handleChiudi} size="small"><CloseRoundedIcon /></IconButton>
         </Box>
 
         <TextField
@@ -164,6 +194,7 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica, onSuccess }) {
           onChange={e => { aggiorna('descrizione', e.target.value); setErrori(p => ({ ...p, descrizione: '' })); }}
           sx={{ mb: 2 }}
           placeholder="es. Spesa supermercato"
+          inputProps={{ maxLength: 100 }}
           error={!!errori.descrizione}
           helperText={errori.descrizione}
         />
@@ -363,6 +394,20 @@ function AggiuntaSpesa({ aperto, onChiudi, spesaInModifica, onSuccess }) {
         )}
       </Box>
     </Drawer>
+
+    <Dialog open={confermaChiudi} onClose={() => setConfermaChiudi(false)} maxWidth="xs" fullWidth>
+      <DialogTitle fontWeight={700}>Modifiche non salvate</DialogTitle>
+      <DialogContent>
+        <Typography variant="body2">Hai modificato la spesa ma non hai salvato. Vuoi uscire senza salvare?</Typography>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        <Button onClick={() => setConfermaChiudi(false)}>Continua</Button>
+        <Button variant="contained" color="error" onClick={() => { setConfermaChiudi(false); setIsDirty(false); onChiudi(); }}>
+          Esci senza salvare
+        </Button>
+      </DialogActions>
+    </Dialog>
+    </>
   );
 }
 

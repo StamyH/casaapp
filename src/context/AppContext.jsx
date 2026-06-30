@@ -72,16 +72,28 @@ export function AppProvider({ children }) {
 
   const aggiungiUtente = (nome) => {
     if (utenti.length >= MAX_UTENTI) return null; // limite massimo raggiunto
-    const id = `u_${Date.now()}`;
+    // Validazione: nome non può essere duplicato (case-insensitive)
+    const nomeTrim = nome.trim();
+    if (utenti.some(u => u.nome.trim().toLowerCase() === nomeTrim.toLowerCase())) return null;
+    const id = `u_${crypto.randomUUID()}`;
     const coloriUsati = utenti.map(u => u.coloreAvatar);
     const colore = COLORI_DEFAULT.find(c => !coloriUsati.includes(c)) || COLORI_DEFAULT[0];
     const coloreSecondario = COLORI_DEFAULT.find(c => c !== colore) || COLORI_DEFAULT[1];
-    setUtenti(prev => [...prev, { id, nome, coloreAvatar: colore, coloreApp: colore, coloreSecondario, modalita: 'auto' }]);
+    setUtenti(prev => [...prev, { id, nome: nomeTrim, coloreAvatar: colore, coloreApp: colore, coloreSecondario, modalita: 'auto' }]);
     return id;
   };
 
+  // Restituisce true se la modifica è andata a buon fine, false se il nome è duplicato
   const modificaUtente = (id, dati) => {
+    if (dati.nome !== undefined) {
+      const nomeTrim = dati.nome.trim();
+      if (utenti.some(u => u.id !== id && u.nome.trim().toLowerCase() === nomeTrim.toLowerCase())) {
+        return false;
+      }
+      dati = { ...dati, nome: nomeTrim };
+    }
     setUtenti(prev => prev.map(u => u.id === id ? { ...u, ...dati } : u));
+    return true;
   };
 
   const eliminaUtente = (id) => {

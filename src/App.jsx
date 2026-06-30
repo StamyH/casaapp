@@ -1,25 +1,29 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { ThemeProvider, createTheme, CssBaseline, Snackbar, Button, Box } from '@mui/material';
+import { ThemeProvider, createTheme, CssBaseline, Snackbar, Button, Box, CircularProgress } from '@mui/material';
 import { AppProvider, useApp } from './context/AppContext';
 import { SpeseProvider } from './context/SpeseContext';
 import { AttivitaProvider } from './context/AttivitaContext';
 import { ImpostazioniProvider } from './context/ImpostazioniContext';
-import Home from './pages/Home';
-import Spese from './pages/Spese';
-import Attivita from './pages/Attivita';
-import Statistiche from './pages/Statistiche';
-import Calendario from './pages/Calendario';
-import Benvenuto from './pages/Benvenuto';
-import Impostazioni from './pages/Impostazioni';
-import ImpostazioniProfilo from './pages/ImpostazioniProfilo';
-import ImpostazioniTema from './pages/ImpostazioniTema';
-import ImpostazioniUtenti from './pages/ImpostazioniUtenti';
-import ImpostazioniCategorie from './pages/ImpostazioniCategorie';
-import ImpostazioniCasa from './pages/ImpostazioniCasa';
+import { BackendProvider } from './context/BackendContext';
 import Navbar from './components/Layout/Navbar';
 import BottomNav from './components/Layout/BottomNav';
 import ErrorBoundary from './components/ErrorBoundary';
+// Pagine principali — caricate subito
+import Home from './pages/Home';
+import Spese from './pages/Spese';
+import Attivita from './pages/Attivita';
+import Benvenuto from './pages/Benvenuto';
+// Pagine secondarie — caricate solo quando necessario (lazy)
+const Statistiche = lazy(() => import('./pages/Statistiche'));
+const Calendario = lazy(() => import('./pages/Calendario'));
+const Impostazioni = lazy(() => import('./pages/Impostazioni'));
+const ImpostazioniProfilo = lazy(() => import('./pages/ImpostazioniProfilo'));
+const ImpostazioniTema = lazy(() => import('./pages/ImpostazioniTema'));
+const ImpostazioniUtenti = lazy(() => import('./pages/ImpostazioniUtenti'));
+const ImpostazioniCategorie = lazy(() => import('./pages/ImpostazioniCategorie'));
+const ImpostazioniCasa = lazy(() => import('./pages/ImpostazioniCasa'));
+const ImpostazioniBackend = lazy(() => import('./pages/ImpostazioniBackend'));
 
 function AuthGuard() {
   const { utenteAttivo } = useApp();
@@ -90,6 +94,11 @@ function AuthGuard() {
           animationFillMode: 'both',
         }}
       >
+        <Suspense fallback={
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', pt: 10 }}>
+            <CircularProgress />
+          </Box>
+        }>
         <Routes>
           <Route path="/benvenuto" element={<Benvenuto />} />
           <Route path="/" element={<Home />} />
@@ -103,8 +112,10 @@ function AuthGuard() {
           <Route path="/impostazioni/utenti" element={<ImpostazioniUtenti />} />
           <Route path="/impostazioni/categorie" element={<ImpostazioniCategorie />} />
           <Route path="/impostazioni/casa" element={<ImpostazioniCasa />} />
+          <Route path="/impostazioni/backend" element={<ImpostazioniBackend />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </Suspense>
       </Box>
       {mostraNav && <BottomNav />}
 
@@ -126,17 +137,19 @@ function AuthGuard() {
 function App() {
   return (
     <ErrorBoundary>
-      <AppProvider>
-        <SpeseProvider>
-          <AttivitaProvider>
-            <ImpostazioniProvider>
-              <BrowserRouter>
-                <AuthGuard />
-              </BrowserRouter>
-            </ImpostazioniProvider>
-          </AttivitaProvider>
-        </SpeseProvider>
-      </AppProvider>
+      <BackendProvider>
+        <AppProvider>
+          <SpeseProvider>
+            <AttivitaProvider>
+              <ImpostazioniProvider>
+                <BrowserRouter>
+                  <AuthGuard />
+                </BrowserRouter>
+              </ImpostazioniProvider>
+            </AttivitaProvider>
+          </SpeseProvider>
+        </AppProvider>
+      </BackendProvider>
     </ErrorBoundary>
   );
 }

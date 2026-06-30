@@ -11,6 +11,7 @@ import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
+import StorageRoundedIcon from '@mui/icons-material/StorageRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import UploadRoundedIcon from '@mui/icons-material/UploadRounded';
@@ -34,6 +35,7 @@ const VOCI = [
   { path: '/impostazioni/utenti', icona: <GroupRoundedIcon />, titolo: 'Utenti', descrizione: 'Gestisci gli utenti della casa', colore: '#AB47BC' },
   { path: '/impostazioni/categorie', icona: <CategoryRoundedIcon />, titolo: 'Categorie spese', descrizione: 'Gestisci le categorie personalizzate', colore: '#FF7043' },
   { path: '/impostazioni/casa', icona: <HomeRoundedIcon />, titolo: 'La tua casa', descrizione: 'Modifica il nome della casa', colore: '#FFA726' },
+  { path: '/impostazioni/backend', icona: <StorageRoundedIcon />, titolo: 'Backend & Sincronizzazione', descrizione: 'Locale, Firebase o Raspberry Pi', colore: '#546E7A' },
 ];
 
 function Impostazioni() {

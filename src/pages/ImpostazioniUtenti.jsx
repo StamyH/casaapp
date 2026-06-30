@@ -19,12 +19,19 @@ function ImpostazioniUtenti() {
   const [confermaElimina, setConfermaElimina] = useState(null);
   const [nuovoNome, setNuovoNome] = useState('');
   const [nomeModifica, setNomeModifica] = useState('');
+  const [erroreNome, setErroreNome] = useState('');
+  const [erroreModifica, setErroreModifica] = useState('');
 
   const handleAggiungi = () => {
     const nome = nuovoNome.trim();
     if (!nome) return;
-    aggiungiUtente(nome);
+    const risultato = aggiungiUtente(nome);
+    if (risultato === null) {
+      setErroreNome('Esiste già un utente con questo nome');
+      return;
+    }
     setNuovoNome('');
+    setErroreNome('');
     setDialogAggiungi(false);
   };
 
@@ -32,11 +39,16 @@ function ImpostazioniUtenti() {
     const nome = nomeModifica.trim();
     if (!nome || !dialogModifica) return;
     const vecchioNome = dialogModifica.nome;
-    modificaUtente(dialogModifica.id, { nome });
+    const ok = modificaUtente(dialogModifica.id, { nome });
+    if (!ok) {
+      setErroreModifica('Esiste già un utente con questo nome');
+      return;
+    }
     if (nome !== vecchioNome) {
       aggiornaSpese(vecchioNome, nome);
       aggiornaAttivita(vecchioNome, nome);
     }
+    setErroreModifica('');
     setDialogModifica(null);
     setNomeModifica('');
   };
@@ -105,37 +117,41 @@ function ImpostazioniUtenti() {
       )}
 
       {/* Dialog aggiungi */}
-      <Dialog open={dialogAggiungi} onClose={() => setDialogAggiungi(false)} fullWidth maxWidth="xs">
+      <Dialog open={dialogAggiungi} onClose={() => { setDialogAggiungi(false); setErroreNome(''); }} fullWidth maxWidth="xs">
         <DialogTitle fontWeight={700}>Nuovo utente</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus fullWidth label="Nome"
             value={nuovoNome}
-            onChange={e => setNuovoNome(e.target.value)}
+            onChange={e => { setNuovoNome(e.target.value); setErroreNome(''); }}
             onKeyDown={e => e.key === 'Enter' && handleAggiungi()}
+            error={!!erroreNome}
+            helperText={erroreNome}
             sx={{ mt: 1 }}
           />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setDialogAggiungi(false)}>Annulla</Button>
+          <Button onClick={() => { setDialogAggiungi(false); setErroreNome(''); }}>Annulla</Button>
           <Button variant="contained" onClick={handleAggiungi} disabled={!nuovoNome.trim()}>Crea</Button>
         </DialogActions>
       </Dialog>
 
       {/* Dialog modifica nome */}
-      <Dialog open={!!dialogModifica} onClose={() => setDialogModifica(null)} fullWidth maxWidth="xs">
+      <Dialog open={!!dialogModifica} onClose={() => { setDialogModifica(null); setErroreModifica(''); }} fullWidth maxWidth="xs">
         <DialogTitle fontWeight={700}>Modifica nome</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus fullWidth label="Nome"
             value={nomeModifica}
-            onChange={e => setNomeModifica(e.target.value)}
+            onChange={e => { setNomeModifica(e.target.value); setErroreModifica(''); }}
             onKeyDown={e => e.key === 'Enter' && handleModifica()}
+            error={!!erroreModifica}
+            helperText={erroreModifica}
             sx={{ mt: 1 }}
           />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setDialogModifica(null)}>Annulla</Button>
+          <Button onClick={() => { setDialogModifica(null); setErroreModifica(''); }}>Annulla</Button>
           <Button variant="contained" onClick={handleModifica} disabled={!nomeModifica.trim()}>Salva</Button>
         </DialogActions>
       </Dialog>
