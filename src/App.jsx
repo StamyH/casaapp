@@ -40,8 +40,10 @@ function AuthGuard() {
 
   const aggiornaSW = () => {
     if (!swReg?.waiting) return;
+    // Ricarica la pagina quando il nuovo service worker prende il controllo
+    const reloadOnce = () => window.location.reload();
+    navigator.serviceWorker.addEventListener('controllerchange', reloadOnce, { once: true });
     swReg.waiting.postMessage({ type: 'SKIP_WAITING' });
-    navigator.serviceWorker.addEventListener('controllerchange', () => window.location.reload());
   };
 
   const mediaQuery = useMemo(() => window.matchMedia('(prefers-color-scheme: dark)'), []);
